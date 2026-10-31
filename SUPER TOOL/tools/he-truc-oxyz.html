@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vẽ hệ trục Oxyz</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;background:#eef1f5;color:#14213d}
+.wrap{max-width:1040px;margin:auto;padding:12px;display:grid;gap:12px}
+@media(min-width:860px){.wrap{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:start}.stage{position:sticky;top:12px}}
+.card{background:#fff;border:1px solid #d5dbe5;border-radius:10px;padding:12px}
+h1{font:600 19px Georgia,"Times New Roman",serif;margin:0 0 10px}
+#svg{width:100%;height:100%;display:block;border:1px solid #d5dbe5;border-radius:6px;background-color:#fff;background-image:linear-gradient(#e8edf4 1px,transparent 1px),linear-gradient(90deg,#e8edf4 1px,transparent 1px);background-size:20px 20px}
+#svg text{cursor:grab;touch-action:none;user-select:none}
+#svg.pen,#svg.pen text{cursor:crosshair}
+details{border-top:1px solid #e3e8f0;padding:8px 0}
+details:first-of-type{border-top:0;padding-top:0}
+summary{font-weight:600;cursor:pointer;padding:4px 0}
+label{display:block;font-size:13px;color:#4a5670;margin:8px 0 3px}
+input,select,button{font:inherit;padding:7px 8px;border:1px solid #b9c2d2;border-radius:7px;background:#fff;color:inherit;max-width:100%;width:100%}
+input[type=range]{padding:0;border:0}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:70px}
+button{cursor:pointer;background:#1d6fa5;color:#fff;border-color:#1d6fa5;margin-top:8px}
+button.alt{background:#fff;color:#1d6fa5}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid #14213d;outline-offset:2px}
+.chip{display:inline-flex;gap:8px;align-items:center;background:#e9f2f9;border-radius:99px;padding:3px 8px 3px 12px;margin:6px 6px 0 0;font-size:13px}
+.chip b{cursor:pointer;color:#b3261e;font-size:16px;line-height:1}
+.cv{aspect-ratio:16/9;width:100%}
+@media(min-width:1000px){
+ body{overflow:hidden}
+ .wrap{max-width:none;height:100vh;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:minmax(0,1fr);align-items:stretch}
+ .stage{position:static;display:flex;flex-direction:column;overflow:auto;min-height:0}
+ .panel{overflow-y:auto;min-height:0}
+ .cv{width:min(100%,calc((100vh - 230px)*16/9));margin:0 auto}
+}
+.hint{font-size:12.5px;color:#5b6783;margin:6px 0 0}
+.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.tb{margin:0;padding:6px 10px;width:auto;background:#fff;color:#14213d;border-color:#b9c2d2}
+.tb[aria-pressed=true]{background:#14213d;color:#fff;border-color:#14213d}
+.sw{width:30px;height:30px;padding:0;margin:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #b9c2d2}
+.inl{display:inline-flex;align-items:center;gap:4px;margin:0;color:#14213d}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="card stage">
+  <h1>Vẽ hệ trục Oxyz</h1>
+  <div class="cv"><svg id="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540"></svg></div>
+  <div class="tools" role="toolbar" aria-label="Bút viết">
+   <button class="tb" data-tool="sel" aria-pressed="true">Kéo nhãn</button><button class="tb" data-tool="pen">Bút</button><button class="tb" data-tool="seg">Đoạn</button><button class="tb" data-tool="line">Đường</button><button class="tb" data-tool="dot">Điểm</button><button class="tb" data-tool="erase">Tẩy</button>
+  </div>
+  <div class="tools">
+   <button class="sw" data-c="#d62828" style="background:#d62828" aria-label="Đỏ"></button><button class="sw" data-c="#1d4ed8" style="background:#1d4ed8" aria-label="Xanh dương"></button><button class="sw" data-c="#16a34a" style="background:#16a34a" aria-label="Xanh lá"></button><button class="sw" data-c="#111111" style="background:#111111" aria-label="Đen"></button>
+   <input id="pc" type="color" value="#d62828" aria-label="Màu tùy chọn" style="width:40px;height:30px;padding:0">
+   <label class="inl">Dày <input id="pw" type="range" min="2" max="12" value="4" style="width:90px"></label>
+   <label class="inl"><input id="pd" type="checkbox" style="width:auto"> Đứt</label>
+   <label class="inl"><input id="snap" type="checkbox" checked style="width:auto"> Bắt dính điểm</label>
+   <button class="tb" onclick="undoInk()">Hoàn tác</button><button class="tb" onclick="clearInk()">Xóa nét</button>
+  </div>
+  <div class="row"><button onclick="exp('png')">Tải ảnh PNG</button><button class="alt" onclick="exp('svg')">Tải file SVG</button></div>
+ </div>
+
+ <div class="card panel">
+  <details><summary>Hệ trục</summary>
+   <div class="row">
+    <div><label for="al">Góc trục Ox: <span id="alv"></span>°</label><input id="al" type="range" min="20" max="70" value="45"></div>
+    <div><label for="k">Độ rút ngắn Ox: <span id="kv"></span></label><input id="k" type="range" min="0.4" max="1" step="0.05" value="0.6"></div>
+   </div>
+   <label class="inl"><input id="tk" type="checkbox" style="width:auto"> Vạch chia đơn vị trên trục</label>
+   <label class="inl"><input id="ng" type="checkbox" checked style="width:auto"> Phần trục âm (nét đứt)</label>
+   <label class="inl"><input id="ft" type="checkbox" checked style="width:auto"> Ghi số trên trục khi gióng</label>
+   <label class="inl"><input id="cd" type="checkbox" style="width:auto"> Ghi tọa độ cạnh tên điểm</label>
+   <div class="row">
+    <div><label for="lw">Độ đậm nét: <span id="lwv"></span></label><input id="lw" type="range" min="1" max="5" step="0.5" value="2"></div>
+    <div><label for="fs">Cỡ chữ: <span id="fsv"></span></label><input id="fs" type="range" min="14" max="40" value="22"></div>
+   </div>
+   <label for="ff">Phông chữ</label>
+   <select id="ff"><option value="Times New Roman,serif">Times New Roman</option><option value="Arial,Helvetica,sans-serif">Arial</option><option value="Georgia,serif">Georgia</option><option value="Courier New,monospace">Courier New</option></select>
+   <button class="alt" onclick="resetLo()">Đặt lại vị trí nhãn</button>
+   <p class="hint">Kéo thả tên điểm, tên trục trên hình để dời nhãn.</p>
+  </details>
+
+  <details open><summary>Dựng nhanh hình</summary>
+   <label for="qs">Hình mẫu</label>
+   <select id="qs"><option value="pyr">Chóp S.ABCD đáy chữ nhật, SA ⊥ đáy</option><option value="reg">Chóp đều S.ABCD (O là tâm đáy)</option><option value="box">Hình hộp chữ nhật ABCD.A′B′C′D′</option><option value="pri">Lăng trụ đứng ABC.A′B′C′ (đáy vuông tại A)</option><option value="tet">Tứ diện vuông OABC</option></select>
+   <div class="row">
+    <div><label for="qa">a</label><input id="qa" type="number" step="0.5" min="0.5" value="3"></div>
+    <div><label for="qb">b</label><input id="qb" type="number" step="0.5" min="0.5" value="2"></div>
+    <div><label for="qc">c</label><input id="qc" type="number" step="0.5" min="0.5" value="3"></div>
+   </div>
+   <p class="hint" id="qh"></p>
+   <label for="qn">Tự đặt tên đỉnh (theo thứ tự, để trống = mặc định)</label>
+   <input id="qn">
+   <div class="row"><button onclick="buildQ()">Dựng hình</button><button class="alt" onclick="clearQ()">Xóa hình hiện tại</button></div>
+   <p class="hint">Cạnh khuất tự động vẽ nét đứt. Đỉnh trùng gốc tọa độ được ghi dạng O≡A.</p>
+  </details>
+
+  <details open><summary>Thêm điểm theo tọa độ</summary>
+   <div class="row">
+    <div><label for="pn">Tên</label><input id="pn" placeholder="A"></div>
+    <div><label for="px">x</label><input id="px" type="number" step="0.5" placeholder="1"></div>
+    <div><label for="py">y</label><input id="py" type="number" step="0.5" placeholder="2"></div>
+    <div><label for="pz">z</label><input id="pz" type="number" step="0.5" placeholder="3"></div>
+   </div>
+   <label for="pg">Gióng tọa độ</label>
+   <select id="pg"><option value="n">Không gióng</option><option value="xy">Hình chiếu lên Oxy và gióng lên Ox, Oy</option><option value="box">Gióng đủ 3 trục (hình hộp tọa độ)</option></select>
+   <button onclick="addPt()">Thêm điểm</button>
+   <p class="hint">Nhập lại cùng tên điểm để cập nhật tọa độ. Tên O dành cho gốc tọa độ.</p>
+  </details>
+
+  <details><summary>Thêm đoạn thẳng / vectơ</summary>
+   <div class="row">
+    <div><label for="sa">Từ</label><select id="sa"></select></div>
+    <div><label for="sb">Đến</label><select id="sb"></select></div>
+   </div>
+   <div class="row">
+    <div><label for="st">Loại</label><select id="st"><option value="seg">Đoạn thẳng</option><option value="vec">Vectơ (có mũi tên)</option></select></div>
+    <div><label for="sd">Nét</label><select id="sd"><option value="0">Liền</option><option value="1">Đứt</option></select></div>
+   </div>
+   <button onclick="addSeg()">Thêm</button>
+  </details>
+  <div id="items"></div>
+ </div>
+</div>
+
+<script>
+const $=i=>document.getElementById(i);
+const W=960,H=540,AX=['x','y','z'],OFF=[[-12,8],[0,17],[-16,0]];
+let pts=[],segs=[],solids=[],lo={},dr=null,scr={},ink=[],cur=null,tool='sel';
+const fmt=v=>String(+v.toFixed(2));
+const okName=s=>/^[\p{L}\d′]+$/u.test(s);
+const clean=s=>s.replace(/'/g,'′').replace(/[<>&"]/g,'');
+const LW=()=>+$('lw').value;
+const sub=(p,q)=>p.map((v,i)=>v-q[i]),dot=(p,q)=>p[0]*q[0]+p[1]*q[1]+p[2]*q[2];
+const cr=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+const avg=L=>[0,1,2].map(i=>L.reduce((s,p)=>s+p[i],0)/L.length);
+const PF=[[0,1,2,3],[0,1,4],[1,2,4],[2,3,4],[3,0,4]];
+const QS={
+ pyr:{t:'Chóp S.ABCD',n:'A,B,C,D,S',h:'a = AB, b = AD, c = SA. A trùng gốc O.',v:(a,b,c)=>[[0,0,0],[a,0,0],[a,b,0],[0,b,0],[0,0,c]],F:PF},
+ reg:{t:'Chóp đều S.ABCD',n:'A,B,C,D,S',h:'a = OA (nửa đường chéo), c = chiều cao SO. A trên Ox, B trên Oy.',v:(a,b,c)=>[[a,0,0],[0,a,0],[-a,0,0],[0,-a,0],[0,0,c]],F:PF},
+ box:{t:'Hình hộp chữ nhật',n:'A,B,C,D,A′,B′,C′,D′',h:'a = AB, b = AD, c = AA′. A trùng gốc O.',v:(a,b,c)=>[[0,0,0],[a,0,0],[a,b,0],[0,b,0],[0,0,c],[a,0,c],[a,b,c],[0,b,c]],F:[[0,1,2,3],[4,5,6,7],[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]]},
+ pri:{t:'Lăng trụ đứng',n:'A,B,C,A′,B′,C′',h:'a = AB, b = AC, c = AA′. A trùng gốc O.',v:(a,b,c)=>[[0,0,0],[a,0,0],[0,b,0],[0,0,c],[a,0,c],[0,b,c]],F:[[0,1,2],[3,4,5],[0,1,4,3],[1,2,5,4],[2,0,3,5]]},
+ tet:{t:'Tứ diện vuông',n:'O,A,B,C',h:'a = OA, b = OB, c = OC.',v:(a,b,c)=>[[0,0,0],[a,0,0],[0,b,0],[0,0,c]],F:[[0,1,2],[0,2,3],[0,3,1],[1,2,3]]}
+};
+function clearQ(){const n=solids.flatMap(sd=>sd.n);pts=pts.filter(q=>!n.includes(q.n));solids=[];render();}
+function qui(){const d=QS[$('qs').value];$('qn').placeholder=d.n;$('qh').textContent=d.h;}
+function buildQ(){
+  const d=QS[$('qs').value],a=+$('qa').value||1,b=+$('qb').value||1,c=+$('qc').value||1,V=d.v(a,b,c);
+  let nm=clean($('qn').value).split(',').map(x=>x.trim()).filter(Boolean);
+  if(nm.length!==V.length||nm.some(x=>!okName(x))||new Set(nm).size!==V.length)nm=d.n.split(',');
+  if(nm.some((x,i)=>x==='O'&&V[i].some(v=>v)))return alert('Tên O chỉ dành cho đỉnh trùng gốc tọa độ.');
+  nm.forEach((x,i)=>{if(x==='O')return;const q={n:x,x:V[i][0],y:V[i][1],z:V[i][2],g:'n'},j=pts.findIndex(p=>p.n===x);if(j<0)pts.push(q);else pts[j]=q;});
+  solids.push({title:d.t,n:nm,F:d.F.map(f=>f.map(i=>nm[i]))});render();
+}
+
+function render(){
+  const al=+$('al').value*Math.PI/180,k=+$('k').value,fs=+$('fs').value,ff=$('ff').value,col='#14213d',gc='#5b6783';
+  $('alv').textContent=$('al').value;$('kv').textContent=k;$('lwv').textContent=$('lw').value;$('fsv').textContent=fs;
+  const pr=p=>[p[1]-k*Math.cos(al)*p[0],p[2]-k*Math.sin(al)*p[0]];
+  const P={O:[0,0,0]};pts.forEach(q=>P[q.n]=[q.x,q.y,q.z]);
+  segs=segs.filter(g=>P[g.a]&&P[g.b]);
+  solids=solids.filter(sd=>sd.n.every(n=>P[n]));
+  /* độ dài các nửa trục: [âm, dương] */
+  const ext=[0,1,2].map(i=>{const v=pts.map(q=>[q.x,q.y,q.z][i]),mx=Math.max(0,...v),mn=Math.min(0,...v);return[mn<0?-mn+.8:($('ng').checked?1.2:0),Math.max(2.5,mx+.8)];});
+  const E=(i,v)=>{const p=[0,0,0];p[i]=v;return p;};
+  const all=[];ext.forEach((e,i)=>{all.push(pr(E(i,-e[0])),pr(E(i,e[1])));});pts.forEach(q=>all.push(pr([q.x,q.y,q.z])));
+  const xs=all.map(p=>p[0]),ys=all.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),pad=58;
+  const sc=Math.min((W-2*pad)/Math.max(x1-x0,1e-6),(H-2*pad)/Math.max(y1-y0,1e-6));
+  const ox=(W-(x1-x0)*sc)/2-x0*sc,oy=(H-(y1-y0)*sc)/2;
+  const T=p=>[p[0]*sc+ox,H-((p[1]-y0)*sc+oy)],S=p=>T(pr(p));
+  const ln=(a,b,o)=>{const u=S(a),v=S(b);return`<line x1="${u[0]}" y1="${u[1]}" x2="${v[0]}" y2="${v[1]}" stroke="${o.c||col}" stroke-width="${o.w||LW()}" stroke-linecap="round"${o.d?' stroke-dasharray="6 5"':''}/>`;};
+  const tx=(x,y,t,key,sz,it,an)=>{const o=lo[key]||[0,0];return`<text${key?` data-n="${key}"`:''} x="${x+o[0]}" y="${y+o[1]}" text-anchor="${an||'middle'}" dominant-baseline="central" font-family="${ff}" font-style="${it===0?'normal':'italic'}" font-size="${sz||fs}" fill="${col}">${t}</text>`;};
+  const dir=(a,b)=>{const L=Math.hypot(b[0]-a[0],b[1]-a[1])||1,u=[(b[0]-a[0])/L,(b[1]-a[1])/L];return[u,[-u[1],u[0]]];};
+  const arr=(a,b,z)=>{const[u,n]=dir(a,b);return`<polygon points="${b[0]},${b[1]} ${b[0]-u[0]*z+n[0]*z*.36},${b[1]-u[1]*z+n[1]*z*.36} ${b[0]-u[0]*z-n[0]*z*.36},${b[1]-u[1]*z-n[1]*z*.36}" fill="${col}"/>`;};
+  scr={};
+  /* gióng tọa độ */
+  let sG='';
+  pts.forEach(q=>{
+    const{x,y,z}=q,dl=(a,b)=>{sG+=ln(a,b,{d:1,w:Math.max(1,LW()*.6),c:gc});},ft=(p,i,v)=>{if($('ft').checked&&v!==0){const c=S(p);sG+=tx(c[0]+OFF[i][0],c[1]+OFF[i][1],fmt(v),'',fs*.8,0);}};
+    if(q.g==='n')return;
+    dl([x,y,z],[x,y,0]);dl([x,y,0],[x,0,0]);dl([x,y,0],[0,y,0]);ft([x,0,0],0,x);ft([0,y,0],1,y);
+    if(q.g==='box'){dl([x,y,z],[x,0,z]);dl([x,y,z],[0,y,z]);dl([x,0,z],[x,0,0]);dl([x,0,z],[0,0,z]);dl([0,y,z],[0,y,0]);dl([0,y,z],[0,0,z]);ft([0,0,z],2,z);}
+  });
+  /* cạnh của các hình dựng nhanh: nét liền/đứt theo góc nhìn */
+  const dv=[1,k*Math.cos(al),k*Math.sin(al)],solE=[],SF=[];
+  solids.forEach(sd=>{
+    const G=avg(sd.n.map(n=>P[n])),Ed={},fc=[];SF.push(fc);
+    sd.F.forEach(f=>{const q=f.map(n=>P[n]);let nr=cr(sub(q[1],q[0]),sub(q[2],q[0]));if(dot(nr,sub(avg(q),G))<0)nr=nr.map(x=>-x);const vis=dot(nr,dv)>1e-9,nl=Math.hypot(...nr)||1;fc.push({P:q,n:nr.map(x=>x/nl),vis});
+      f.forEach((v,i)=>{const w=f[(i+1)%f.length],key=[v,w].sort().join('|');Ed[key]=Ed[key]||vis;});});
+    for(const key in Ed){const[a,b]=key.split('|');solE.push({a,b,vis:Ed[key]});}
+  });
+  const onAxis=(e,i)=>[P[e.a],P[e.b]].every(p=>p.every((v,j)=>j===i||Math.abs(v)<1e-9)),onAx=e=>[0,1,2].some(i=>onAxis(e,i));
+  /* các trục */
+  let sA='';
+  for(let i=0;i<3;i++){
+    const[ng,ps]=ext[i],a=S(E(i,0)),b=S(E(i,ps)),[u,n]=dir(a,b);
+    if(ng>0)sA+=ln(E(i,-ng),E(i,0),{d:1});
+    const bs=[0,ps];
+    SF.forEach(fc=>fc.forEach(f=>{
+      if(Math.abs(f.n[i])>1e-9){const t=dot(f.n,f.P[0])/f.n[i];if(t>0&&t<ps)bs.push(t);}
+      f.P.forEach(v=>{if(v.every((x,j)=>j===i||Math.abs(x)<1e-9)&&v[i]>0&&v[i]<ps)bs.push(v[i]);});
+    }));
+    const bp=[...new Set(bs.map(t=>+t.toFixed(9)))].sort((x,y)=>x-y),runs=[];
+    for(let j=0;j+1<bp.length;j++){
+      const M=E(i,(bp[j]+bp[j+1])/2),r=runs[runs.length-1];
+      /* khuất khi nằm trong khối, hoặc chỉ nằm trên các mặt quay lưng */
+      const hd=SF.some(fc=>{const dd=fc.map(f=>dot(f.n,sub(M,f.P[0])));return dd.every(d=>d<=1e-6)&&!fc.some((f,q)=>Math.abs(dd[q])<=1e-6&&f.vis);});
+      if(r&&r.hd===hd)r.t1=bp[j+1];else runs.push({t0:bp[j],t1:bp[j+1],hd});}
+    runs.forEach(r=>{sA+=ln(E(i,r.t0),E(i,r.t1),{d:r.hd});});
+    sA+=arr(a,b,13)+tx(b[0]+u[0]*16,b[1]+u[1]*16,AX[i],'@'+AX[i]);
+    if($('tk').checked){
+      const up=Math.hypot(S(E(i,1))[0]-a[0],S(E(i,1))[1]-a[1]);
+      for(let t=-Math.floor(ng);t<=Math.floor(ps);t++){if(!t)continue;const c=S(E(i,t));
+        sA+=`<line x1="${c[0]-n[0]*4}" y1="${c[1]-n[1]*4}" x2="${c[0]+n[0]*4}" y2="${c[1]+n[1]*4}" stroke="${col}" stroke-width="1.2"/>`;
+        if(up>=18)sA+=tx(c[0]+OFF[i][0],c[1]+OFF[i][1],t,'',fs*.65,0);}
+    }
+  }
+  const o=S([0,0,0]);scr.O=o;sA+=tx(o[0]+12,o[1]+14,'O'+pts.filter(q=>!q.x&&!q.y&&!q.z).map(q=>'≡'+q.n).join(''),'@O');
+  /* đoạn thẳng, vectơ */
+  let sS='';
+  solE.forEach(e=>{if(!onAx(e))sS+=ln(P[e.a],P[e.b],{d:!e.vis});});
+  segs.forEach(g=>{sS+=ln(P[g.a],P[g.b],{d:g.d==='1',w:LW()*.9});if(g.t==='vec')sS+=arr(S(P[g.a]),S(P[g.b]),12);});
+  /* điểm */
+  let sP='';
+  pts.forEach(q=>{const p=S([q.x,q.y,q.z]);scr[q.n]=p;if(!q.x&&!q.y&&!q.z)return;
+    sP+=`<circle cx="${p[0]}" cy="${p[1]}" r="${Math.max(2.6,LW()*1.3)}" fill="${col}"/>`+tx(p[0]+8,p[1]-10,q.n+($('cd').checked?`(${fmt(q.x)}; ${fmt(q.y)}; ${fmt(q.z)})`:''),q.n,0,1,'start');});
+  $('svg').innerHTML=sG+sA+sS+sP+inkG();
+
+  const names=['O',...pts.map(q=>q.n)];
+  ['sa','sb'].forEach((id,i)=>{const el=$(id),v=el.value;el.innerHTML=names.map(x=>`<option>${x}</option>`).join('');if(names.includes(v))el.value=v;else el.selectedIndex=Math.min(i,names.length-1);});
+  $('items').innerHTML=
+    pts.map((q,i)=>chip(`${q.n}(${fmt(q.x)}; ${fmt(q.y)}; ${fmt(q.z)})${q.g==='n'?'':q.g==='xy'?' gióng Oxy':' gióng 3 trục'}`,'pts',i)).join('')+
+    solids.map((sd,i)=>chip(`${sd.title} ${sd.n.join('')}`,'solids',i)).join('')+
+    segs.map((g,i)=>chip(`${g.t==='vec'?'Vectơ':'Đoạn'} ${g.a}${g.b}${g.d==='1'?' (đứt)':''}`,'segs',i)).join('');
+}
+const chip=(t,k,i)=>`<span class="chip">${t}<b role="button" tabindex="0" aria-label="Xóa" onclick="del('${k}',${i})">×</b></span>`;
+function del(k,i){if(k==='solids'){const n=solids[i].n;pts=pts.filter(q=>!n.includes(q.n));solids.splice(i,1);}else({pts,segs})[k].splice(i,1);render();}
+function addPt(){
+  const n=clean($('pn').value.trim()),x=parseFloat($('px').value),y=parseFloat($('py').value),z=parseFloat($('pz').value);
+  if(!okName(n)||n==='O')return alert('Nhập tên điểm khác O, ví dụ: A');
+  if([x,y,z].some(isNaN))return alert('Nhập đủ tọa độ x, y, z.');
+  const q={n,x,y,z,g:$('pg').value},i=pts.findIndex(p=>p.n===n);
+  if(i<0)pts.push(q);else pts[i]=q;
+  $('pn').value='';render();
+}
+function addSeg(){
+  const a=$('sa').value,b=$('sb').value;
+  if(a===b)return alert('Chọn hai điểm khác nhau.');
+  segs.push({a,b,t:$('st').value,d:$('sd').value});render();
+}
+function resetLo(){lo={};render();}
+
+/* ---------- Bút viết ---------- */
+const inkEl=it=>{
+  const st=`stroke="${it.c}" stroke-width="${it.w}" stroke-linecap="round" stroke-linejoin="round" fill="none"${it.d?` stroke-dasharray="${it.w*2.5} ${it.w*2}"`:''}`;
+  if(it.t==='dot')return`<circle cx="${it.a[0]}" cy="${it.a[1]}" r="${it.w*1.4}" fill="${it.c}"/>`;
+  if(it.t==='pen')return`<polyline points="${it.p.map(q=>q.join(',')).join(' ')}" ${st}/>`;
+  let a=it.a,b=it.b;
+  if(it.t==='line'){const L=Math.hypot(b[0]-a[0],b[1]-a[1])||1,d=[(b[0]-a[0])/L*2000,(b[1]-a[1])/L*2000];a=[it.a[0]-d[0],it.a[1]-d[1]];b=[it.a[0]+d[0],it.a[1]+d[1]];}
+  return`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" ${st}/>`;
+};
+const inkIn=()=>ink.concat(cur?[cur]:[]).map(inkEl).join('');
+const inkG=()=>`<g id="inkg">${inkIn()}</g>`;
+const redraw=()=>{const g=$('inkg');if(g)g.innerHTML=inkIn();};
+const ps=()=>({c:$('pc').value,w:+$('pw').value,d:$('pd').checked});
+const dseg=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/L));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);};
+const hit=(it,p)=>{
+  const r=Math.max(8,it.w+4);
+  if(it.t==='dot')return Math.hypot(p[0]-it.a[0],p[1]-it.a[1])<r+it.w;
+  if(it.t==='pen')return it.p.some((q,i)=>dseg(p,q,it.p[i+1]||q)<r);
+  if(it.t==='seg')return dseg(p,it.a,it.b)<r;
+  const L=Math.hypot(it.b[0]-it.a[0],it.b[1]-it.a[1])||1;
+  return Math.abs((it.b[0]-it.a[0])*(it.a[1]-p[1])-(it.a[0]-p[0])*(it.b[1]-it.a[1]))/L<r;
+};
+const snap=p=>{if(!$('snap').checked)return p;let b=null,bd=16;for(const n in scr){const q=scr[n],d=Math.hypot(q[0]-p[0],q[1]-p[1]);if(d<bd){bd=d;b=q;}}return b?[b[0],b[1]]:p;};
+const erase=p=>{const n=ink.length;ink=ink.filter(it=>!hit(it,p));if(ink.length!==n)redraw();};
+function undoInk(){ink.pop();redraw();}
+function clearInk(){ink=[];redraw();}
+function setTool(t){tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));$('svg').classList.toggle('pen',t!=='sel');$('svg').style.touchAction=t==='sel'?'':'none';}
+function ptr(e){const q=new DOMPoint(e.clientX,e.clientY).matrixTransform($('svg').getScreenCTM().inverse());return[q.x,q.y];}
+
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+function exp(t){
+  const x=new XMLSerializer().serializeToString($('svg')).replace(/(<svg[^>]*>)/,`$1<rect width="${W}" height="${H}" fill="#fff"/>`);
+  if(t==='svg')return dl(new Blob([x],{type:'image/svg+xml'}),'he-truc-oxyz.svg');
+  const url=URL.createObjectURL(new Blob([x],{type:'image/svg+xml;charset=utf-8'})),img=new Image();
+  img.onload=()=>{const c=document.createElement('canvas');c.width=W*2;c.height=H*2;c.getContext('2d').drawImage(img,0,0,c.width,c.height);c.toBlob(b=>dl(b,'he-truc-oxyz.png'));URL.revokeObjectURL(url);};
+  img.src=url;
+}
+
+$('svg').addEventListener('pointerdown',e=>{
+  const p=ptr(e);
+  if(tool==='sel'){const n=e.target.dataset&&e.target.dataset.n;if(!n)return;dr={n,s:p,o:lo[n]||[0,0]};}
+  else if(tool==='erase'){dr={};erase(p);}
+  else if(tool==='dot'){ink.push({t:'dot',a:snap(p),...ps()});redraw();return;}
+  else{const a=snap(p);cur=tool==='pen'?{t:'pen',p:[p],...ps()}:{t:tool,a,b:a,...ps()};dr={};}
+  $('svg').setPointerCapture(e.pointerId);e.preventDefault();redraw();
+});
+$('svg').addEventListener('pointermove',e=>{
+  if(!dr)return;const p=ptr(e);
+  if(tool==='sel'){lo[dr.n]=[dr.o[0]+p[0]-dr.s[0],dr.o[1]+p[1]-dr.s[1]];render();}
+  else if(tool==='erase')erase(p);
+  else if(cur){if(cur.t==='pen')cur.p.push(p);else cur.b=snap(p);redraw();}
+});
+['pointerup','pointercancel'].forEach(n=>$('svg').addEventListener(n,()=>{
+  if(cur){const ok=cur.t==='pen'?cur.p.length>1:Math.hypot(cur.b[0]-cur.a[0],cur.b[1]-cur.a[1])>3;if(ok)ink.push(cur);cur=null;redraw();}
+  dr=null;
+}));
+document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>setTool(b.dataset.tool)));
+document.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{$('pc').value=b.dataset.c;}));
+['al','k','tk','ng','ft','cd','lw','fs','ff'].forEach(i=>$(i).addEventListener('input',render));
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='B')e.target.click();});
+$('qs').addEventListener('input',qui);qui();
+render();
+</script>
+</body>
+</html>

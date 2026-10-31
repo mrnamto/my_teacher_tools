@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Giải tam giác – Toán 10</title>
+<style>
+:root{--bg:#f2f7ff;--card:#fff;--ink:#0f1f3d;--mut:#5b6b8a;--line:#cfdcf3;--acc:#2563eb;--pri:#1d4ed8;--sky:#dbeafe;--sky2:#eff6ff;--pg:#e6efff;--fill:rgba(37,99,235,.09);--h:#d9480f;--g1:#2b8a3e;--g2:#9c36b5;--bad:#c92a2a;--k0:#e03131;--k1:#2f9e44;--k2:#1971c2;--k3:#f08c00;--k4:#0c8599;--k5:#7048e8;color-scheme:light}
+html{font-size:clamp(13px,calc(.4vw + .4vh + 4px),22px);scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--pg);color:var(--ink);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+:focus-visible{outline:2px solid #ea580c;outline-offset:2px}
+code{background:var(--sky);color:var(--pri);padding:.05rem .35rem;border-radius:.35rem;font-size:.92em}
+
+/* khung ứng dụng */
+.app{display:flex;flex-direction:column;min-height:100dvh;background:radial-gradient(70rem 28rem at 100% 0,#cfe0ff,transparent 70%),var(--pg);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.top{display:flex;align-items:center;padding:.5rem 1rem;color:#fff;background:linear-gradient(120deg,#1e3a8a,#2563eb 65%,#38bdf8);box-shadow:0 2px 10px rgba(30,64,175,.28)}
+.brand{display:flex;align-items:center;gap:.65rem;min-width:0}
+.logo{flex:none;width:2.2rem;height:2.2rem;border-radius:.65rem;background:#fff;display:grid;place-items:center;font-size:1.2rem}
+h1{font-size:1.15rem;margin:0;line-height:1.25;min-width:0}
+h1 small{display:block;font-size:.76rem;font-weight:400;color:rgba(255,255,255,.88)}
+.stage{flex:1;min-height:0;display:flex;padding:.75rem}
+.split{flex:1;width:100%;max-width:56rem;margin:0 auto;min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;align-content:start}
+.pane{display:flex;flex-direction:column;gap:.75rem;min-width:0;min-height:0}
+.pane>*{flex:none}
+@media (min-aspect-ratio:1/1) and (min-width:700px){
+  html,body{height:100%;overflow:hidden}
+  .app{height:100dvh;min-height:0}
+  h1 small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .split{max-width:120rem;grid-template-columns:minmax(22rem,5fr) minmax(0,6fr);grid-template-rows:minmax(0,1fr);align-content:stretch}
+  .pane{overflow-y:auto;overflow-x:hidden;padding:.15rem;margin:-.15rem;scrollbar-width:thin}
+}
+@media (min-aspect-ratio:1/1) and (min-width:1280px){
+  .split{grid-template-columns:minmax(23rem,5fr) minmax(0,6fr) minmax(0,5fr)}
+  .pane.r{display:contents}
+  .pane.r>.card{overflow-y:auto;min-height:0;scrollbar-width:thin}
+}
+@media (max-height:520px){h1 small{display:none}}
+
+/* khối */
+.card{--k:var(--acc);background:var(--card);border:1px solid var(--line);border-radius:.9rem;box-shadow:0 1px 2px rgba(30,64,175,.08),0 8px 20px -8px rgba(30,64,175,.2);overflow:hidden;min-width:0}
+#res,#sol{padding:.75rem .8rem}
+#res{--k:#0891b2;display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:.5rem}
+#res>*{min-width:0}#res>h2,#res>.row,#res>.msg{grid-column:1/-1}
+#res>h2{order:-1}
+#sol{--k:#7c3aed}
+.ch,#res>h2,#sol>h2{display:flex;align-items:center;gap:.5rem;margin:0;padding:.45rem .8rem;font-size:.95rem;font-weight:700;color:var(--k);background:color-mix(in srgb,var(--k) 9%,#fff);border-bottom:1px solid color-mix(in srgb,var(--k) 22%,#fff);border-left:.3rem solid var(--k)}
+#res>h2,#sol>h2{margin:-.75rem -.8rem .2rem}
+#sol>h2{margin-bottom:.6rem}
+.ic{flex:none;display:grid;place-items:center;width:1.45rem;height:1.45rem;border-radius:.45rem;background:var(--k);color:#fff;font-size:.82rem;font-weight:700}
+.cb{padding:.65rem .8rem}
+
+/* nhập liệu */
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+label{font-size:.8rem;color:var(--mut);display:block}
+input[type=text],select{width:100%;padding:.45rem .6rem;border:1.5px solid var(--line);border-radius:.6rem;background:var(--bg);color:var(--ink);font:inherit;margin-top:2px}
+input[type=text]:focus,select:focus{background:#fff;border-color:var(--acc)}
+input.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+input[type=range]{accent-color:var(--acc)}
+button{font:inherit;font-size:.9rem;padding:.35rem .7rem;border:1.5px solid var(--line);border-radius:.6rem;background:#fff;color:var(--acc);cursor:pointer;transition:background .15s,border-color .15s}
+button:hover{background:var(--sky);border-color:#93b4f0}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.row{display:flex;gap:.5rem;align-items:end;flex-wrap:wrap;margin-top:.6rem}
+#ex button{font-size:.8rem;padding:.25rem .55rem;background:var(--sky2)}
+#ex button:hover{background:var(--sky)}
+.msg{margin:.5rem 0 0;font-size:.85rem;color:var(--mut)}.msg.err{color:var(--bad);background:#fef2f2;border:1px solid #fecaca;border-radius:.5rem;padding:.35rem .6rem}.msg.ok{color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:.5rem;padding:.35rem .6rem}
+.msg:empty{display:none}
+details>summary{cursor:pointer;color:var(--acc);font-size:.9rem;font-weight:600}
+.more{margin-top:.6rem}.more summary{margin-bottom:.5rem}
+.syn{margin-top:.6rem}
+.ev{display:block;font-size:.72rem;color:var(--mut);min-height:1em;margin-top:2px}
+.blk,.chip{background:color-mix(in srgb,var(--k) 11%,#fff);border:1px solid color-mix(in srgb,var(--k) 35%,var(--line));border-top:4px solid var(--k);border-radius:.65rem;padding:.35rem .5rem .5rem}
+.blk .bt{color:var(--k);font-weight:700;font-size:.8rem}
+.blk input{background:#fff}.blk input.on{border-color:var(--k);box-shadow:0 0 0 2px color-mix(in srgb,var(--k) 30%,transparent)}
+
+/* kết quả */
+.zone{margin:0;border:1px solid var(--line);border-radius:.8rem;padding:.4rem .5rem .5rem;background:var(--sky2)}
+.zt{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.8rem;color:var(--pri);margin-bottom:.35rem}.zt::after{content:"";flex:1;height:1px;background:var(--line)}
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(2.9rem,1fr));gap:.35rem}
+.chip{display:flex;flex-direction:column;position:relative;padding:.25rem .4rem .35rem}.chip span{color:var(--k);font-weight:700;font-style:italic;font-size:.9rem}.chip b{font-size:.98rem;font-variant-numeric:tabular-nums}
+.chip.gv{outline:2px solid var(--k)}.chip.gv::after{content:"đề cho";position:absolute;right:4px;top:3px;font-size:.55rem;color:var(--k)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--mut);font-weight:600}
+ol,ul{padding-left:1.2em;margin:.4em 0}li{margin:.3em 0}
+
+/* hình vẽ */
+.bar{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:center;font-size:.85rem;margin-bottom:.5rem;padding:.4rem .6rem;border-radius:.7rem;background:var(--sky2);border:1px solid var(--line)}
+.bar label{display:inline-flex;gap:.3rem;align-items:center;color:var(--ink);font-size:.85rem}
+.bar input[type=range]{width:6rem;margin:0}
+.bar button{padding:.15rem .6rem}
+#svg{display:block;width:min(100%,max(20rem,calc((100dvh - 16rem)*1.538)));height:auto;margin:0 auto;touch-action:none;cursor:grab;border:1px solid var(--line);border-radius:.7rem;background:#fff}
+.t{fill:var(--ink);paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round;font-family:inherit}
+.tg{fill:var(--g1)}.th{fill:var(--h)}.tp{fill:var(--g2)}.tv{font-weight:700;font-style:italic}
+.ph{fill:var(--mut);font-size:18px}
+.tri{fill:var(--fill);stroke:var(--acc);stroke-linejoin:round}.arc,.cI{fill:none;stroke:var(--g1)}.hl{fill:none;stroke:var(--h)}.cO{fill:none;stroke:var(--g2)}
+.alt{fill:none;stroke:var(--h);stroke-dasharray:7 5;stroke-linejoin:round}
+
+/* lời giải */
+.paper{font-family:"Times New Roman",Georgia,serif;font-size:1.05rem;line-height:1.9;background:#fff;border:1px solid var(--line);border-left:4px solid #7c3aed;border-radius:.6rem;padding:.6rem 1.1rem}
+.paper p{margin:.35em 0}.paper .kq{color:var(--acc);font-weight:600}.paper .cs{margin-top:.9em;color:var(--h)}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.35;margin:0 3px}.fr>span{padding:0 4px}.fr>span:first-child{border-bottom:1px solid currentColor}
+.ov{border-top:1px solid currentColor;padding:0 2px}
+.paper .m{margin:.25em 0;overflow-x:auto;overflow-y:hidden}.paper mjx-container{max-width:none}
+.tex{margin-top:.6rem}.tex summary{margin-bottom:.4rem}.tex textarea{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:.5rem;padding:.5rem;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace}
+</style>
+<script>window.MathJax={svg:{fontCache:'none'},startup:{typeset:false}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" onload="typeset($('sol'))"></script></head><body>
+<div class="app">
+<header class="top"><div class="brand"><span class="logo">📐</span><h1>Giải tam giác<small>Toán 10 · Hệ thức lượng trong tam giác · nhập đúng 3 yếu tố bất kỳ (cạnh, góc, R, r, S, chu vi, đường cao) · giải bằng định lí côsin, định lí sin và các công thức diện tích</small></h1></div></header>
+<main class="stage"><div class="split">
+<section class="pane">
+<section class="card">
+<h2 class="ch"><span class="ic">✎</span>Nhập số liệu</h2>
+<div class="cb">
+<div class="fields" id="fields"></div>
+<details class="more" id="mt"><summary>Yếu tố khác: R, r, S, chu vi, đường cao</summary><div class="fields" id="more"></div></details>
+<p id="msg" class="msg"></p>
+<div class="row"><label style="width:110px">Làm tròn<select id="dp"><option value="1">1 chữ số</option><option value="2" selected>2 chữ số</option><option value="3">3 chữ số</option><option value="4">4 chữ số</option></select></label><button id="clr">Xóa hết</button></div>
+<div class="row" id="ex"></div>
+<details class="syn"><summary>Cách nhập phân số, căn</summary><p class="msg">Có thể nhập phân số, căn: <code>3/4</code>, <code>√3</code>, <code>sqrt(3)</code>, <code>2√3/3</code>, <code>(1+√5)/2</code>, <code>3√2/2</code>.</p></details>
+</div>
+</section>
+<section class="card" id="res" hidden></section>
+</section>
+<section class="pane r">
+<section class="card" style="--k:#0284c7">
+<h2 class="ch"><span class="ic">△</span>Hình vẽ</h2>
+<div class="cb">
+<div class="bar">
+<label>Nét vẽ <input type="range" id="sw" min="1" max="6" step=".5" value="2"><span id="swv"></span></label>
+<label>Cỡ chữ <input type="range" id="fs" min="10" max="30" step="1" value="15"><span id="fsv"></span></label>
+<span><button id="zo" title="Thu nhỏ">−</button> <b id="zv">100%</b> <button id="zi" title="Phóng to">+</button> <button id="zr">Đặt lại</button></span>
+</div>
+<div class="bar">
+<label><input type="checkbox" id="ls" checked>Cạnh</label>
+<label><input type="checkbox" id="la" checked>Góc</label>
+<label><input type="checkbox" id="ch">Đường cao</label>
+<label><input type="checkbox" id="ci">Đường tròn nội tiếp (r)</label>
+<label><input type="checkbox" id="cc">Đường tròn ngoại tiếp (R)</label>
+<label id="l2" style="display:none"><input type="checkbox" id="c2" checked>Hiện cả các nghiệm (nét đứt)</label>
+</div>
+<svg id="svg" viewBox="0 0 800 520" role="img" aria-label="Hình tam giác"></svg>
+<p class="msg">Kéo để di chuyển hình, cuộn chuột hoặc dùng nút +/− để phóng to, thu nhỏ.</p>
+</div>
+</section>
+<section class="card" id="sol" hidden></section>
+</section>
+</div></main>
+</div>
+<script>
+const $=id=>document.getElementById(id),N=['a','b','c'],L=['A','B','C'],I3=[0,1,2],PI=Math.PI,D=PI/180;
+let dp=2,zoom=1,pan={x:0,y:0},cur={sols:[],idx:0,given:[]};
+const f=(x,d=dp)=>(+x).toFixed(d).replace(/\.0+$/,'').replace('.',','),dg=x=>{const t=Math.round(x/D*60),d=Math.floor(t/60),m=t%60;return m?`${d}°${m}′`:`${d}°`};
+const add=(p,q)=>[p[0]+q[0],p[1]+q[1]],sub=(p,q)=>[p[0]-q[0],p[1]-q[1]],sc=(v,k)=>[v[0]*k,v[1]*k],nrm=v=>{const l=Math.hypot(v[0],v[1])||1;return[v[0]/l,v[1]/l]};
+const FL=['Cạnh a','Cạnh b','Cạnh c','Góc A (độ)','Góc B (độ)','Góc C (độ)','Bán kính R','Bán kính r','Diện tích S','Chu vi 2p','Đường cao ha','Đường cao hb','Đường cao hc','Trung tuyến ma','Trung tuyến mb','Trung tuyến mc'];
+const HU=[330,85,50,260,20,20,20,190,190,190],KC=i=>i<6?`var(--k${i})`:`hsl(${HU[i-6]} 70% 50%)`;
+$('fields').innerHTML=FL.map((t,i)=>`<label class="blk" style="--k:${KC(i)}"><span class="bt">${t}</span><input type="text" id="f${i}" inputmode="text" autocomplete="off" placeholder="—"></label>`).join('');
+const inputs=FL.map((_,i)=>$('f'+i));inputs.forEach(e=>e.insertAdjacentHTML('afterend','<small class="ev"></small>'));inputs.slice(6,13).forEach(e=>$('more').appendChild(e.parentNode));inputs.slice(13).forEach(e=>e.parentNode.remove());
+const EX=[['3 – 4 – 5',[3,4,5,'','','']],['c.g.c',['',5,8,60,'','']],['g.c.g',[10,'','','',40,65]],['c.c.g (2 nghiệm)',[7,10,'',30,'','']],['2 góc + R',['','','',30,60,'',5]],['2 cạnh + R',[6,8,'','','','',5]],['√3 – 1 – 2',['√3',1,2]]];
+EX.forEach(e=>{while(e[1].length<16)e[1].push('')});$('ex').innerHTML='<span class="msg" style="margin:0;align-self:center">Ví dụ:</span>'+EX.map((e,i)=>`<button data-e="${i}">${e[0]}</button>`).join('');
+
+function solve(S,G){
+ const ng=G.filter(x=>x!=null).length;
+ if(ng===3)throw 'Ba góc chưa đủ: cần ít nhất một cạnh để xác định kích thước tam giác.';
+ if(ng===0){
+  const [a,b,c]=S;
+  if(a+b<=c||a+c<=b||b+c<=a)throw 'Ba cạnh không thỏa bất đẳng thức tam giác.';
+  const g=[],st=[];
+  [0,1].forEach(i=>{const j=(i+1)%3,k=(i+2)%3,cs=(S[j]**2+S[k]**2-S[i]**2)/(2*S[j]*S[k]);g[i]=Math.acos(cs);st.push(`Định lí côsin: cos ${L[i]} = (${N[j]}²+${N[k]}²−${N[i]}²)/(2·${N[j]}·${N[k]}) ≈ ${f(cs,4)} ⇒ ${L[i]} ≈ ${dg(g[i])}`)});
+  g[2]=PI-g[0]-g[1];st.push(`${L[2]} = 180° − ${L[0]} − ${L[1]} ≈ ${dg(g[2])}`);
+  return[{s:S.slice(),g,st,kind:'Biết ba cạnh (c.c.c)'}];
+ }
+ if(ng===2){
+  const kn=I3.filter(i=>G[i]!=null),k=I3.find(i=>G[i]==null),g=G.slice();
+  g[k]=PI-G[kn[0]]-G[kn[1]];
+  if(g[k]<=1e-9)throw 'Tổng hai góc phải nhỏ hơn 180°.';
+  const m=I3.find(i=>S[i]!=null),K=S[m]/Math.sin(g[m]),s=g.map((x,i)=>i===m?S[m]:K*Math.sin(x));
+  const st=[`${L[k]} = 180° − ${L[kn[0]]} − ${L[kn[1]]} = ${dg(g[k])}`,`Định lí sin: a/sin A = b/sin B = c/sin C = 2R ≈ ${f(K)}`];
+  I3.filter(i=>i!==m).forEach(i=>st.push(`${N[i]} = ${N[m]}·sin ${L[i]} / sin ${L[m]} ≈ ${f(s[i])}`));
+  return[{s,g,st,kind:'Biết hai góc và một cạnh (g.c.g / g.g.c)'}];
+ }
+ const i=I3.find(x=>G[x]!=null);
+ if(S[i]==null){
+  const j=(i+1)%3,k=(i+2)%3,s=S.slice(),g=[];
+  s[i]=Math.sqrt(S[j]**2+S[k]**2-2*S[j]*S[k]*Math.cos(G[i]));
+  const cs=(s[i]**2+s[k]**2-s[j]**2)/(2*s[i]*s[k]);
+  g[i]=G[i];g[j]=Math.acos(Math.max(-1,Math.min(1,cs)));g[k]=PI-g[i]-g[j];
+  return[{s,g,kind:'Biết hai cạnh và góc xen giữa (c.g.c)',st:[`Định lí côsin: ${N[i]}² = ${N[j]}²+${N[k]}²−2·${N[j]}·${N[k]}·cos ${L[i]} ⇒ ${N[i]} ≈ ${f(s[i])}`,`cos ${L[j]} = (${N[i]}²+${N[k]}²−${N[j]}²)/(2·${N[i]}·${N[k]}) ≈ ${f(cs,4)} ⇒ ${L[j]} ≈ ${dg(g[j])}`,`${L[k]} = 180° − ${L[i]} − ${L[j]} ≈ ${dg(g[k])}`]}];
+ }
+ const p=I3.find(x=>x!==i&&S[x]!=null),u=3-i-p,sv=S[p]*Math.sin(G[i])/S[i];
+ if(sv>1+1e-9)throw `Vô nghiệm: sin ${L[p]} = ${f(sv,4)} > 1.`;
+ const c1=Math.asin(Math.min(1,sv)),cand=[c1],out=[];
+ if(Math.abs(PI-2*c1)>1e-9)cand.push(PI-c1);
+ cand.forEach((x,n)=>{
+  const gu=PI-G[i]-x;if(gu<=1e-9)return;
+  const g=[],s=[];g[i]=G[i];g[p]=x;g[u]=gu;s[i]=S[i];s[p]=S[p];s[u]=S[i]*Math.sin(gu)/Math.sin(G[i]);
+  out.push({s,g,kind:'Biết hai cạnh và góc đối của một cạnh (c.c.g)',st:[`Định lí sin: sin ${L[p]} = ${N[p]}·sin ${L[i]} / ${N[i]} ≈ ${f(sv,4)}`,n?`⇒ ${L[p]} = 180° − ${dg(c1)} ≈ ${dg(x)} (góc tù)`:`⇒ ${L[p]} ≈ ${dg(x)}`,`${L[u]} = 180° − ${L[i]} − ${L[p]} ≈ ${dg(gu)}`,`${N[u]} = ${N[i]}·sin ${L[u]} / sin ${L[i]} ≈ ${f(s[u])}`]});
+ });
+ if(!out.length)throw 'Vô nghiệm: tổng hai góc không nhỏ hơn 180°.';
+ return out;
+}
+function met(s,g){const p=(s[0]+s[1]+s[2])/2,A=.5*s[1]*s[2]*Math.sin(g[0]);return{p,A,R:s[0]/(2*Math.sin(g[0])),r:A/p,h:s.map(x=>2*A/x)}}
+function ty(s,g){
+ const mx=Math.max(...g),e=(x,y)=>Math.abs(x-y)<1e-6*(x+y),n=(e(s[0],s[1])?1:0)+(e(s[1],s[2])?1:0)+(e(s[0],s[2])?1:0);
+ if(n===3)return 'Tam giác đều';
+ return 'Tam giác '+(Math.abs(mx-PI/2)<1e-6?'vuông':mx>PI/2?'tù':'nhọn')+(n?' cân':'');
+}
+function ev(s){
+ const t=s.toLowerCase().replace(/\s+/g,'').replace(/,/g,'.').replace(/√|căn/g,'sqrt').replace(/π/g,'pi').replace(/[×·]/g,'*').replace(/÷/g,'/').replace(/[−–]/g,'-');
+ let i=0;const bad=()=>{throw 0};
+ const num=()=>{const m=/^(\d+\.?\d*|\.\d+)/.exec(t.slice(i));if(!m)bad();i+=m[0].length;return +m[0]};
+ const atom=()=>{
+  if(t[i]==='('){i++;const v=expr();if(t[i++]!==')')bad();return v}
+  if(t.startsWith('sqrt',i)){i+=4;const v=atom();if(v<0)bad();return Math.sqrt(v)}
+  if(t.startsWith('pi',i)){i+=2;return Math.PI}
+  return num()};
+ const pw=()=>{const b=atom();if(t[i]==='^'){i++;return b**un()}return b};
+ const un=()=>{if(t[i]==='-'){i++;return -un()}if(t[i]==='+'){i++;return un()}return pw()};
+ const fac=c=>c!==undefined&&(/[\d.(]/.test(c)||t.startsWith('sqrt',i)||t.startsWith('pi',i));
+ const term=()=>{let v=un();for(;;){const c=t[i];if(c==='*'){i++;v*=un()}else if(c==='/'){i++;const d=un();if(d===0)bad();v/=d}else if(fac(c))v*=un();else return v}};
+ const expr=()=>{let v=term();while(t[i]==='+'||t[i]==='-'){const o=t[i++],w=term();v=o==='+'?v+w:v-w}return v};
+ try{if(!t)return NaN;const v=expr();return i===t.length&&isFinite(v)?v:NaN}catch(e){return NaN}
+}
+function read(){return inputs.map(e=>{const t=e.value.trim();return t===''?null:ev(t)})}
+function setMsg(t,c){const m=$('msg');m.textContent=t;m.className='msg '+(c||'')}
+function update0(){
+ const v=read(),n=v.filter(x=>x!==null).length;
+ inputs.forEach((e,i)=>e.classList.toggle('on',v[i]!==null));
+ cur.sols=[];cur.idx=0;
+ try{
+  if(v.some(x=>Number.isNaN(x)))throw 'Có giá trị không phải là số.';
+  if(v.some(x=>x!==null&&x<=0))throw 'Cạnh và góc phải là số dương.';
+  if(v.slice(3).some(x=>x!==null&&x>=180))throw 'Mỗi góc phải nhỏ hơn 180°.';
+  if(n<3){setMsg(`Đã nhập ${n}/3 yếu tố.`)}
+  else if(n>3)throw `Đã nhập ${n} yếu tố – hãy để trống bớt, chỉ giữ đúng 3.`;
+  else{
+   cur.sols=solve(v.slice(0,3),v.slice(3).map(x=>x==null?null:x*D));
+   cur.given=v.map(x=>x!==null);
+   setMsg('✓ '+cur.sols[0].kind,'ok');
+  }
+ }catch(e){setMsg(typeof e==='string'?e:'Không tính được.','err')}
+ renderRes();drawFig();
+}
+function renderResOld(){
+ const R=$('res');
+ if(!cur.sols.length){R.hidden=true;$('sol').hidden=true;return}
+ R.hidden=false;
+ const sol=cur.sols[cur.idx],{s,g}=sol,M=met(s,g),[a,b,c]=s,gv=i=>cur.given[i]?' class="g"':'';
+ const he=Math.sqrt(M.p*(M.p-a)*(M.p-b)*(M.p-c));
+ let h='';
+ if(cur.sols.length>1)h+=`<div class="row" style="margin:0 0 8px">${cur.sols.map((x,i)=>`<button data-i="${i}" class="${i===cur.idx?'on':''}">Nghiệm ${i+1}</button>`).join('')}</div>`;
+ h+=`<h2>Kết quả</h2><div class="chips">${[0,1,2,3,4,5].map(i=>`<div class="chip${cur.given[i]?' gv':''}" style="--k:var(--k${i})"><span>${i<3?N[i]:L[i-3]}</span><b>${i<3?f(s[i]):dg(g[i-3])}</b></div>`).join('')}</div><p class="msg">Ô có viền đậm và nhãn “đề cho” là số liệu đã cho.</p>`;
+ renderSol();
+ h+=`<h2>${ty(s,g)}</h2><ul>
+<li><b>Chu vi:</b> 2p = ${f(2*M.p)}; nửa chu vi p = ${f(M.p)}</li>
+<li><b>Diện tích:</b> S = ½·b·c·sin A ≈ <b>${f(M.A)}</b> (Heron: ${f(he)})</li>
+<li><b>Bán kính đường tròn ngoại tiếp:</b> R = a/(2·sin A) ≈ <b>${f(M.R)}</b></li>
+<li><b>Bán kính đường tròn nội tiếp:</b> r = S/p ≈ <b>${f(M.r)}</b></li>
+<li><b>Đường cao:</b> h<sub>a</sub> = 2S/a ≈ <b>${f(M.h[0])}</b>; h<sub>b</sub> = 2S/b ≈ <b>${f(M.h[1])}</b>; h<sub>c</sub> = 2S/c ≈ <b>${f(M.h[2])}</b></li></ul>`;
+ R.innerHTML=h;
+}
+const H=['Â','B\u0302','Ĉ'],fr=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+function bodyOld(sol,n,tot,gv,ng){
+ const {s,g}=sol,P=x=>`<p>${x}</p>`;
+ const cl=i=>{const j=(i+1)%3,k=(i+2)%3,cs=(s[j]**2+s[k]**2-s[i]**2)/(2*s[j]*s[k]);return P(`cos ${L[i]} = ${fr(`${N[j]}²+${N[k]}²−${N[i]}²`,`2·${N[j]}·${N[k]}`)} = ${fr(`${f(s[j])}²+${f(s[k])}²−${f(s[i])}²`,`2·${f(s[j])}·${f(s[k])}`)} ≈ ${f(cs,4)} ⇒ ${H[i]} ≈ ${dg(g[i])}.`)};
+ let h='';
+ if(ng===0)h=P('Áp dụng hệ quả của định lí côsin, ta có:')+cl(0)+cl(1)+P(`${H[2]} = 180° − (${H[0]} + ${H[1]}) ≈ ${dg(g[2])}.`);
+ else if(ng===2){
+  const kn=I3.filter(i=>gv[i+3]),k=I3.find(i=>!gv[i+3]),m=I3.find(i=>gv[i]);
+  h=P(`${H[k]} = 180° − (${H[kn[0]]} + ${H[kn[1]]}) = 180° − (${dg(g[kn[0]])} + ${dg(g[kn[1]])}) = ${dg(g[k])}.`)+P('Áp dụng định lí sin, ta có: '+fr('a','sin A')+' = '+fr('b','sin B')+' = '+fr('c','sin C')+'.');
+  I3.filter(i=>i!==m).forEach(i=>h+=P(`${N[i]} = ${fr(`${N[m]}·sin ${L[i]}`,`sin ${L[m]}`)} = ${fr(`${f(s[m])}·sin ${dg(g[i])}`,`sin ${dg(g[m])}`)} ≈ ${f(s[i])}.`));
+ }else{
+  const i=I3.find(x=>gv[x+3]);
+  if(!gv[i]){const j=(i+1)%3,k=(i+2)%3;
+   h=P('Áp dụng định lí côsin, ta có:')+P(`${N[i]}² = ${N[j]}²+${N[k]}²−2·${N[j]}·${N[k]}·cos ${L[i]} = ${f(s[j])}²+${f(s[k])}²−2·${f(s[j])}·${f(s[k])}·cos ${dg(g[i])} ≈ ${f(s[i]**2)}`)+P(`⇒ ${N[i]} ≈ ${f(s[i])}.`)+P('Áp dụng hệ quả của định lí côsin, ta có:')+cl(j)+P(`${H[k]} = 180° − (${H[i]} + ${H[j]}) ≈ ${dg(g[k])}.`);
+  }else{
+   const p=I3.find(x=>x!==i&&gv[x]),u=3-i-p;
+   if(n===0)h+=P('Áp dụng định lí sin, ta có: '+fr(N[i],'sin '+L[i])+' = '+fr(N[p],'sin '+L[p])+`, suy ra sin ${L[p]} = ${fr(`${N[p]}·sin ${L[i]}`,N[i])} = ${fr(`${f(s[p])}·sin ${dg(g[i])}`,f(s[i]))} ≈ ${f(Math.sin(g[p]),4)}.`);
+   if(tot>1)h+=`<p class="cs"><b>Trường hợp ${n+1}:</b> ${H[p]} là góc ${n?'tù':'nhọn'}</p>`;
+   h+=P(`${H[p]} ≈ ${dg(g[p])}.`)+P(`${H[u]} = 180° − (${H[i]} + ${H[p]}) ≈ ${dg(g[u])}.`)+P(`${N[u]} = ${fr(`${N[i]}·sin ${L[u]}`,`sin ${L[i]}`)} = ${fr(`${f(s[i])}·sin ${dg(g[u])}`,`sin ${dg(g[i])}`)} ≈ ${f(s[u])}.`);
+  }
+ }
+ const kq=[];I3.forEach(i=>{if(!gv[i])kq.push(`${N[i]} ≈ ${f(s[i])}`)});I3.forEach(i=>{if(!gv[i+3])kq.push(`${H[i]} ≈ ${dg(g[i])}`)});
+ return h+`<p class="kq">Vậy ${kq.join(', ')}.</p>`;
+}
+function renderSolOld(){
+ const el=$('sol');
+ if(!cur.sols.length){el.hidden=true;return}
+ el.hidden=false;
+ const gv=cur.given,sols=cur.sols,s0=sols[0],ng=gv.slice(3).filter(Boolean).length,gl=[];
+ I3.forEach(i=>{if(gv[i])gl.push(`${N[i]} = ${f(s0.s[i])}`)});I3.forEach(i=>{if(gv[i+3])gl.push(`${H[i]} = ${dg(s0.g[i])}`)});for(let i=6;i<16;i++)if(gv[i])gl.push(`${LB[i]} = ${f(qv(s0.s)[i])}`);
+ let h=`<h2>📖 Lời giải</h2><div class="paper"><p><b>Bài toán.</b> Giải tam giác ABC, biết ${gl.join(', ')}.</p><p><b>Giải.</b></p>`;
+ sols.forEach((x,n)=>h+=x.gen?bodyY(x,n,sols.length):body(x,n,sols.length,gv,ng));
+ const {s,g}=sols[cur.idx],[a,b,c]=s,M=met(s,g),he=Math.sqrt(M.p*(M.p-a)*(M.p-b)*(M.p-c)),P=x=>`<p>${x}</p>`;
+ h+=`<p><b>Diện tích, bán kính, đường cao</b>${sols.length>1?` (nghiệm ${cur.idx+1})`:''}</p>`+
+ P(`Nửa chu vi: p = ${fr('a+b+c','2')} = ${fr(`${f(a)}+${f(b)}+${f(c)}`,'2')} ≈ ${f(M.p)}.`)+
+ P(`Diện tích: S = ½·b·c·sin A = ½·${f(b)}·${f(c)}·sin ${dg(g[0])} ≈ <b>${f(M.A)}</b>. (Kiểm tra bằng công thức Heron: S = √<span class="ov">p(p−a)(p−b)(p−c)</span> ≈ ${f(he)}.)`)+
+ P(`Bán kính đường tròn ngoại tiếp: R = ${fr('a','2·sin A')} = ${fr(f(a),`2·sin ${dg(g[0])}`)} ≈ <b>${f(M.R)}</b>.`)+
+ P(`Bán kính đường tròn nội tiếp: r = ${fr('S','p')} = ${fr(f(M.A),f(M.p))} ≈ <b>${f(M.r)}</b>.`)+
+ P('Các đường cao: '+I3.map(i=>`h<sub>${N[i]}</sub> = ${fr('2S',N[i])} = ${fr(`2·${f(M.A)}`,f(s[i]))} ≈ <b>${f(M.h[i])}</b>`).join('; ')+'.');
+ const qq=qv(s);h+=P(`Chu vi: 2p = a + b + c ≈ <b>${f(2*M.p)}</b>. Các trung tuyến: `+I3.map(i=>{const j=(i+1)%3,k=(i+2)%3;return `m<sub>${N[i]}</sub> = ½·√<span class="ov">2${N[j]}²+2${N[k]}²−${N[i]}²</span> ≈ <b>${f(qq[13+i])}</b>`}).join('; ')+'.');el.innerHTML=h+'</div>';
+}
+const LB=['a','b','c','A','B','C','R','r','S','2p','h<sub>a</sub>','h<sub>b</sub>','h<sub>c</sub>','m<sub>a</sub>','m<sub>b</sub>','m<sub>c</sub>'];
+function gauss(M,b){const A=M.map((r,i)=>[...r,b[i]]);for(let c=0;c<3;c++){let p=c;for(let r=c+1;r<3;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;if(Math.abs(A[p][c])<1e-12)return null;[A[c],A[p]]=[A[p],A[c]];for(let r=c+1;r<3;r++){const m=A[r][c]/A[c][c];for(let k=c;k<=3;k++)A[r][k]-=m*A[c][k]}}const x=[0,0,0];for(let i=2;i>=0;i--){let s=A[i][3];for(let k=i+1;k<3;k++)s-=A[i][k]*x[k];x[i]=s/A[i][i]}return x}
+function qv(x){const [a,b,c]=x,p=(a+b+c)/2,w=p*(p-a)*(p-b)*(p-c);if(!(w>1e-18*p**4))return null;const S=Math.sqrt(w),ac=(i,j,k)=>Math.acos(Math.max(-1,Math.min(1,(x[j]**2+x[k]**2-x[i]**2)/(2*x[j]*x[k]))));return[a,b,c,ac(0,1,2),ac(1,2,0),ac(2,0,1),a*b*c/(4*S),S/p,S,2*p,2*S/a,2*S/b,2*S/c,Math.sqrt(2*b*b+2*c*c-a*a)/2,Math.sqrt(2*c*c+2*a*a-b*b)/2,Math.sqrt(2*a*a+2*b*b-c*c)/2]}
+function solveN(v){
+ const T=v.map((x,i)=>x==null?null:i>2&&i<6?x*D:x),ix=[...Array(16).keys()].filter(i=>T[i]!=null);
+ const ln=i=>i<3||i===6||i>9?T[i]:i===7?3*T[i]:i===8?Math.sqrt(T[i]):i===9?T[i]/3:null,L0=ix.map(ln).find(x=>x!=null);
+ if(L0==null)throw 'Cần ít nhất một yếu tố có độ dài (cạnh, R, r, S, chu vi, đường cao, trung tuyến).';
+ let seed=7;const rnd=()=>(seed=(seed*1664525+1013904223)%4294967296)/4294967296;
+ const rs=u=>{const q=qv(u.map(Math.exp));return q&&ix.map(i=>i>2&&i<6?q[i]-T[i]:q[i]/T[i]-1)},sols=[];
+ for(let t=0;t<300;t++){
+  let u=null;
+  for(let k=0;k<30&&!u;k++){const w=[0,1,2].map(()=>Math.log(L0*(.3+3.5*rnd())));if(qv(w.map(Math.exp)))u=w}
+  let r=u&&rs(u);
+  for(let it=0;it<80&&r;it++){
+   const nr=Math.hypot(...r);if(nr<1e-13)break;
+   const J=[0,1,2].map(k=>{const w=u.slice();w[k]+=1e-7;const r2=rs(w);return r2&&r2.map((y,m)=>(y-r[m])/1e-7)});
+   if(J.includes(null))break;
+   const du=gauss([0,1,2].map(m=>[0,1,2].map(k=>J[k][m])),r.map(y=>-y));
+   if(!du)break;
+   let lam=1,mv=false;
+   while(lam>1e-4){const un=u.map((y,k)=>y+lam*du[k]),rn=rs(un);if(rn&&Math.hypot(...rn)<nr){u=un;r=rn;mv=true;break}lam/=2}
+   if(!mv)break;
+  }
+  if(r&&Math.hypot(...r)<1e-9){const x=u.map(Math.exp);if(!sols.some(y=>y.every((e,k)=>Math.abs(e-x[k])<1e-6*e)))sols.push(x)}
+ }
+ if(!sols.length)throw 'Không tìm được tam giác thỏa mãn: giả thiết vô nghiệm, mâu thuẫn hoặc chưa đủ để xác định tam giác.';
+ if(sols.length>4)throw 'Giả thiết chưa đủ để xác định duy nhất tam giác (có vô số tam giác thỏa mãn).';
+ sols.sort((p,q)=>p[0]-q[0]||p[1]-q[1]);
+ return sols.map(x=>{const w=qv(x);return{s:x,g:[w[3],w[4],w[5]],gen:1,st:[],kind:'Giả thiết tổng quát (giải hệ phương trình)'}});
+}
+function update(){
+ const v=read(),n=v.filter(x=>x!==null).length;
+ inputs.forEach((e,i)=>e.classList.toggle('on',v[i]!==null));
+ inputs.forEach((e,i)=>{const h=e.nextElementSibling;if(!h)return;const t=e.value.trim();h.textContent=t!==''&&!/^\d+([.,]\d+)?$/.test(t)?(Number.isNaN(v[i])?'⚠ biểu thức chưa đúng':'≈ '+f(v[i])+(i>2&&i<6?'°':'')):''});
+ if(v.slice(6).some(x=>x!==null))$('mt').open=true;
+ cur.sols=[];cur.idx=0;
+ try{
+  if(v.some(x=>Number.isNaN(x)))throw 'Có giá trị không phải là số.';
+  if(v.some(x=>x!==null&&x<=0))throw 'Các giá trị phải là số dương.';
+  if(v.slice(3,6).some(x=>x!==null&&x>=180))throw 'Mỗi góc phải nhỏ hơn 180°.';
+  if(n<3)setMsg(`Đã nhập ${n}/3 yếu tố.`);
+  else if(n>3)throw `Đã nhập ${n} yếu tố – hãy để trống bớt, chỉ giữ đúng 3.`;
+  else{
+   cur.given=v.map(x=>x!==null);
+   cur.sols=v.slice(6).every(x=>x===null)?solve(v.slice(0,3),v.slice(3,6).map(x=>x==null?null:x*D)):solveD(v);
+   setMsg('✓ '+cur.sols[0].kind+(cur.sols.length>1?` – có ${cur.sols.length} nghiệm`:''),'ok');
+  }
+ }catch(e){setMsg(typeof e==='string'?e:'Không tìm được nghiệm.','err')}
+ renderRes();drawFig();
+}
+function bodyX(sol,n,tot,gv){
+ const s=sol.s,q=qv(s),P=x=>`<p>${x}</p>`,E={6:`R = ${fr('a·b·c','4S')} = ${f(q[6])}`,7:`r = ${fr('S','p')} = ${f(q[7])}`,8:`S = ½·b·c·sin A = ${f(q[8])}`,9:`a + b + c = ${f(q[9])}`};
+ I3.forEach(t=>{const j=(t+1)%3,k=(t+2)%3;E[t]=`${N[t]} = ${f(q[t])}`;E[t+3]=`cos ${L[t]} = ${fr(`${N[j]}²+${N[k]}²−${N[t]}²`,`2·${N[j]}·${N[k]}`)} = ${f(Math.cos(q[t+3]),4)}`;E[t+10]=`h<sub>${N[t]}</sub> = ${fr('2S',N[t])} = ${f(q[t+10])}`;E[t+13]=`m<sub>${N[t]}</sub>² = ${fr(`2${N[j]}²+2${N[k]}²−${N[t]}²`,'4')} = ${f(q[t+13]**2)}`});
+ let h='';
+ if(n===0){h+=P('Gọi a, b, c là độ dài các cạnh BC, CA, AB. Từ giả thiết ta có hệ phương trình với ẩn a, b, c:');for(let i=0;i<16;i++)if(gv[i])h+=P('• '+E[i]);h+=P(`trong đó p = ${fr('a+b+c','2')}, S = √<span class="ov">p(p−a)(p−b)(p−c)</span>. Giải hệ phương trình, ta được:`)}
+ if(tot>1)h+=`<p class="cs"><b>Nghiệm ${n+1}:</b></p>`;
+ h+=P(`a ≈ ${f(s[0])}, b ≈ ${f(s[1])}, c ≈ ${f(s[2])}.`);
+ I3.forEach(i=>{if(!gv[i+3]){const j=(i+1)%3,k=(i+2)%3,cs=(s[j]**2+s[k]**2-s[i]**2)/(2*s[j]*s[k]);h+=P(`cos ${L[i]} = ${fr(`${N[j]}²+${N[k]}²−${N[i]}²`,`2·${N[j]}·${N[k]}`)} = ${fr(`${f(s[j])}²+${f(s[k])}²−${f(s[i])}²`,`2·${f(s[j])}·${f(s[k])}`)} ≈ ${f(cs,4)} ⇒ ${H[i]} ≈ ${dg(q[i+3])}.`)}});
+ return h+`<p class="kq">Vậy a ≈ ${f(s[0])}, b ≈ ${f(s[1])}, c ≈ ${f(s[2])}; ${H[0]} ≈ ${dg(q[3])}, ${H[1]} ≈ ${dg(q[4])}, ${H[2]} ≈ ${dg(q[5])}.</p>`;
+}
+function renderRes(){
+ const R=$('res');
+ if(!cur.sols.length){R.hidden=true;$('sol').hidden=true;return}
+ R.hidden=false;
+ const sol=cur.sols[cur.idx],q=qv(sol.s),fv=i=>i>2&&i<6?dg(q[i]):f(q[i]);
+ let h='';
+ if(cur.sols.length>1)h+=`<div class="row" style="margin:0 0 8px">${cur.sols.map((x,i)=>`<button data-i="${i}" class="${i===cur.idx?'on':''}">Nghiệm ${i+1}</button>`).join('')}</div>`;
+ h+=`<h2>Kết quả · ${ty(sol.s,sol.g)}</h2>${[['Cạnh',[0,1,2]],['Góc',[3,4,5]],['Diện tích, chu vi',[8,9]],['Bán kính',[6,7]],['Đường cao',[10,11,12]],['Trung tuyến',[13,14,15]]].map(([t,ids])=>`<div class="zone"><div class="zt">${t}</div><div class="chips">${ids.map(i=>`<div class="chip${cur.given[i]?' gv':''}" style="--k:${KC(i)}"><span>${LB[i]}</span><b>${fv(i)}</b></div>`).join('')}</div></div>`).join('')}<p class="msg">Ô có viền đậm và nhãn “đề cho” là số liệu đã cho.</p>`;
+ R.innerHTML=h;renderSol();
+}
+function deduceOld(T){
+ const PI=Math.PI,RL=[],out=[],hs=i=>`h<sub>${N[i]}</sub>`,
+ at=(i,v,b)=>b?`${H[i]} = 180° − ${dg(PI-v[i+3])} ≈ ${dg(v[i+3])} (góc tù)`:`${H[i]} ≈ ${dg(v[i+3])}`,
+ sa=x=>{if(!(x>0)||x>1+1e-9)return[];const a=Math.asin(Math.min(1,x));return Math.abs(PI-2*a)>1e-9?[a,PI-a]:[a]},
+ add=(n,g,fn,t)=>RL.push({n,g,fn,t});
+ I3.forEach(i=>{
+  const j=(i+1)%3,k=(i+2)%3,Ni=N[i],Li=L[i];
+  add([j+3,k+3],i+3,v=>[PI-v[j+3]-v[k+3]].filter(x=>x>1e-9),v=>`${H[i]} = 180° − (${H[j]} + ${H[k]}) = 180° − (${dg(v[j+3])} + ${dg(v[k+3])}) = ${dg(v[i+3])}`);
+  add([j,k,i+3],i,v=>{const x=v[j]**2+v[k]**2-2*v[j]*v[k]*Math.cos(v[i+3]);return x>0?[Math.sqrt(x)]:[]},v=>`Định lí côsin: ${Ni}² = ${N[j]}²+${N[k]}²−2·${N[j]}·${N[k]}·cos ${Li} = ${f(v[j])}²+${f(v[k])}²−2·${f(v[j])}·${f(v[k])}·cos ${dg(v[i+3])} ⇒ ${Ni} ≈ ${f(v[i])}`);
+  add([0,1,2],i+3,v=>{const c=(v[j]**2+v[k]**2-v[i]**2)/(2*v[j]*v[k]);return Math.abs(c)<1-1e-12?[Math.acos(c)]:[]},v=>`cos ${Li} = ${fr(`${N[j]}²+${N[k]}²−${Ni}²`,`2·${N[j]}·${N[k]}`)} = ${fr(`${f(v[j])}²+${f(v[k])}²−${f(v[i])}²`,`2·${f(v[j])}·${f(v[k])}`)} ≈ ${f(Math.cos(v[i+3]),4)} ⇒ ${H[i]} ≈ ${dg(v[i+3])}`);
+  add([i,i+3],6,v=>[v[i]/(2*Math.sin(v[i+3]))],v=>`Định lí sin: ${fr(Ni,'sin '+Li)} = 2R ⇒ R = ${fr(f(v[i]),`2·sin ${dg(v[i+3])}`)} ≈ ${f(v[6])}`);
+  add([6,i+3],i,v=>[2*v[6]*Math.sin(v[i+3])],v=>`${Ni} = 2R·sin ${Li} = 2·${f(v[6])}·sin ${dg(v[i+3])} ≈ ${f(v[i])}`);
+  add([6,i],i+3,v=>sa(v[i]/(2*v[6])),(v,b)=>`sin ${Li} = ${fr(Ni,'2R')} = ${fr(f(v[i]),`2·${f(v[6])}`)} ≈ ${f(Math.sin(v[i+3]),4)} ⇒ ${at(i,v,b)}`);
+ });
+ I3.forEach(i=>{
+  const j=(i+1)%3,k=(i+2)%3,Ni=N[i],Li=L[i];
+  add([j,k,i+3],8,v=>[.5*v[j]*v[k]*Math.sin(v[i+3])],v=>`S = ½·${N[j]}·${N[k]}·sin ${Li} = ½·${f(v[j])}·${f(v[k])}·sin ${dg(v[i+3])} ≈ ${f(v[8])}`);
+  add([8,j,k],i+3,v=>sa(2*v[8]/(v[j]*v[k])),(v,b)=>`S = ½·${N[j]}·${N[k]}·sin ${Li} ⇒ sin ${Li} = ${fr('2S',`${N[j]}·${N[k]}`)} = ${fr(`2·${f(v[8])}`,`${f(v[j])}·${f(v[k])}`)} ≈ ${f(Math.sin(v[i+3]),4)} ⇒ ${at(i,v,b)}`);
+  add([8,10+i],i,v=>[2*v[8]/v[10+i]],v=>`S = ½·${Ni}·${hs(i)} ⇒ ${Ni} = ${fr('2S',hs(i))} = ${fr(`2·${f(v[8])}`,f(v[10+i]))} ≈ ${f(v[i])}`);
+  add([i,10+i],8,v=>[.5*v[i]*v[10+i]],v=>`S = ½·${Ni}·${hs(i)} = ½·${f(v[i])}·${f(v[10+i])} ≈ ${f(v[8])}`);
+  add([8,6,j,k],i,v=>[4*v[6]*v[8]/(v[j]*v[k])],v=>`Từ S = ${fr('abc','4R')} ⇒ ${Ni} = ${fr('4R·S',`${N[j]}·${N[k]}`)} = ${fr(`4·${f(v[6])}·${f(v[8])}`,`${f(v[j])}·${f(v[k])}`)} ≈ ${f(v[i])}`);
+  add([9,j,k],i,v=>[v[9]-v[j]-v[k]].filter(x=>x>1e-9),v=>`${Ni} = 2p − ${N[j]} − ${N[k]} = ${f(v[9])} − ${f(v[j])} − ${f(v[k])} ≈ ${f(v[i])}`);
+  [[j,k],[k,j]].forEach(([p,q])=>{
+   add([8,p,i+3],q,v=>[2*v[8]/(v[p]*Math.sin(v[i+3]))],v=>`S = ½·${N[p]}·${N[q]}·sin ${Li} ⇒ ${N[q]} = ${fr('2S',`${N[p]}·sin ${Li}`)} = ${fr(`2·${f(v[8])}`,`${f(v[p])}·sin ${dg(v[i+3])}`)} ≈ ${f(v[q])}`);
+   add([10+i,p],q+3,v=>sa(v[10+i]/v[p]),(v,b)=>`${hs(i)} = ${N[p]}·sin ${L[q]} ⇒ sin ${L[q]} = ${fr(hs(i),N[p])} = ${fr(f(v[10+i]),f(v[p]))} ≈ ${f(Math.sin(v[q+3]),4)} ⇒ ${at(q,v,b)}`);
+   add([10+i,q+3],p,v=>[v[10+i]/Math.sin(v[q+3])],v=>`${hs(i)} = ${N[p]}·sin ${L[q]} ⇒ ${N[p]} = ${fr(hs(i),`sin ${L[q]}`)} = ${fr(f(v[10+i]),`sin ${dg(v[q+3])}`)} ≈ ${f(v[p])}`);
+  });
+ });
+ add([9,7],8,v=>[v[9]/2*v[7]],v=>`S = p·r = ${f(v[9]/2)}·${f(v[7])} ≈ ${f(v[8])}`);
+ add([8,7],9,v=>[2*v[8]/v[7]],v=>`S = p·r ⇒ p = ${fr('S','r')} ⇒ 2p ≈ ${f(v[9])}`);
+ add([8,9],7,v=>[2*v[8]/v[9]],v=>`r = ${fr('S','p')} = ${fr(f(v[8]),f(v[9]/2))} ≈ ${f(v[7])}`);
+ const go=(v,steps)=>{
+  if([0,1,2,3,4,5].every(i=>v[i]!=null)){out.push({v,steps});return}
+  for(const r of RL){
+   if(v[r.g]!=null||!r.n.every(i=>v[i]!=null))continue;
+   r.fn(v).forEach((x,b)=>{const nv=v.slice();nv[r.g]=x;go(nv,[...steps,{g:r.g,n:r.n,t:r.t(nv,b)}])});
+   return;
+  }
+ };
+ go(T.slice(),[]);
+ return out;
+}
+function solveD(v){
+ const T=v.map((x,i)=>x==null?null:i>2&&i<6?x*D:x),res=[];
+ deduce(T).forEach(o=>{
+  const x=[0,1,2].map(i=>o.v[i]),q=qv(x);if(!q)return;
+  if(!T.every((t,i)=>t==null||Math.abs(q[i]-t)<=1e-6*Math.max(1,Math.abs(t)))||![3,4,5].every(i=>Math.abs(q[i]-o.v[i])<1e-6))return;
+  if(res.some(y=>y.s.every((e,k)=>Math.abs(e-x[k])<1e-6*e)))return;
+  const need=new Set([0,1,2,3,4,5]),keep=[];
+  for(let i=o.steps.length-1;i>=0;i--){const st=o.steps[i];if(need.has(st.g)){keep.unshift(st);st.n.forEach(k=>need.add(k))}}
+  res.push({s:x,g:[q[3],q[4],q[5]],gen:1,steps:keep,kind:'Giả thiết tổng quát (định lí côsin, định lí sin, công thức diện tích)'});
+ });
+ if(!res.length)throw '⚠ Dữ liệu chưa chính xác: với 3 yếu tố này không giải được bằng định lí côsin, định lí sin và các công thức diện tích (giả thiết chưa đủ, mâu thuẫn hoặc không tồn tại tam giác).';
+ res.sort((p,q)=>p.s[0]-q.s[0]||p.s[1]-q.s[1]);
+ return res;
+}
+function bodyYOld(sol,n,tot){
+ const s=sol.s,q=qv(s);
+ return (tot>1?`<p class="cs"><b>Nghiệm ${n+1}:</b></p>`:'')+sol.steps.map(st=>`<p>${st.t}</p>`).join('')+`<p class="kq">Vậy a ≈ ${f(s[0])}, b ≈ ${f(s[1])}, c ≈ ${f(s[2])}; ${H[0]} ≈ ${dg(q[3])}, ${H[1]} ≈ ${dg(q[4])}, ${H[2]} ≈ ${dg(q[5])}.</p>`;
+}
+const r=String.raw,fm=(x,d)=>f(x,d).replace(',','{,}'),dm=x=>{const t=Math.round(x/D*60),d=Math.floor(t/60),m=t%60;return m?r`${d}^\circ ${m}'`:r`${d}^\circ`},LH=[r`\hat{A}`,r`\hat{B}`,r`\hat{C}`],fc=(n,d)=>r`\dfrac{${n}}{${d}}`,Mm=x=>r`<p class="m">\(\displaystyle ${x}\)</p>`,Pp=x=>`<p>${x}</p>`;
+function typeset(el){const M=window.MathJax;if(M&&M.startup&&M.typesetPromise&&el)M.startup.promise.then(()=>M.typesetPromise([el])).catch(()=>{})}
+function body(sol,n,tot,gv,ng){
+ const {s,g}=sol;let h='';
+ const cl=i=>{const j=(i+1)%3,k=(i+2)%3,cs=(s[j]**2+s[k]**2-s[i]**2)/(2*s[j]*s[k]);return Mm(r`\cos ${L[i]}=${fc(`${N[j]}^2+${N[k]}^2-${N[i]}^2`,r`2\cdot ${N[j]}\cdot ${N[k]}`)}=${fc(`${fm(s[j])}^2+${fm(s[k])}^2-${fm(s[i])}^2`,r`2\cdot ${fm(s[j])}\cdot ${fm(s[k])}`)}\approx ${fm(cs,4)}\Rightarrow ${LH[i]}\approx ${dm(g[i])}`)};
+ const sm=(i,j,k)=>Mm(r`${LH[k]}=180^\circ-(${LH[i]}+${LH[j]})\approx ${dm(g[k])}`);
+ if(ng===0)h=Pp('Áp dụng hệ quả của định lí côsin, ta có:')+cl(0)+cl(1)+sm(0,1,2);
+ else if(ng===2){
+  const kn=I3.filter(i=>gv[i+3]),k=I3.find(i=>!gv[i+3]),m=I3.find(i=>gv[i]);
+  h=Mm(r`${LH[k]}=180^\circ-(${LH[kn[0]]}+${LH[kn[1]]})=180^\circ-(${dm(g[kn[0]])}+${dm(g[kn[1]])})=${dm(g[k])}`)+Pp('Áp dụng định lí sin, ta có:')+Mm(r`\dfrac{a}{\sin A}=\dfrac{b}{\sin B}=\dfrac{c}{\sin C}`);
+  I3.filter(i=>i!==m).forEach(i=>h+=Mm(r`${N[i]}=${fc(r`${N[m]}\sin ${L[i]}`,r`\sin ${L[m]}`)}=${fc(r`${fm(s[m])}\cdot \sin ${dm(g[i])}`,r`\sin ${dm(g[m])}`)}\approx ${fm(s[i])}`));
+ }else{
+  const i=I3.find(x=>gv[x+3]);
+  if(!gv[i]){const j=(i+1)%3,k=(i+2)%3;
+   h=Pp('Áp dụng định lí côsin, ta có:')+Mm(r`${N[i]}^2=${N[j]}^2+${N[k]}^2-2\cdot ${N[j]}\cdot ${N[k]}\cos ${L[i]}=${fm(s[j])}^2+${fm(s[k])}^2-2\cdot ${fm(s[j])}\cdot ${fm(s[k])}\cos ${dm(g[i])}\approx ${fm(s[i]**2)}`)+Mm(r`\Rightarrow ${N[i]}\approx ${fm(s[i])}`)+Pp('Áp dụng hệ quả của định lí côsin, ta có:')+cl(j)+sm(i,j,k);
+  }else{
+   const p=I3.find(x=>x!==i&&gv[x]),u=3-i-p;
+   if(n===0)h+=Pp('Áp dụng định lí sin, ta có:')+Mm(r`\dfrac{${N[i]}}{\sin ${L[i]}}=\dfrac{${N[p]}}{\sin ${L[p]}}\Rightarrow \sin ${L[p]}=${fc(r`${N[p]}\sin ${L[i]}`,N[i])}=${fc(r`${fm(s[p])}\cdot \sin ${dm(g[i])}`,fm(s[i]))}\approx ${fm(Math.sin(g[p]),4)}`);
+   if(n===0&&Math.abs(PI-2*g[p])>1e-9)h+=Mm(tot>1?r`${LH[i]}+(180^\circ-${LH[p]})\approx ${dm(g[i]+PI-g[p])}<180^\circ\ \Rightarrow\ \text{nhận cả hai giá trị của }${LH[p]}`:r`\text{Nếu }${LH[p]}=180^\circ-${dm(g[p])}\text{ thì }${LH[i]}+${LH[p]}\ge 180^\circ\ \text{(vô lí, loại)}`);
+   if(tot>1)h+=r`<p class="cs"><b>Trường hợp ${n+1}:</b> \(${LH[p]}\) là góc ${n?'tù':'nhọn'}</p>`;
+   h+=Mm(n?r`${LH[p]}=180^\circ-${dm(PI-g[p])}\approx ${dm(g[p])}`:r`${LH[p]}\approx ${dm(g[p])}`)+sm(i,p,u)+Mm(r`${N[u]}=${fc(r`${N[i]}\sin ${L[u]}`,r`\sin ${L[i]}`)}=${fc(r`${fm(s[i])}\cdot \sin ${dm(g[u])}`,r`\sin ${dm(g[i])}`)}\approx ${fm(s[u])}`);
+  }
+ }
+ const kq=[];I3.forEach(i=>{if(!gv[i])kq.push(r`${N[i]}\approx ${fm(s[i])}`)});I3.forEach(i=>{if(!gv[i+3])kq.push(r`${LH[i]}\approx ${dm(g[i])}`)});
+ return h+r`<p class="kq">Vậy \(${kq.join(r`,\;`)}\).</p>`;
+}
+function deduce(T){
+ const RL=[],out=[],hs=i=>`h_${N[i]}`,
+ at=(i,v,b)=>b?r`${LH[i]}=180^\circ-${dm(PI-v[i+3])}\approx ${dm(v[i+3])}\ (\text{góc tù})`:r`${LH[i]}\approx ${dm(v[i+3])}`,
+ sa=x=>{if(!(x>0)||x>1+1e-9)return[];const a=Math.asin(Math.min(1,x));return Math.abs(PI-2*a)>1e-9?[a,PI-a]:[a]},
+ add=(n,g,fn,t)=>RL.push({n,g,fn,t});
+ I3.forEach(i=>{
+  const j=(i+1)%3,k=(i+2)%3,Ni=N[i],Li=L[i];
+  add([j+3,k+3],i+3,v=>[PI-v[j+3]-v[k+3]].filter(x=>x>1e-9),v=>r`${LH[i]}=180^\circ-(${LH[j]}+${LH[k]})=180^\circ-(${dm(v[j+3])}+${dm(v[k+3])})=${dm(v[i+3])}`);
+  add([j,k,i+3],i,v=>{const x=v[j]**2+v[k]**2-2*v[j]*v[k]*Math.cos(v[i+3]);return x>0?[Math.sqrt(x)]:[]},v=>r`\text{Định lí côsin: }${Ni}^2=${N[j]}^2+${N[k]}^2-2\cdot ${N[j]}\cdot ${N[k]}\cos ${Li}=${fm(v[j])}^2+${fm(v[k])}^2-2\cdot ${fm(v[j])}\cdot ${fm(v[k])}\cos ${dm(v[i+3])}\Rightarrow ${Ni}\approx ${fm(v[i])}`);
+  add([0,1,2],i+3,v=>{const c=(v[j]**2+v[k]**2-v[i]**2)/(2*v[j]*v[k]);return Math.abs(c)<1-1e-12?[Math.acos(c)]:[]},v=>r`\cos ${Li}=${fc(`${N[j]}^2+${N[k]}^2-${Ni}^2`,r`2\cdot ${N[j]}\cdot ${N[k]}`)}=${fc(`${fm(v[j])}^2+${fm(v[k])}^2-${fm(v[i])}^2`,r`2\cdot ${fm(v[j])}\cdot ${fm(v[k])}`)}\approx ${fm(Math.cos(v[i+3]),4)}\Rightarrow ${LH[i]}\approx ${dm(v[i+3])}`);
+  add([i,i+3],6,v=>[v[i]/(2*Math.sin(v[i+3]))],v=>r`\text{Định lí sin: }${fc(Ni,r`\sin ${Li}`)}=2R\Rightarrow R=${fc(fm(v[i]),r`2\sin ${dm(v[i+3])}`)}\approx ${fm(v[6])}`);
+  add([6,i+3],i,v=>[2*v[6]*Math.sin(v[i+3])],v=>r`${Ni}=2R\sin ${Li}=2\cdot ${fm(v[6])}\cdot \sin ${dm(v[i+3])}\approx ${fm(v[i])}`);
+  add([6,i],i+3,v=>sa(v[i]/(2*v[6])),(v,b)=>r`\sin ${Li}=${fc(Ni,'2R')}=${fc(fm(v[i]),r`2\cdot ${fm(v[6])}`)}\approx ${fm(Math.sin(v[i+3]),4)}\Rightarrow ${at(i,v,b)}`);
+ });
+ I3.forEach(i=>{
+  const j=(i+1)%3,k=(i+2)%3,Ni=N[i],Li=L[i];
+  add([j,k,i+3],8,v=>[.5*v[j]*v[k]*Math.sin(v[i+3])],v=>r`S=\tfrac12 ${N[j]}${N[k]}\sin ${Li}=\tfrac12\cdot ${fm(v[j])}\cdot ${fm(v[k])}\cdot \sin ${dm(v[i+3])}\approx ${fm(v[8])}`);
+  add([8,j,k],i+3,v=>sa(2*v[8]/(v[j]*v[k])),(v,b)=>r`S=\tfrac12 ${N[j]}${N[k]}\sin ${Li}\Rightarrow \sin ${Li}=${fc('2S',`${N[j]}${N[k]}`)}=${fc(r`2\cdot ${fm(v[8])}`,r`${fm(v[j])}\cdot ${fm(v[k])}`)}\approx ${fm(Math.sin(v[i+3]),4)}\Rightarrow ${at(i,v,b)}`);
+  add([8,10+i],i,v=>[2*v[8]/v[10+i]],v=>r`S=\tfrac12 ${Ni}${hs(i)}\Rightarrow ${Ni}=${fc('2S',hs(i))}=${fc(r`2\cdot ${fm(v[8])}`,fm(v[10+i]))}\approx ${fm(v[i])}`);
+  add([i,10+i],8,v=>[.5*v[i]*v[10+i]],v=>r`S=\tfrac12 ${Ni}${hs(i)}=\tfrac12\cdot ${fm(v[i])}\cdot ${fm(v[10+i])}\approx ${fm(v[8])}`);
+  add([8,6,j,k],i,v=>[4*v[6]*v[8]/(v[j]*v[k])],v=>r`S=${fc('abc','4R')}\Rightarrow ${Ni}=${fc('4RS',`${N[j]}${N[k]}`)}=${fc(r`4\cdot ${fm(v[6])}\cdot ${fm(v[8])}`,r`${fm(v[j])}\cdot ${fm(v[k])}`)}\approx ${fm(v[i])}`);
+  add([9,j,k],i,v=>[v[9]-v[j]-v[k]].filter(x=>x>1e-9),v=>r`${Ni}=2p-${N[j]}-${N[k]}=${fm(v[9])}-${fm(v[j])}-${fm(v[k])}\approx ${fm(v[i])}`);
+  [[j,k],[k,j]].forEach(([p,q])=>{
+   add([8,p,i+3],q,v=>[2*v[8]/(v[p]*Math.sin(v[i+3]))],v=>r`S=\tfrac12 ${N[p]}${N[q]}\sin ${Li}\Rightarrow ${N[q]}=${fc('2S',r`${N[p]}\sin ${Li}`)}=${fc(r`2\cdot ${fm(v[8])}`,r`${fm(v[p])}\cdot \sin ${dm(v[i+3])}`)}\approx ${fm(v[q])}`);
+   add([10+i,p],q+3,v=>sa(v[10+i]/v[p]),(v,b)=>r`${hs(i)}=${N[p]}\sin ${L[q]}\Rightarrow \sin ${L[q]}=${fc(hs(i),N[p])}=${fc(fm(v[10+i]),fm(v[p]))}\approx ${fm(Math.sin(v[q+3]),4)}\Rightarrow ${at(q,v,b)}`);
+   add([10+i,q+3],p,v=>[v[10+i]/Math.sin(v[q+3])],v=>r`${hs(i)}=${N[p]}\sin ${L[q]}\Rightarrow ${N[p]}=${fc(hs(i),r`\sin ${L[q]}`)}=${fc(fm(v[10+i]),r`\sin ${dm(v[q+3])}`)}\approx ${fm(v[p])}`);
+  });
+ });
+ add([9,7],8,v=>[v[9]/2*v[7]],v=>r`S=p\cdot r=${fm(v[9]/2)}\cdot ${fm(v[7])}\approx ${fm(v[8])}`);
+ add([8,7],9,v=>[2*v[8]/v[7]],v=>r`S=pr\Rightarrow p=${fc('S','r')}\Rightarrow 2p\approx ${fm(v[9])}`);
+ add([8,9],7,v=>[2*v[8]/v[9]],v=>r`r=${fc('S','p')}=${fc(fm(v[8]),fm(v[9]/2))}\approx ${fm(v[7])}`);
+ const go=(v,steps)=>{
+  if([0,1,2,3,4,5].every(i=>v[i]!=null)){out.push({v,steps});return}
+  for(const rl of RL){
+   if(v[rl.g]!=null||!rl.n.every(i=>v[i]!=null))continue;
+   rl.fn(v).forEach((x,b)=>{const nv=v.slice();nv[rl.g]=x;go(nv,[...steps,{g:rl.g,n:rl.n,t:rl.t(nv,b)}])});
+   return;
+  }
+ };
+ go(T.slice(),[]);
+ return out;
+}
+function bodyY(sol,n,tot){
+ const s=sol.s,q=qv(s);
+ return (tot>1?`<p class="cs"><b>Nghiệm ${n+1}:</b></p>`:'')+sol.steps.map(st=>Mm(st.t)).join('')+r`<p class="kq">Vậy \(a\approx ${fm(s[0])},\;b\approx ${fm(s[1])},\;c\approx ${fm(s[2])};\;${LH[0]}\approx ${dm(q[3])},\;${LH[1]}\approx ${dm(q[4])},\;${LH[2]}\approx ${dm(q[5])}\).</p>`;
+}
+function renderSol(){
+ const el=$('sol');
+ if(!cur.sols.length){el.hidden=true;return}
+ el.hidden=false;
+ const gv=cur.given,sols=cur.sols,s0=sols[0],q0=qv(s0.s),ng=gv.slice(3,6).filter(Boolean).length,gl=[],EN=['','','','','','','R','r','S','2p','h_a','h_b','h_c'];
+ I3.forEach(i=>{if(gv[i])gl.push(r`${N[i]}=${fm(s0.s[i])}`)});
+ I3.forEach(i=>{if(gv[i+3])gl.push(r`${LH[i]}=${dm(s0.g[i])}`)});
+ for(let i=6;i<13;i++)if(gv[i])gl.push(r`${EN[i]}=${fm(q0[i])}`);
+ let h=r`<h2>📖 Lời giải</h2><div class="paper"><p><b>Bài toán.</b> Giải tam giác \(ABC\), biết \(${gl.join(r`,\;`)}\).</p><p><b>Giải.</b></p>`;
+ sols.forEach((x,n)=>h+=x.gen?bodyY(x,n,sols.length):body(x,n,sols.length,gv,ng));
+ const {s,g}=sols[cur.idx],[a,b,c]=s,M=met(s,g),q=qv(s),he=Math.sqrt(M.p*(M.p-a)*(M.p-b)*(M.p-c));
+ h+=`<p><b>Diện tích, bán kính, đường cao, trung tuyến</b>${sols.length>1?` (nghiệm ${cur.idx+1})`:''}</p>`
+ +Mm(r`p=${fc('a+b+c','2')}=${fc(`${fm(a)}+${fm(b)}+${fm(c)}`,'2')}\approx ${fm(M.p)}\Rightarrow 2p\approx ${fm(2*M.p)}`)
+ +Mm(r`S=\tfrac12 bc\sin A=\tfrac12\cdot ${fm(b)}\cdot ${fm(c)}\cdot \sin ${dm(g[0])}\approx \mathbf{${fm(M.A)}}`)
+ +Mm(r`S=\sqrt{p(p-a)(p-b)(p-c)}\approx ${fm(he)}\quad\text{(Heron)}`)
+ +Mm(r`R=${fc('a',r`2\sin A`)}=${fc(fm(a),r`2\sin ${dm(g[0])}`)}\approx \mathbf{${fm(M.R)}}`)
+ +Mm(r`r=${fc('S','p')}=${fc(fm(M.A),fm(M.p))}\approx \mathbf{${fm(M.r)}}`)
+ +Mm(I3.map(i=>r`h_${N[i]}=${fc('2S',N[i])}=${fc(r`2\cdot ${fm(M.A)}`,fm(s[i]))}\approx \mathbf{${fm(M.h[i])}}`).join(r`;\quad `))
+ +Mm(I3.map(i=>{const j=(i+1)%3,k=(i+2)%3;return r`m_${N[i]}=\tfrac12\sqrt{2${N[j]}^2+2${N[k]}^2-${N[i]}^2}\approx \mathbf{${fm(q[13+i])}}`}).join(r`;\quad `));
+ cur.tex='% Lời giải – cần gói amsmath\n'+toTex(h);const esc=cur.tex.replace(/&/g,'&amp;').replace(/</g,'&lt;');el.innerHTML=h.replace('</h2>','</h2><div class="row" style="margin:0 0 8px"><button id="cptex">📋 Sao chép LaTeX</button><span class="msg" id="cpmsg" style="margin:0"></span></div>')+'</div><details class="tex"><summary>Xem mã LaTeX</summary><textarea readonly rows="12">'+esc+'</textarea></details>';typeset(el);
+}
+function toTex(h){
+ return h.replace(/<h2>[\s\S]*?<\/h2>/g,'').replace(/<div class="paper">/,'')
+ .replace(/<p class="m">\\\(\\displaystyle ([\s\S]*?)\\\)<\/p>/g,(m,x)=>'\\[\n  '+x+'\n\\]\n')
+ .replace(/<b>([\s\S]*?)<\/b>/g,'\\textbf{$1}')
+ .replace(/\\\(([\s\S]*?)\\\)/g,'$$$1$$')
+ .replace(/<p[^>]*>/g,'').replace(/<\/p>/g,'\n\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function copyTex(){
+ const t=cur.tex||'',m=$('cpmsg'),ok=()=>{m.textContent='Đã sao chép ✓'};
+ const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');ok()}catch(e){m.textContent='Không sao chép được – hãy mở "Xem mã LaTeX" và sao chép thủ công'}a.remove()};
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fb);else fb();
+}
+function drawFig(){
+ const svg=$('svg'),sw=+$('sw').value,fs=+$('fs').value,W=800,H=520,o=k=>$(k).checked;
+ $('swv').textContent=sw;$('fsv').textContent=fs;$('zv').textContent=Math.round(zoom*100)+'%';
+ if(!cur.sols.length){svg.innerHTML='<text x="400" y="265" text-anchor="middle" class="ph">Nhập đủ 3 yếu tố hợp lệ để xem hình</text>';return}
+ const {s,g}=cur.sols[cur.idx],[a,b,c]=s,M=met(s,g),per=a+b+c;
+ const P=[[c*Math.cos(g[1]),c*Math.sin(g[1])],[0,0],[a,0]];
+ $('l2').style.display=cur.sols.length>1?'':'none';
+ const ALT=[];
+ if($('c2').checked)cur.sols.forEach((o,k)=>{
+  if(k===cur.idx)return;
+  const [a2,b2,c2]=o.s,g2=o.g,Q2=[[c2*Math.cos(g2[1]),c2*Math.sin(g2[1])],[0,0],[a2,0]],e=I3.find(x=>Math.abs(o.s[x]-s[x])<1e-9*Math.max(1,s[x]));
+  if(e==null){ALT.push({k,sh:[],p:Q2});return}
+  const m=(e+1)%3,n=(e+2)%3,th=Math.atan2(P[n][1]-P[m][1],P[n][0]-P[m][0])-Math.atan2(Q2[n][1]-Q2[m][1],Q2[n][0]-Q2[m][0]),cs=Math.cos(th),sn=Math.sin(th);
+  ALT.push({k,sh:[m,n],p:Q2.map(q=>{const dx=q[0]-Q2[m][0],dy=q[1]-Q2[m][1];return[P[m][0]+dx*cs-dy*sn,P[m][1]+dx*sn+dy*cs]})});
+ });
+ const O=[a/2,M.R*Math.cos(g[0])],I=[(a*P[0][0]+b*P[1][0]+c*P[2][0])/per,(a*P[0][1])/per];
+ const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]);ALT.forEach(o=>o.p.forEach(p=>{xs.push(p[0]);ys.push(p[1])}));
+ if(o('cc')){xs.push(O[0]-M.R,O[0]+M.R);ys.push(O[1]-M.R,O[1]+M.R)}
+ if(o('ci')){xs.push(I[0]-M.r,I[0]+M.r);ys.push(I[1]-M.r,I[1]+M.r)}
+ const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),mg=85;
+ const k=Math.min((W-2*mg)/(x1-x0),(H-2*mg)/(y1-y0))*zoom,mx=(x0+x1)/2,my=(y0+y1)/2;
+ const T=p=>[W/2+(p[0]-mx)*k+pan.x,H/2-(p[1]-my)*k+pan.y];
+ const Q=P.map(T),Gc=[(Q[0][0]+Q[1][0]+Q[2][0])/3,(Q[0][1]+Q[1][1]+Q[2][1])/3];
+ const tx=(p,s,cl,z=fs)=>`<text class="t ${cl}" x="${p[0].toFixed(1)}" y="${p[1].toFixed(1)}" font-size="${z}" text-anchor="middle" dominant-baseline="central">${s}</text>`;
+ const ln=(p,q,cl,w,da)=>`<line class="${cl}" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke-width="${w}" stroke-dasharray="${da}"/>`;
+ let h='';
+ if(o('cc')){const q=T(O);h+=`<circle class="cO" cx="${q[0]}" cy="${q[1]}" r="${M.R*k}" stroke-width="${sw*.8}"/><circle class="tp" cx="${q[0]}" cy="${q[1]}" r="${sw+1}"/>`+tx([q[0]+fs*.7,q[1]-fs*.8],'O','tp tv')}
+ if(o('ci')){const q=T(I);h+=`<circle class="cI" cx="${q[0]}" cy="${q[1]}" r="${M.r*k}" stroke-width="${sw*.8}"/><circle class="tg" cx="${q[0]}" cy="${q[1]}" r="${sw+1}"/>`+tx([q[0]+fs*.7,q[1]-fs*.8],'I','tg tv')}
+ ALT.forEach(o=>{const Q2=o.p.map(T);h+=`<polygon class="alt" stroke-width="${sw}" points="${Q2.join(' ')}"/>`;I3.forEach(v=>{if(o.sh.includes(v))return;h+=tx(add(Q2[v],sc(nrm(sub(Q2[v],Gc)),fs*1.1+10)),L[v]+'₁₂₃₄'[o.k],'tv',fs*1.15)})});
+ h+=`<polygon class="tri" stroke-width="${sw}" points="${Q.join(' ')}"/>`;
+ if(o('ch'))I3.forEach(i=>{
+  const j=(i+1)%3,m=(i+2)%3,A=P[j],B=P[m],Vt=P[i],dx=B[0]-A[0],dy=B[1]-A[1],t=((Vt[0]-A[0])*dx+(Vt[1]-A[1])*dy)/(dx*dx+dy*dy),F=T([A[0]+t*dx,A[1]+t*dy]);
+  h+=ln(Q[i],F,'hl',sw*.8,'6 4');
+  if(t<0||t>1)h+=ln(Q[t<0?j:m],F,'hl',sw*.6,'2 4');
+  const dir=nrm(sub(Q[m],Q[j])),u=t>1?sc(dir,-1):dir,v=nrm(sub(Q[i],F)),d=9,p1=add(F,sc(u,d)),p3=add(F,sc(v,d)),p2=add(p1,sc(v,d));
+  h+=`<path class="hl" stroke-width="${sw*.6}" d="M${p1} L${p2} L${p3}"/>`;
+  const md=[(Q[i][0]+F[0])/2,(Q[i][1]+F[1])/2],e=nrm(sub(F,Q[i])),n0=[-e[1],e[0]],sg=((md[0]-Gc[0])*n0[0]+(md[1]-Gc[1])*n0[1])>=0?1:-1;
+  h+=tx(add(md,sc(n0,sg*(fs*1.6+4))),`h<tspan dy="${fs*.3}" font-size="${fs*.75}">${N[i]}</tspan><tspan dy="${-fs*.3}"> = ${f(M.h[i])}</tspan>`,'th',fs*.9);
+ });
+ if(o('la'))I3.forEach(i=>{
+  const j=(i+1)%3,m=(i+2)%3,Vt=Q[i],d1=sub(Q[j],Vt),d2=sub(Q[m],Vt),a1=Math.atan2(d1[1],d1[0]),a2=Math.atan2(d2[1],d2[0]);
+  let dd=a2-a1;while(dd>PI)dd-=2*PI;while(dd<-PI)dd+=2*PI;
+  const ra=Math.min(22+fs*.5,.4*Math.hypot(...d1),.4*Math.hypot(...d2)),pt=an=>[Vt[0]+ra*Math.cos(an),Vt[1]+ra*Math.sin(an)];
+  if(Math.abs(g[i]-PI/2)<1e-4){const e1=nrm(d1),e2=nrm(d2),r2=ra*.8,m1=add(Vt,sc(e1,r2)),m3=add(Vt,sc(e2,r2));h+=`<path class="arc" stroke-width="${sw*.8}" d="M${m1} L${add(m1,sc(e2,r2))} L${m3}"/>`}
+  else h+=`<path class="arc" stroke-width="${sw*.8}" d="M${pt(a1)} A${ra} ${ra} 0 0 ${dd>0?1:0} ${pt(a2)}"/>`;
+  const bs=a1+dd/2,rl=ra+fs*1.1+4;
+  h+=tx([Vt[0]+rl*Math.cos(bs),Vt[1]+rl*Math.sin(bs)],dg(g[i]),'tg',fs*.9);
+ });
+ if(o('ls'))I3.forEach(i=>{
+  const j=(i+1)%3,m=(i+2)%3,md=[(Q[j][0]+Q[m][0])/2,(Q[j][1]+Q[m][1])/2],e=nrm(sub(Q[m],Q[j])),n0=[-e[1],e[0]],sg=((md[0]-Gc[0])*n0[0]+(md[1]-Gc[1])*n0[1])>0?1:-1;
+  h+=tx(add(md,sc(n0,sg*(fs*.9+8))),`${N[i]} = ${f(s[i])}`,'');
+ });
+ I3.forEach(i=>{h+=`<circle class="tri" style="fill:var(--acc)" cx="${Q[i][0]}" cy="${Q[i][1]}" r="${sw*1.4+1}"/>`;h+=tx(add(Q[i],sc(nrm(sub(Q[i],Gc)),fs*1.1+10)),L[i]+(ALT.length&&!ALT[0].sh.includes(i)?'₁₂₃₄'[cur.idx]:''),'tv',fs*1.3)});
+ svg.innerHTML=h;
+}
+function setZoom(z){zoom=Math.max(.25,Math.min(6,z));drawFig()}
+inputs.forEach(e=>e.addEventListener('input',update));
+$('dp').onchange=e=>{dp=+e.target.value;renderRes();update()};
+$('clr').onclick=()=>{inputs.forEach(e=>e.value='');zoom=1;pan={x:0,y:0};update()};
+$('ex').onclick=e=>{const i=e.target.dataset.e;if(i==null)return;inputs.forEach((x,k)=>x.value=EX[i][1][k]===''?'':String(EX[i][1][k]).replace('.',','));zoom=1;pan={x:0,y:0};update()};
+$('sol').onclick=e=>{if(e.target.id==='cptex')copyTex()};
+$('res').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;cur.idx=+i;renderRes();drawFig()};
+['sw','fs','ls','la','ch','ci','cc','c2'].forEach(id=>$(id).addEventListener('input',drawFig));
+$('zi').onclick=()=>setZoom(zoom*1.2);$('zo').onclick=()=>setZoom(zoom/1.2);$('zr').onclick=()=>{zoom=1;pan={x:0,y:0};drawFig()};
+const svg=$('svg');let drag=null;
+svg.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y};svg.setPointerCapture(e.pointerId)});
+svg.addEventListener('pointermove',e=>{if(!drag)return;const sc2=800/svg.getBoundingClientRect().width;pan.x=drag.px+(e.clientX-drag.x)*sc2;pan.y=drag.py+(e.clientY-drag.y)*sc2;drawFig()});
+['pointerup','pointercancel'].forEach(n=>svg.addEventListener(n,()=>drag=null));
+svg.addEventListener('wheel',e=>{e.preventDefault();setZoom(zoom*(e.deltaY<0?1.1:1/1.1))},{passive:false});
+inputs.forEach((x,k)=>x.value=EX[1][1][k]===''?'':String(EX[1][1][k]));
+update();
+</script></body></html>

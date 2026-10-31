@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vẽ tập hợp trên trục số</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
+<style>
+:root{--bg:#fff;--fg:#0f1f3d;--mut:#5b6b8a;--line:#cfdcf3;--card:#f2f7ff;--pg:#e6efff;--pri:#1d4ed8;--pri2:#2563eb;--sky:#dbeafe;--sky2:#eff6ff;--A:#2563eb;--B:#ea580c;--C:#16a34a;--R:#7c3aed;--err:#dc2626;color-scheme:light}
+html{font-size:clamp(13px,calc(.4vw + .4vh + 4px),22px);scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pg);color:var(--fg);font:1rem/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+:focus-visible{outline:2px solid var(--B);outline-offset:2px}
+button,select{font:inherit;cursor:pointer}
+
+/* khung ứng dụng */
+.app{display:flex;flex-direction:column;min-height:100dvh;background:radial-gradient(70rem 28rem at 100% 0,#cfe0ff,transparent 70%),var(--pg);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.6rem 1rem;flex-wrap:wrap;padding:.55rem 1rem;color:#fff;background:linear-gradient(120deg,#1e3a8a,#2563eb 65%,#38bdf8);box-shadow:0 2px 10px rgba(30,64,175,.28)}
+.brand{display:flex;align-items:center;gap:.6rem;min-width:0}
+.logo{flex:none;width:2.1rem;height:2.1rem;border-radius:.65rem;background:#fff;color:var(--pri);display:grid;place-items:center;font-weight:800;font-size:1.15rem}
+h1{font-size:1.15rem;margin:0;line-height:1.2}
+.tabs{display:flex;gap:.2rem;padding:.2rem;border-radius:.8rem;background:rgba(255,255,255,.22)}
+.tabs button{font-weight:600;font-size:.92rem;padding:.4rem 1.2rem;border:0;border-radius:.6rem;background:transparent;color:#fff}
+.tabs button:hover{background:rgba(255,255,255,.18)}
+.tabs button.on{background:#fff;color:var(--pri)}
+.stage{flex:1;min-height:0;display:flex;padding:.75rem}
+.split{flex:1;width:100%;max-width:56rem;margin:0 auto;min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;align-content:start}
+.pane{display:flex;flex-direction:column;gap:.75rem;min-width:0;min-height:0}
+.pane>*{flex:none}
+@media (min-aspect-ratio:1/1) and (min-width:700px){
+  html,body{height:100%;overflow:hidden}
+  .app{height:100dvh;min-height:0}
+  .split{max-width:120rem;grid-template-columns:minmax(19rem,5fr) minmax(0,7fr);grid-template-rows:minmax(0,1fr);align-content:stretch}
+  .pane{overflow-y:auto;overflow-x:hidden;padding:.15rem;margin:-.15rem;scrollbar-width:thin}
+}
+
+/* khối */
+.card,.fig{--k:var(--pri2);background:#fff;border:1px solid var(--line);border-radius:.9rem;box-shadow:0 1px 2px rgba(30,64,175,.08),0 8px 20px -8px rgba(30,64,175,.2);overflow:hidden;min-width:0}
+.ch,.fig>h2{display:flex;align-items:center;gap:.5rem;margin:0;padding:.45rem .8rem;font-size:.92rem;font-weight:700;color:var(--k);background:color-mix(in srgb,var(--k) 9%,#fff);border-bottom:1px solid color-mix(in srgb,var(--k) 22%,#fff);border-left:.3rem solid var(--k)}
+.ic{flex:none;display:grid;place-items:center;width:1.45rem;height:1.45rem;border-radius:.45rem;background:var(--k);color:#fff;font-size:.82rem;font-weight:700}
+.cb{padding:.65rem .8rem}
+summary.ch{cursor:pointer;list-style:none}
+summary.ch::-webkit-details-marker{display:none}
+summary.ch::after{content:"▾";margin-left:auto;transition:transform .2s}
+details:not([open])>summary.ch{border-bottom:0}
+details:not([open])>summary.ch::after{transform:rotate(-90deg)}
+
+/* nhập liệu */
+.row{display:flex;align-items:center;gap:.5rem;margin:.4rem 0}
+.row>b{flex:none;width:2.1rem;height:2.1rem;border-radius:.6rem;display:grid;place-items:center;background:var(--k,var(--pri2));color:#fff;font-size:1.05rem}
+input{flex:1;min-width:0;font:inherit;padding:.5rem .7rem;border:1.5px solid var(--line);border-radius:.6rem;background:var(--sky2);color:var(--fg)}
+input:focus{background:#fff;border-color:var(--k,var(--pri2))}
+input:focus-visible{outline:2px solid var(--k,var(--pri2));outline-offset:1px}
+input[type=range]{padding:0;border:0;background:none;accent-color:var(--pri2);min-width:5rem}
+.err{margin:-.1rem 0 .3rem 2.6rem;padding:.25rem .6rem;border-radius:.5rem;background:#fef2f2;color:var(--err);font-size:.85rem}
+.err:empty{display:none}
+.bar{display:flex;flex-wrap:wrap;gap:.3rem;margin:.6rem 0 0;padding-top:.6rem;border-top:1px dashed var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.5rem 0 0}
+.opts{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin:.5rem 0 0}
+.bar button,.chips>button,.opts select,.tg,.ex button,.vb{font-size:.88rem;padding:.35rem .7rem;border:1.5px solid var(--line);border-radius:.6rem;background:#fff;color:var(--pri);transition:background .15s,border-color .15s}
+.bar button:hover,.chips>button:hover,.opts select:hover,.tg:hover,.vb:hover{background:var(--sky);border-color:#93b4f0}
+.bar button{min-width:2.1rem;padding:.25rem .45rem;font-size:1rem;background:var(--sky2)}
+.chips>button{color:var(--R);background:#f5f0ff;border-color:#ddd0fb}
+.chips>button:hover{background:#ebe1ff;border-color:#c4b0f7}
+.tg.on,.vb.on{background:var(--pri2);border-color:var(--pri2);color:#fff}
+code{background:var(--sky);color:var(--pri);padding:.05rem .35rem;border-radius:.35rem;font-size:.92em}
+.hint{font-size:.86rem;color:var(--mut);line-height:1.55}
+.vl{font-size:.85rem;color:var(--mut)}
+.vi{margin:.5rem 0 0;padding:.45rem .7rem;border-radius:.6rem;background:var(--sky);color:var(--pri);font-weight:600;font-size:.9rem}
+
+/* kết quả & hình */
+.res{padding:.8rem 1rem;border-radius:.9rem;background:linear-gradient(120deg,#1e40af,#2563eb 70%,#3b82f6);color:#fff;font-size:1.3rem;line-height:1.4;overflow-wrap:anywhere;box-shadow:0 10px 22px -10px rgba(37,99,235,.7)}
+.res:empty{display:none}
+.res b{display:inline-block;background:rgba(255,255,255,.2);padding:0 .5rem;border-radius:.45rem;margin-right:.25rem}
+.fig>h2{font-size:.88rem}
+#nl,#vSvg{padding:.5rem .7rem;overflow-x:auto}
+#nl svg{display:block;width:100%;height:auto}
+#vSvg{display:flex;justify-content:center}
+#vSvg svg{display:block;width:100%;height:auto;max-height:max(14rem,calc(100dvh - 12rem));touch-action:none}
+@media (max-width:600px){#nl svg{min-width:30rem}}
+.ex{display:flex;gap:.5rem;justify-content:flex-end;padding:.5rem .8rem;border-top:1px solid var(--line);background:var(--sky2)}
+.fig .ex button{background:var(--pri2);border-color:var(--pri2);color:#fff;font-weight:600}
+.fig .ex button:hover{background:var(--pri);border-color:var(--pri)}
+#vf{display:none!important}
+.chip{display:inline-flex;gap:.1rem;align-items:center;padding:.15rem .3rem .15rem .7rem;border:1.5px solid var(--line);border-radius:99px;background:var(--sky2);color:var(--pri);font-size:.9rem;font-style:italic}
+.chip button{border:0;background:none;color:var(--mut);padding:0 .35rem;font-size:.9rem}
+.chip button:hover{color:var(--err)}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand"><span class="logo">∩</span><h1>Tập hợp: trục số &amp; Venn</h1></div>
+  <div class="tabs"><button type="button" class="on" data-t="NL">Trục số</button><button type="button" data-t="V">Venn</button></div>
+</header>
+<main class="stage">
+
+<div id="pNL" class="split">
+<section class="pane">
+  <div class="card">
+    <h2 class="ch"><span class="ic">∈</span>Các tập hợp</h2>
+    <div class="cb">
+      <div class="row" style="--k:var(--A)"><b>A</b><input id="sA" value="[-2; 3)" autocomplete="off" autocapitalize="off" spellcheck="false"></div><p class="err" id="eA"></p>
+      <div class="row" style="--k:var(--B)"><b>B</b><input id="sB" value="(1; +∞)" autocomplete="off" autocapitalize="off" spellcheck="false"></div><p class="err" id="eB"></p>
+      <div class="row" style="--k:var(--C)"><b>C</b><input id="sC" placeholder="(tuỳ chọn)" autocomplete="off" autocapitalize="off" spellcheck="false"></div><p class="err" id="eC"></p>
+      <div class="bar" id="sym"></div>
+    </div>
+  </div>
+
+  <div class="card" style="--k:var(--R)">
+    <h2 class="ch"><span class="ic">ƒ</span>Biểu thức cần tính</h2>
+    <div class="cb">
+      <div class="row" style="--k:var(--R)"><b>ƒ</b><input id="ex" value="A ∩ B" autocomplete="off" autocapitalize="off" spellcheck="false"></div><p class="err" id="eX"></p>
+      <div class="chips" id="chips"></div>
+    </div>
+  </div>
+
+  <div class="card" style="--k:#0284c7">
+    <h2 class="ch"><span class="ic">⚙</span>Tuỳ chọn hình vẽ</h2>
+    <div class="cb">
+      <div class="opts" style="margin-top:0"><select id="stl"><option value="br">Đầu mút: ngoặc [ ] ( )</option><option value="dt">Đầu mút: chấm đặc / rỗng</option></select><button type="button" class="tg on" data-k="guide">Đường gióng</button><button type="button" class="tg on" data-k="bw">Đen trắng</button><button type="button" class="tg on" data-k="res">Hàng phép toán</button><button type="button" class="tg on" data-k="zero">Số 0</button></div>
+    </div>
+  </div>
+
+  <details class="card" style="--k:var(--mut)">
+    <summary class="ch"><span class="ic">?</span>Cách nhập</summary>
+    <div class="cb hint">Khoảng: <code>[a; b)</code>, <code>(a; +∞)</code>. Tập rời rạc: <code>{1; 2; 5}</code>. Nhiều phần: nối bằng ∪, ví dụ <code>[0; 1] ∪ (3; 4]</code>. Biểu thức dùng ∩, ∪, \ và ᶜ (phần bù); ∩ được tính trước ∪ và \, nên dùng ngoặc cho rõ. Có thể gõ n thay ∩, u thay ∪, ! trước một tập để lấy phần bù.</div>
+  </details>
+</section>
+
+<section class="pane">
+  <div class="res" id="res"></div>
+  <div class="fig"><h2>Hình trục số (gạch chéo phần không thuộc tập)</h2><div id="nl"></div><div class="ex"><button type="button" id="dSvg">Tải SVG</button><button type="button" id="dPng">Tải PNG</button></div></div>
+  <div class="fig" id="vf"><h2>Biểu đồ Venn (vùng tô màu là kết quả)</h2><div id="vn"></div></div>
+</section>
+</div>
+
+<div id="pV" class="split" style="display:none"></div>
+</main>
+</div>
+
+<script>
+const INF=Infinity, NAMES=['A','B','C'];
+const $=id=>document.getElementById(id);
+
+/* ---------- Đại số khoảng ---------- */
+function norm(a){
+  a=a.filter(v=>v.lo<v.hi||(v.lo===v.hi&&v.loC&&v.hiC)).map(v=>({...v}))
+     .sort((p,q)=>(p.lo-q.lo)||(q.loC-p.loC));
+  const o=[];
+  for(const v of a){
+    const l=o[o.length-1];
+    if(l&&(v.lo<l.hi||(v.lo===l.hi&&(l.hiC||v.loC)))){
+      if(v.hi>l.hi){l.hi=v.hi;l.hiC=v.hiC}else if(v.hi===l.hi)l.hiC=l.hiC||v.hiC;
+    }else o.push(v);
+  }
+  return o;
+}
+function inter(a,b){
+  const o=[];
+  for(const p of a)for(const q of b){
+    let lo,loC,hi,hiC;
+    if(p.lo>q.lo){lo=p.lo;loC=p.loC}else if(p.lo<q.lo){lo=q.lo;loC=q.loC}else{lo=p.lo;loC=p.loC&&q.loC}
+    if(p.hi<q.hi){hi=p.hi;hiC=p.hiC}else if(p.hi>q.hi){hi=q.hi;hiC=q.hiC}else{hi=p.hi;hiC=p.hiC&&q.hiC}
+    o.push({lo,loC,hi,hiC});
+  }
+  return norm(o);
+}
+function comp(a){
+  a=norm(a);const o=[];let lo=-INF,loC=false;
+  for(const v of a){o.push({lo,loC,hi:v.lo,hiC:!v.loC});lo=v.hi;loC=!v.hiC}
+  o.push({lo,loC,hi:INF,hiC:false});
+  return norm(o);
+}
+const setOps={and:inter,or:(a,b)=>norm([...a,...b]),not:comp,diff:(a,b)=>inter(a,comp(b))};
+const boolOps={and:(a,b)=>a&&b,or:(a,b)=>a||b,not:a=>!a,diff:(a,b)=>a&&!b};
+
+/* ---------- Phân tích cú pháp ---------- */
+function parseNum(t){
+  t=t.replace(/\s+/g,'').toLowerCase().replace('∞','inf');
+  if(!t)throw new Error('Thiếu một đầu mút');
+  if(/^\+?inf(inity)?$/.test(t))return INF;
+  if(/^-inf(inity)?$/.test(t))return -INF;
+  let v;
+  if(t.includes('/')){const [p,q]=t.split('/');v=Number(p)/Number(q)}else v=Number(t);
+  if(!isFinite(v))throw new Error('Số không hợp lệ: “'+t+'”');
+  return v;
+}
+function parseSet(s){
+  s=s.replace(/−/g,'-').replace(/U/g,'∪');
+  const out=[];let i=0;
+  while(i<s.length){
+    const c=s[i];
+    if(/\s|∪/.test(c)||c==='∅'){i++;continue}
+    if(c==='('||c==='['){
+      const m=s.slice(i+1).search(/[)\]]/);
+      if(m<0)throw new Error('Thiếu dấu đóng khoảng');
+      const body=s.slice(i+1,i+1+m),cl=s[i+1+m],pr=body.split(/[;,]/);
+      if(pr.length!==2)throw new Error('Khoảng cần đúng 2 đầu mút: '+s.slice(i,i+m+2));
+      const lo=parseNum(pr[0]),hi=parseNum(pr[1]);
+      if(lo>hi)throw new Error('Đầu mút trái lớn hơn đầu mút phải');
+      out.push({lo,hi,loC:c==='['&&isFinite(lo),hiC:cl===']'&&isFinite(hi)});
+      i+=m+2;
+    }else if(c==='{'){
+      const m=s.indexOf('}',i);
+      if(m<0)throw new Error('Thiếu dấu }');
+      for(const x of s.slice(i+1,m).split(/[;,]/)){
+        if(!x.trim())continue;
+        const v=parseNum(x);
+        if(!isFinite(v))throw new Error('Phần tử của tập rời rạc phải là số hữu hạn');
+        out.push({lo:v,hi:v,loC:true,hiC:true});
+      }
+      i=m+1;
+    }else throw new Error('Ký tự lạ: “'+c+'”');
+  }
+  return norm(out);
+}
+function parseExpr(str){
+  const t=[];
+  for(const c of str.replace(/\s+/g,'')){
+    if(NAMES.includes(c))t.push({v:c});
+    else if(c==='∩'||c==='n')t.push('&');
+    else if(c==='∪'||c==='u'||c==='U')t.push('|');
+    else if(c==='\\'||c==='∖'||c==='-')t.push('-');
+    else if('()!'.includes(c))t.push(c);
+    else if(c==="'"||c==='ᶜ')t.push('c');
+    else throw new Error('Ký tự lạ trong biểu thức: “'+c+'”');
+  }
+  if(!t.length)throw new Error('Hãy nhập biểu thức');
+  let p=0;const peek=()=>t[p],nx=()=>t[p++];
+  const bad=()=>new Error('Biểu thức chưa đúng cú pháp');
+  function E(){let l=T();while(peek()==='|'||peek()==='-'){const o=nx();l={o,l,r:T()}}return l}
+  function T(){let l=U();while(peek()==='&'){nx();l={o:'&',l,r:U()}}return l}
+  function U(){
+    if(peek()==='!'){nx();return{o:'!',l:U()}}
+    let a=At();while(peek()==='c'){nx();a={o:'!',l:a}}return a;
+  }
+  function At(){
+    const k=nx();
+    if(k&&k.v)return k;
+    if(k==='('){const e=E();if(nx()!==')')throw new Error('Thiếu dấu )');return e}
+    throw bad();
+  }
+  const e=E();if(p<t.length)throw bad();return e;
+}
+function ev(n,env,o){
+  if(n.v)return env[n.v];
+  const l=ev(n.l,env,o);
+  if(n.o==='!')return o.not(l);
+  const r=ev(n.r,env,o);
+  return n.o==='&'?o.and(l,r):n.o==='|'?o.or(l,r):o.diff(l,r);
+}
+function usedVars(n,s=new Set()){if(n.v)s.add(n.v);else{usedVars(n.l,s);n.r&&usedVars(n.r,s)}return s}
+
+/* ---------- Hiển thị ---------- */
+const fmt=n=>n===INF?'+∞':n===-INF?'-∞':String(+n.toFixed(4));
+function fmtSet(s){
+  if(!s.length)return '∅';
+  const pts=s.filter(v=>v.lo===v.hi).map(v=>fmt(v.lo));
+  const parts=s.filter(v=>v.lo!==v.hi).map(v=>(v.loC?'[':'(')+fmt(v.lo)+'; '+fmt(v.hi)+(v.hiC?']':')'));
+  if(pts.length)parts.push('{'+pts.join('; ')+'}');
+  const r=parts.join(' ∪ ');
+  return r==='(-∞; +∞)'?r+' = ℝ':r;
+}
+const colOf={A:'var(--A)',B:'var(--B)',C:'var(--C)',R:'var(--R)'};
+
+function drawLine(rows){
+  const W=640,L=56,R=612,rh=44,top=8;
+  const vs=[0];
+  rows.forEach(r=>r.set.forEach(v=>[v.lo,v.hi].forEach(x=>isFinite(x)&&vs.push(x))));
+  let mn=Math.min(...vs),mx=Math.max(...vs);
+  if(mx-mn<1){mn-=1;mx+=1}
+  const pad=(mx-mn)*.12;mn-=pad;mx+=pad;
+  const X=v=>L+(v-mn)/(mx-mn)*(R-L);
+  const ay=top+rows.length*rh+4,H=ay+34;
+  const uniq=[...new Set(vs)].sort((a,b)=>a-b);
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">`;
+  uniq.forEach(v=>s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${top}" y2="${ay}" style="stroke:var(--line);stroke-dasharray:3 3"/>`);
+  rows.forEach((r,i)=>{
+    const y=top+i*rh+rh/2,c=r.col;
+    s+=`<line x1="${L-8}" x2="${R+8}" y1="${y}" y2="${y}" style="stroke:var(--line);stroke-width:1"/>`;
+    s+=`<text x="8" y="${y+6}" font-size="17" font-weight="700" style="fill:${c}">${r.name}</text>`;
+    if(!r.set.length)s+=`<text x="${(L+R)/2}" y="${y+5}" text-anchor="middle" font-size="15" style="fill:var(--mut)">∅</text>`;
+    r.set.forEach(v=>{
+      const xa=isFinite(v.lo)?X(v.lo):L-8,xb=isFinite(v.hi)?X(v.hi):R+8;
+      if(v.lo!==v.hi)s+=`<line x1="${xa}" x2="${xb}" y1="${y}" y2="${y}" style="stroke:${c};stroke-width:7;opacity:.85"/>`;
+      if(v.lo===-INF)s+=`<polygon points="${L-14},${y} ${L-4},${y-7} ${L-4},${y+7}" style="fill:${c}"/>`;
+      if(v.hi===INF)s+=`<polygon points="${R+14},${y} ${R+4},${y-7} ${R+4},${y+7}" style="fill:${c}"/>`;
+      const dot=(x,closed)=>`<circle cx="${x}" cy="${y}" r="5.5" style="fill:${closed?c:'var(--bg)'};stroke:${c};stroke-width:2.5"/>`;
+      if(isFinite(v.lo))s+=dot(X(v.lo),v.loC);
+      if(isFinite(v.hi)&&v.hi!==v.lo)s+=dot(X(v.hi),v.hiC);
+    });
+  });
+  s+=`<line x1="${L-14}" x2="${R+16}" y1="${ay}" y2="${ay}" style="stroke:var(--fg);stroke-width:1.5"/>`;
+  s+=`<polygon points="${R+20},${ay} ${R+12},${ay-4} ${R+12},${ay+4}" style="fill:var(--fg)"/>`;
+  let last=-99;
+  uniq.forEach(v=>{
+    const x=X(v);
+    s+=`<line x1="${x}" x2="${x}" y1="${ay-4}" y2="${ay+4}" style="stroke:var(--fg);stroke-width:1.5"/>`;
+    if(x-last>=26){s+=`<text x="${x}" y="${ay+22}" text-anchor="middle" font-size="14" style="fill:var(--fg)">${fmt(v)}</text>`;last=x}
+  });
+  return s+'</svg>';
+}
+
+function drawVenn(names,ast){
+  const n=names.length;
+  const cs=n===2?[[150,145,72],[250,145,72]]:[[160,105,60],[240,105,60],[200,170,60]];
+  const lab=n===2?[[96,70],[304,70]]:[[104,52],[296,52],[200,252]];
+  let d='',reg='',out='';
+  cs.forEach(([cx,cy,r],i)=>{
+    d+=`<clipPath id="vi${i}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;
+    d+=`<clipPath id="vo${i}"><path clip-rule="evenodd" d="M8 8H392V282H8Z M${cx-r} ${cy}a${r} ${r} 0 1 0 ${2*r} 0a${r} ${r} 0 1 0 ${-2*r} 0Z"/></clipPath>`;
+  });
+  for(let m=0;m<1<<n;m++){
+    const env={};names.forEach((k,i)=>env[k]=!!(m>>i&1));
+    if(!ev(ast,env,boolOps))continue;
+    let g='<rect x="8" y="8" width="384" height="274" style="fill:var(--R);opacity:.55"/>';
+    for(let i=n-1;i>=0;i--)g=`<g clip-path="url(#v${m>>i&1?'i':'o'}${i})">${g}</g>`;
+    reg+=g;
+  }
+  cs.forEach(([cx,cy,r],i)=>{
+    out+=`<circle cx="${cx}" cy="${cy}" r="${r}" style="fill:none;stroke:${colOf[names[i]]};stroke-width:2.5"/>`;
+    out+=`<text x="${lab[i][0]}" y="${lab[i][1]}" text-anchor="middle" font-size="20" font-weight="700" style="fill:${colOf[names[i]]}">${names[i]}</text>`;
+  });
+  return `<svg viewBox="0 0 400 290" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif"><defs>${d}</defs>${reg}<rect x="8" y="8" width="384" height="274" rx="6" style="fill:none;stroke:var(--mut);stroke-width:1.5"/><text x="18" y="30" font-size="16" style="fill:var(--mut)">ℝ</text>${out}</svg>`;
+}
+
+/* ---------- Cập nhật ---------- */
+function update(){
+  const env={},active=[];
+  let ok=true;
+  NAMES.forEach(k=>{
+    $('e'+k).textContent='';
+    const v=$('s'+k).value;
+    if(!v.trim())return;
+    try{env[k]=parseSet(v);active.push(k)}
+    catch(e){$('e'+k).textContent=e.message;ok=false}
+  });
+  $('eX').textContent='';
+  let ast;
+  try{
+    ast=parseExpr($('ex').value);
+    for(const k of usedVars(ast))if(!(k in env)&&ok)throw new Error('Tập '+k+' chưa được nhập');
+  }catch(e){$('eX').textContent=e.message;ok=false}
+  if(!ok)return;
+  const res=ev(ast,env,setOps);
+  $('res').innerHTML='<b>'+$('ex').value.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</b> = '+fmtSet(res);
+  const rows=active.map(k=>({name:k,set:env[k],col:colOf[k]}));
+  rows.push({name:'KQ',set:res,col:colOf.R});
+  lastRows=rows;renderLine();
+  const vf=$('vf');
+  if(active.length>=2){
+    vf.style.display='';
+    const bad=[...usedVars(ast)].some(k=>!active.includes(k));
+    $('vn').innerHTML=bad?'':drawVenn(active,ast);
+  }else vf.style.display='none';
+}
+
+/* ---------- Thanh ký hiệu & gợi ý nhanh ---------- */
+let focusEl=$('sA');
+document.querySelectorAll('input').forEach(i=>i.addEventListener('focus',()=>focusEl=i));
+document.querySelectorAll('input').forEach(i=>i.addEventListener('input',update));
+['∩','∪','\\','ᶜ','(',')','[',']',';','∞','{','}'].forEach(ch=>{
+  const b=document.createElement('button');b.type='button';b.textContent=ch;
+  b.onpointerdown=e=>e.preventDefault();
+  b.onclick=()=>{
+    const el=focusEl,a=el.selectionStart??el.value.length,z=el.selectionEnd??a;
+    el.value=el.value.slice(0,a)+ch+el.value.slice(z);
+    el.focus();el.setSelectionRange(a+1,a+1);update();
+  };
+  $('sym').appendChild(b);
+});
+['A ∩ B','A ∪ B','A \\ B','B \\ A','Aᶜ','Bᶜ','(A ∪ B)ᶜ','Aᶜ ∩ Bᶜ'].forEach(t=>{
+  const b=document.createElement('button');b.type='button';b.textContent=t;
+  b.onclick=()=>{$('ex').value=t;update()};
+  $('chips').appendChild(b);
+});
+let lastRows=[],S={stl:'br',lay:'sh',bw:true,res:true,zero:true};
+function renderLine(){$('nl').innerHTML=tbSvg(false)}
+function tbSvg(exp){
+  const sets=lastRows.filter(r=>r.name!=='KQ'),res=lastRows.find(r=>r.name==='KQ');
+  if(!res)return '';
+  const L=52,R=596,xl=L-8,xr=R+10,step=20,bh=16;
+  const fg=exp?'#000':'var(--fg)',bg=exp?'#fff':'var(--bg)';
+  const hex={A:'#1c5fe0',B:'#d9480f',C:'#2b8a3e',R:'#862e9c'};
+  const key=r=>r.name==='KQ'?'R':r.name;
+  const col=k=>S.bw?fg:(exp?hex[k]:colOf[k]);
+  const groups=S.lay==='sh'?[sets.map((r,i)=>({...r,u:i%2===0,lv:i>>1}))]:sets.map(r=>[{...r,u:true,lv:0}]);
+  if(S.res)groups.push([{...res,u:true,lv:0}]);
+  const vs=S.zero?[0]:[];
+  lastRows.forEach(r=>r.set.forEach(v=>[v.lo,v.hi].forEach(x=>isFinite(x)&&vs.push(x))));
+  if(!vs.length)vs.push(0);
+  let mn=Math.min(...vs),mx=Math.max(...vs);
+  if(mx-mn<1){mn-=1;mx+=1}
+  const pd=(mx-mn)*.14;mn-=pd;mx+=pd;
+  const X=v=>L+(v-mn)/(mx-mn)*(R-L);
+  const halo=`paint-order:stroke;stroke:${bg};stroke-width:4px;stroke-linejoin:round`;
+  const num=v=>fmt(v).replace('-','−');
+  let s='',y=6;
+  groups.forEach(g=>{
+    const nu=g.reduce((m,i)=>i.u?Math.max(m,i.lv+1):m,0),nd=g.reduce((m,i)=>i.u?m:Math.max(m,i.lv+1),0);
+    const ay=y+nu*step+12,ends=[];
+    s+=`<line x1="${L-14}" x2="${R+14}" y1="${ay}" y2="${ay}" style="stroke:${fg};stroke-width:1.6"/><polygon points="${R+20},${ay} ${R+11},${ay-4} ${R+11},${ay+4}" style="fill:${fg}"/><text x="${R+24}" y="${ay+5}" font-size="15" font-style="italic" style="fill:${fg}">x</text>`;
+    g.forEach(it=>{
+      const k=key(it),c=col(k),near=it.u?ay-10-it.lv*step:ay+22+it.lv*step,far=it.u?near-bh:near+bh,my=(near+far)/2;
+      comp(it.set).forEach(v=>{const a=v.lo===-INF?xl:X(v.lo),b=v.hi===INF?xr:X(v.hi);s+=`<rect x="${a}" y="${Math.min(near,far)}" width="${Math.max(0,b-a)}" height="${bh}" style="fill:url(#h${k})"/>`});
+      s+=`<text x="8" y="${my+5}" font-size="17" font-style="italic" font-weight="700" style="fill:${c}">${it.name}</text>`;
+      it.set.forEach(v=>{
+        const pt=v.lo===v.hi;
+        [[v.lo,v.loC,1],[v.hi,v.hiC,-1]].forEach(([p,cl,dir],j)=>{
+          if(!isFinite(p)||(pt&&j))return;
+          const x=X(p);ends.push(p);
+          if(S.stl==='br'){
+            if(it.lv>0||!it.u)s+=`<line x1="${x}" x2="${x}" y1="${ay+(it.u?-8:8)}" y2="${near}" style="stroke:${fg};stroke-width:.8;stroke-dasharray:2 2"/>`;
+            const st=`fill:none;stroke:${fg};stroke-width:1.6`;
+            if(pt)s+=`<line x1="${x}" x2="${x}" y1="${ay-8}" y2="${ay+8}" style="${st}"/>`;
+            else if(cl)s+=`<path d="M${x+dir*6},${ay-8}H${x}V${ay+8}H${x+dir*6}" style="${st}"/>`;
+            else s+=`<path d="M${x},${ay-8}Q${x-dir*9},${ay} ${x},${ay+8}" style="${st}"/>`;
+          }
+          if(S.stl==='dt'||pt)s+=`<circle cx="${x}" cy="${ay}" r="4.2" style="fill:${cl||pt?fg:bg};stroke:${fg};stroke-width:1.6"/>`;
+        });
+      });
+    });
+    const lab=[...new Set(ends)];
+    if(S.zero&&!lab.some(v=>Math.abs(X(v)-X(0))<22))lab.push(0);
+    let lx=-99;
+    lab.sort((a,b)=>a-b).forEach(v=>{
+      const x=X(v);
+      s+=`<line x1="${x}" x2="${x}" y1="${ay-4}" y2="${ay+4}" style="stroke:${fg};stroke-width:1.4"/>`;
+      if(x-lx>=20){s+=`<text x="${x}" y="${ay+19}" text-anchor="middle" font-size="15" style="fill:${fg};${halo}">${num(v)}</text>`;lx=x}
+    });
+    y=ay+(nd?22+nd*step:28)+10;
+  });
+  const defs=['A','B','C','R'].map(k=>`<pattern id="h${k}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" style="stroke:${col(k)};stroke-width:1.1"/></pattern>`).join('');
+  return `<svg viewBox="0 0 640 ${y}" xmlns="http://www.w3.org/2000/svg" font-family="Times New Roman, Times, serif">${exp?'<rect width="100%" height="100%" fill="#fff"/>':''}<defs>${defs}</defs>${s}</svg>`;
+}
+async function saveFile(name,data){
+  const d=window.claude?await claude.use('downloads'):null;
+  if(d){try{await d.save({filename:name,data})}catch(e){}return}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data],{type:'image/svg+xml'}));
+  a.download=name;a.click();
+}
+$('dSvg').onclick=()=>saveFile('truc-so.svg',tbSvg(true));
+$('dPng').onclick=async()=>{
+  try{
+    const svg=tbSvg(true),m=svg.match(/viewBox="0 0 (\d+) ([\d.]+)"/),k=3;
+    const img=new Image();
+    await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
+    const c=document.createElement('canvas');c.width=m[1]*k;c.height=Math.round(m[2]*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,'image/png'));
+    saveFile('truc-so.png',b);
+  }catch(e){}
+};
+document.querySelectorAll('.tg').forEach(b=>b.onclick=()=>{S[b.dataset.k]=!S[b.dataset.k];b.classList.toggle('on',S[b.dataset.k]);renderLine()});
+$('stl').onchange=e=>{S.stl=e.target.value;renderLine()};
+
+/* ---------- Tab Venn ---------- */
+const V={n:2,t:55,sel:'01',sty:'fill',bw:true,pts:[]},pv=$('pV');let drag=-1;
+const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function vGeo(){
+  if(V.n===2){const d=165-1.65*V.t;return{r:70,cy:145,cs:[[200-d/2,145],[200+d/2,145]]}}
+  const d=140-1.4*V.t,cy=135;
+  return{r:56,cy,cs:[[200-d/2,cy-d*.2887],[200+d/2,cy-d*.2887],[200,cy+d*.5774]]};
+}
+function vIdx(){return V.n===2?[0,1]:V.sel.split('').map(Number)}
+function vSvg(exp){
+  const {r,cs,cy}=vGeo(),fg=exp?'#000':'var(--fg)',bg=exp?'#fff':'var(--bg)';
+  const hex=['#1c5fe0','#d9480f','#2b8a3e'],cv=['var(--A)','var(--B)','var(--C)'];
+  const col=i=>V.bw?fg:(exp?hex[i]:cv[i]),rc=V.bw?fg:(exp?'#862e9c':'var(--R)');
+  let d=cs.map(([x,y],i)=>`<clipPath id="vc${i}"><circle cx="${x}" cy="${y}" r="${r}"/></clipPath>`).join('');
+  d+=`<pattern id="vhp" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" style="stroke:${rc};stroke-width:1.2"/></pattern>`;
+  let g=`<rect x="8" y="8" width="384" height="290" style="${V.sty==='fill'?'fill:'+rc+';opacity:'+(V.bw?.22:.5):'fill:url(#vhp)'}"/>`;
+  vIdx().forEach(i=>g=`<g clip-path="url(#vc${i})">${g}</g>`);
+  let s=g+`<rect x="8" y="8" width="384" height="290" rx="6" style="fill:none;stroke:${fg};stroke-width:1.2"/><text x="18" y="30" font-size="17" font-style="italic" style="fill:${fg}">E</text>`;
+  cs.forEach(([x,y],i)=>{
+    s+=`<circle cx="${x}" cy="${y}" r="${r}" style="fill:none;stroke:${col(i)};stroke-width:2"/>`;
+    const fb=[[-1,-.5],[1,-.5],[0,1]][i],t0=Math.hypot(x-200,y-cy)<1,dx=t0?fb[0]:x-200,dy=t0?fb[1]:y-cy,l=Math.hypot(dx,dy),lx=Math.max(24,Math.min(376,x+dx/l*(r+13))),ly=Math.max(28,Math.min(292,y+dy/l*(r+13)+6));
+    s+=`<text x="${lx}" y="${ly}" text-anchor="middle" font-size="19" font-style="italic" font-weight="700" style="fill:${col(i)}">${'ABC'[i]}</text>`;
+  });
+  V.pts.forEach((p,i)=>s+=`<g data-i="${i}" transform="translate(${p.x} ${p.y})" style="cursor:grab"><circle r="16" style="fill:transparent"/><circle r="3.8" style="fill:${fg}"/><text x="7" y="-6" font-size="16" font-style="italic" style="fill:${fg};paint-order:stroke;stroke:${bg};stroke-width:3px">${esc(p.name)}</text></g>`);
+  return `<svg viewBox="0 0 400 306" xmlns="http://www.w3.org/2000/svg" font-family="Times New Roman, Times, serif">${exp?'<rect width="100%" height="100%" fill="#fff"/>':''}<defs>${d}</defs>${s}</svg>`;
+}
+pv.innerHTML=`<section class="pane"><div class="card"><h2 class="ch"><span class="ic">∪</span>Thiết lập hình Venn</h2><div class="cb"><div class="opts" style="margin-top:0"><span class="vl">Số tập</span><button type="button" class="vb" data-n="2">2</button><button type="button" class="vb" data-n="3">3</button><select id="vSelS"><option value="012">A ∩ B ∩ C</option><option value="01">A ∩ B</option><option value="12">B ∩ C</option><option value="02">A ∩ C</option></select></div><div class="opts"><select id="vSty"><option value="fill">Phần giao: tô màu</option><option value="hatch">Phần giao: gạch chéo</option></select><button type="button" class="vb" id="vBw">Đen trắng</button></div><div class="row"><span class="vl">Không giao</span><input type="range" id="vR" min="0" max="100" value="55"><span class="vl">Giao nhiều</span></div><p class="vi" id="vInfo"></p></div></div><div class="card" style="--k:var(--R)"><h2 class="ch"><span class="ic">•</span>Phần tử (kéo điểm để đặt vào vị trí)</h2><div class="cb"><div class="row" style="margin-top:0"><input id="vNm" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="button" class="vb" id="vAdd">Thêm điểm</button><button type="button" class="vb" id="vClr">Xoá hết</button></div><div class="chips" id="vCh"></div></div></div></section><section class="pane"><div class="fig"><h2>Biểu đồ Venn</h2><div id="vSvg"></div><div class="ex"><button type="button" class="vb" id="vS">Tải SVG</button><button type="button" class="vb" id="vP">Tải PNG</button></div></div></section>`;
+function vRender(){
+  pv.querySelectorAll('[data-n]').forEach(b=>b.classList.toggle('on',+b.dataset.n===V.n));
+  $('vBw').classList.toggle('on',V.bw);
+  $('vSelS').style.display=V.n===3?'':'none';$('vSelS').value=V.sel;
+  $('vSvg').innerHTML=vSvg(false);
+  const {r,cs}=vGeo(),s=vIdx();let ok=true;
+  for(let i=0;i<s.length;i++)for(let j=i+1;j<s.length;j++)ok=ok&&Math.hypot(cs[s[i]][0]-cs[s[j]][0],cs[s[i]][1]-cs[s[j]][1])<2*r;
+  if(ok&&s.length===3)ok=Math.hypot(cs[0][0]-cs[1][0],cs[0][1]-cs[1][1])/1.732<r;
+  const nm=s.map(i=>'ABC'[i]).join(' ∩ ');
+  $('vInfo').textContent=ok?nm+' ≠ ∅: các tập có phần giao':nm+' = ∅: các tập không giao nhau';
+  $('vCh').innerHTML=V.pts.map((p,i)=>`<span class="chip">${esc(p.name)}<button type="button" data-d="${i}">✕</button></span>`).join('');
+  $('vNm').placeholder='Tên điểm (mặc định: '+String.fromCharCode(97+V.pts.length%26)+')';
+}
+pv.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{V.n=+b.dataset.n;V.sel=V.n===2?'01':'012';vRender()});
+$('vSelS').onchange=e=>{V.sel=e.target.value;vRender()};
+$('vSty').onchange=e=>{V.sty=e.target.value;vRender()};
+$('vBw').onclick=()=>{V.bw=!V.bw;vRender()};
+$('vR').oninput=e=>{V.t=+e.target.value;vRender()};
+$('vAdd').onclick=()=>{
+  const k=V.pts.length;
+  V.pts.push({name:$('vNm').value.trim()||String.fromCharCode(97+k%26),x:200+((k%3)-1)*26,y:vGeo().cy+(((k/3)|0)%3)*22-10});
+  $('vNm').value='';vRender();
+};
+$('vNm').onkeydown=e=>{if(e.key==='Enter')$('vAdd').click()};
+$('vClr').onclick=()=>{V.pts=[];vRender()};
+$('vCh').onclick=e=>{const b=e.target.closest('[data-d]');if(b){V.pts.splice(+b.dataset.d,1);vRender()}};
+$('vSvg').addEventListener('pointerdown',e=>{const g=e.target.closest('[data-i]');if(g){drag=+g.dataset.i;e.preventDefault()}});
+addEventListener('pointermove',e=>{
+  if(drag<0)return;
+  const sv=$('vSvg').querySelector('svg'),pt=sv.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+  const q=pt.matrixTransform(sv.getScreenCTM().inverse()),o=V.pts[drag];
+  o.x=Math.max(14,Math.min(386,q.x));o.y=Math.max(20,Math.min(292,q.y));
+  sv.querySelector('[data-i="'+drag+'"]').setAttribute('transform','translate('+o.x+' '+o.y+')');
+});
+addEventListener('pointerup',()=>drag=-1);addEventListener('pointercancel',()=>drag=-1);
+async function toPng(svg,name){
+  try{
+    const m=svg.match(/viewBox="0 0 (\d+) ([\d.]+)"/),k=3,img=new Image();
+    await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
+    const c=document.createElement('canvas');c.width=m[1]*k;c.height=Math.round(m[2]*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    saveFile(name,await new Promise(r=>c.toBlob(r,'image/png')));
+  }catch(e){}
+}
+$('vS').onclick=()=>saveFile('venn.svg',vSvg(true));
+$('vP').onclick=()=>toPng(vSvg(true),'venn.png');
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  $('pNL').style.display=b.dataset.t==='NL'?'':'none';
+  pv.style.display=b.dataset.t==='V'?'':'none';
+  if(b.dataset.t==='V')vRender();
+});
+S.guide=true;
+function tbSvg(exp){
+  const rows=lastRows.filter(r=>S.res||r.name!=='KQ');
+  if(!rows.length)return '';
+  const L=52,R=596,xl=L-8,xr=R+10;
+  const fg=exp?'#000':'var(--fg)',bg=exp?'#fff':'var(--bg)';
+  const hex={A:'#1c5fe0',B:'#d9480f',C:'#2b8a3e',R:'#862e9c'};
+  const key=r=>r.name==='KQ'?'R':r.name;
+  const col=k=>S.bw?fg:(exp?hex[k]:colOf[k]);
+  const vs=S.zero?[0]:[];
+  lastRows.forEach(r=>r.set.forEach(v=>[v.lo,v.hi].forEach(x=>isFinite(x)&&vs.push(x))));
+  if(!vs.length)vs.push(0);
+  let mn=Math.min(...vs),mx=Math.max(...vs);
+  if(mx-mn<1){mn-=1;mx+=1}
+  const pd=(mx-mn)*.14;mn-=pd;mx+=pd;
+  const X=v=>L+(v-mn)/(mx-mn)*(R-L);
+  const halo=`paint-order:stroke;stroke:${bg};stroke-width:4px;stroke-linejoin:round`;
+  const num=v=>fmt(v).replace('-','\u2212');
+  const ays=[];let yy=22;
+  rows.forEach(r=>{if(r.name==='KQ'&&ays.length)yy+=10;ays.push(yy);yy+=54});
+  let s='';
+  if(S.guide&&rows.length>1){
+    const all=new Set();rows.forEach(r=>r.set.forEach(v=>[v.lo,v.hi].forEach(p=>isFinite(p)&&all.add(p))));
+    all.forEach(p=>s+=`<line x1="${X(p)}" x2="${X(p)}" y1="${ays[0]-12}" y2="${ays[ays.length-1]+12}" style="stroke:${fg};stroke-width:.8;stroke-dasharray:3 3;opacity:.6"/>`);
+  }
+  rows.forEach((it,i)=>{
+    const ay=ays[i],k=key(it),c=col(k),ends=[];
+    s+=`<line x1="${L-14}" x2="${R+14}" y1="${ay}" y2="${ay}" style="stroke:${fg};stroke-width:1.6"/><polygon points="${R+20},${ay} ${R+11},${ay-4} ${R+11},${ay+4}" style="fill:${fg}"/><text x="${R+24}" y="${ay+5}" font-size="15" font-style="italic" style="fill:${fg}">x</text>`;
+    s+=it.name==='KQ'?`<text x="8" y="${ay-14}" font-size="16" font-style="italic" font-weight="700" style="fill:${c}">${$('ex').value.trim().replace(/&/g,'&amp;').replace(/</g,'&lt;')}</text>`:`<text x="8" y="${ay+6}" font-size="17" font-style="italic" font-weight="700" style="fill:${c}">${it.name}</text>`;
+    comp(it.set).forEach(v=>{const a=v.lo===-INF?xl:X(v.lo),b=v.hi===INF?xr:X(v.hi);s+=`<rect x="${a}" y="${ay-8}" width="${Math.max(0,b-a)}" height="16" style="fill:url(#h${k})"/>`});
+    it.set.forEach(v=>{
+      const pt=v.lo===v.hi;
+      [[v.lo,v.loC,1],[v.hi,v.hiC,-1]].forEach(([p,cl,dir],j)=>{
+        if(!isFinite(p)||(pt&&j))return;
+        const x=X(p);ends.push(p);
+        if(S.stl==='br'){
+          const st=`fill:none;stroke:${fg};stroke-width:1.6`;
+          if(pt)s+=`<line x1="${x}" x2="${x}" y1="${ay-8}" y2="${ay+8}" style="${st}"/>`;
+          else if(cl)s+=`<path d="M${x+dir*6},${ay-8}H${x}V${ay+8}H${x+dir*6}" style="${st}"/>`;
+          else s+=`<path d="M${x+dir*5},${ay-8}Q${x-dir*5},${ay} ${x+dir*5},${ay+8}" style="${st}"/>`;
+        }
+        if(S.stl==='dt'||pt)s+=`<circle cx="${x}" cy="${ay}" r="4.2" style="fill:${cl||pt?fg:bg};stroke:${fg};stroke-width:1.6"/>`;
+      });
+    });
+    const lab=[...new Set(ends)];
+    if(S.zero&&!lab.some(v=>Math.abs(X(v)-X(0))<22))lab.push(0);
+    let lx=-99;
+    lab.sort((a,b)=>a-b).forEach(v=>{
+      const x=X(v);
+      s+=`<line x1="${x}" x2="${x}" y1="${ay-3}" y2="${ay+3}" style="stroke:${fg};stroke-width:1.4"/>`;
+      if(x-lx>=20){s+=`<text x="${x}" y="${ay+26}" text-anchor="middle" font-size="15" style="fill:${fg};${halo}">${num(v)}</text>`;lx=x}
+    });
+  });
+  const defs=['A','B','C','R'].map(k=>`<pattern id="h${k}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" style="stroke:${col(k)};stroke-width:1.1"/></pattern>`).join('');
+  return `<svg viewBox="0 0 640 ${yy-10}" xmlns="http://www.w3.org/2000/svg" font-family="Times New Roman, Times, serif">${exp?'<rect width="100%" height="100%" fill="#fff"/>':''}<defs>${defs}</defs>${s}</svg>`;
+}
+update();
+</script>
+</body>
+</html>

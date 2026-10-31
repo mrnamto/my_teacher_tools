@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bộ công cụ hỗ trợ giáo viên soạn giảng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0a2f63;--blue:#2563eb;--bg:#f3f8ff;--line:#dbe7fb;--ink:#16233b;--muted:#5b6b85;--font:"Be Vietnam Pro","Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);display:flex;flex-direction:column}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+header{display:flex;align-items:center;gap:10px;padding:10px 18px;background:#fff;border-bottom:1px solid var(--line);flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px;border:0;background:none;cursor:pointer;padding:0;margin-right:auto;text-align:left}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#38bdf8,#2563eb);display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;box-shadow:0 4px 12px rgba(37,99,235,.35)}
+.brand b{font-size:13px;font-weight:800;color:var(--navy);line-height:1.2}
+.btn{border:1px solid var(--line);background:#fff;color:var(--navy);font-size:13px;font-weight:600;padding:9px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+.btn:hover{background:#eaf2ff}
+.btn.pri{background:#f97316;border-color:#f97316;color:#fff;box-shadow:0 4px 12px rgba(249,115,22,.35)}
+.btn.pri:hover{background:#ea6a0c}
+.btn.red{color:#dc2626}
+#tabsbar{display:none;align-items:center;gap:8px;padding:8px 18px;background:#fff;border-bottom:1px solid var(--line);flex-shrink:0}
+#tabs{display:flex;gap:6px;overflow-x:auto;flex:1;padding:2px}
+#tabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;color:var(--navy);font-size:13px;font-weight:500;padding:7px 13px;border-radius:999px;cursor:pointer}
+#tabs button[aria-current="true"]{background:var(--c);border-color:var(--c);color:#fff}
+main{flex:1;min-height:0}
+#home{height:100%;overflow:auto}
+.wrap{max-width:1100px;margin:0 auto;padding:26px 20px 60px}
+.hero{position:relative;overflow:hidden;border-radius:26px;padding:42px 36px;color:#fff;background:linear-gradient(120deg,#1d4ed8,#2563eb 45%,#38bdf8);box-shadow:0 16px 40px rgba(37,99,235,.28)}
+.hero h1{margin:0 0 12px;max-width:16em;font-size:clamp(24px,4.4vw,44px);line-height:1.15;font-weight:800;letter-spacing:-.5px;position:relative}
+.hero p{margin:0;max-width:50ch;font-size:16px;line-height:1.6;opacity:.92;position:relative}
+.sym{position:absolute;font-weight:800;color:rgba(255,255,255,.16);user-select:none;animation:fl 6s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-12px) rotate(6deg)}}
+.tools-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:30px 0 16px}
+.search{flex:1;min-width:200px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:11px 18px;font:500 14px var(--font);color:var(--ink)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;color:var(--navy);font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;cursor:pointer}
+.chip.on{background:var(--c,var(--navy));border-color:var(--c,var(--navy));color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.card{--c:var(--blue);display:flex;flex-direction:column;gap:8px;text-align:left;cursor:pointer;color:inherit;background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;transition:.18s}
+.card:hover{transform:translateY(-4px);border-color:var(--c);box-shadow:0 14px 30px color-mix(in srgb,var(--c) 25%,transparent)}
+.ico{width:54px;height:54px;border-radius:50%;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);display:grid;place-items:center;font-size:20px;font-weight:800;transition:.18s}
+.card:hover .ico{background:var(--c);color:#fff}
+.tag{align-self:flex-start;font-size:11px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);padding:3px 10px;border-radius:999px;margin-top:6px}
+.card h3{margin:2px 0 0;font-size:17px;color:var(--navy)}
+.card p{margin:0;font-size:14px;line-height:1.55;color:var(--muted)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:30px}
+#frame{display:none;width:100%;height:100%;border:0;background:#fff}
+#exit{display:none;position:fixed;top:10px;right:10px;z-index:9;opacity:.75}
+body.present header,body.present #tabsbar{display:none!important}
+body.present #exit{display:block}
+dialog{border:0;border-radius:22px;padding:0;width:min(520px,94vw);box-shadow:0 24px 60px rgba(10,47,99,.35)}
+dialog::backdrop{background:rgba(10,47,99,.45)}
+.dlg{padding:26px;display:flex;flex-direction:column;gap:12px}
+.dlg h2{margin:0;color:var(--navy);font-size:20px}
+.dlg label{font-size:13px;font-weight:600;color:var(--navy)}
+.dlg input[type=text],.dlg textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:14px var(--font);margin-top:4px}
+.dlg textarea{height:110px;font-family:Consolas,monospace;font-size:12px}
+.row{display:flex;gap:10px}.row>div{flex:1}.row>div:last-child{flex:0 0 90px}
+.hint{font-size:12px;color:var(--muted);margin:0;line-height:1.5}
+.acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}
+#msg{font-size:13px;color:#dc2626;min-height:1em;margin:0}
+@media(max-width:720px){header{padding:8px 12px}.brand b{max-width:130px}.hero{padding:30px 22px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <button class="brand" id="homeBtn" aria-label="Về trang chủ"><span class="logo">fx</span><b>BỘ CÔNG CỤ HỖ TRỢ GIÁO VIÊN</b></button>
+  <button class="btn" id="presentBtn" style="display:none">Trình chiếu</button>
+  <button class="btn pri" id="addBtn">+ Thêm tool</button>
+</header>
+<div id="tabsbar"><div id="tabs"></div><button class="btn red" id="delBtn" style="display:none">Xóa tool này</button></div>
+<button class="btn" id="exit">Thoát trình chiếu (Esc)</button>
+
+<main>
+<section id="home"><div class="wrap">
+  <div class="hero">
+    <span class="sym" style="right:6%;top:12%;font-size:70px">∑</span>
+    <span class="sym" style="right:22%;bottom:8%;font-size:54px;animation-delay:-2s">π</span>
+    <span class="sym" style="right:3%;bottom:10%;font-size:60px;animation-delay:-4s">√</span>
+    <span class="sym" style="right:30%;top:10%;font-size:44px;animation-delay:-1s">∫</span>
+    <h1>BỘ CÔNG CỤ HỖ TRỢ GIÁO VIÊN SOẠN GIẢNG</h1>
+    <p>Vẽ bảng biến thiên, đồ thị, hình không gian, giải toán thống kê và nhiều hơn nữa. Chọn một công cụ để bắt đầu soạn bài.</p>
+  </div>
+  <div class="tools-bar">
+    <input class="search" id="q" type="search" placeholder="Tìm công cụ..." aria-label="Tìm công cụ">
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div></section>
+<iframe id="frame" title="Công cụ đang mở"></iframe>
+</main>
+
+<dialog id="dlg"><div class="dlg">
+  <h2>Thêm tool của bạn</h2>
+  <p class="hint">Tool được lưu ngay trong trình duyệt của máy này, không tải lên mạng. Chỉ bạn nhìn thấy.</p>
+  <div class="row"><div><label>Tên tool<input type="text" id="nName" placeholder="VD: Tính đạo hàm"></label></div>
+  <div><label>Biểu tượng<input type="text" id="nIcon" maxlength="4" placeholder="f'"></label></div></div>
+  <label>Chọn file .html <input type="file" id="nFile" accept=".html,.htm"></label>
+  <label>Hoặc dán mã HTML vào đây<textarea id="nCode" placeholder="<!DOCTYPE html>..."></textarea></label>
+  <p id="msg"></p>
+  <div class="acts">
+    <button class="btn" id="bk">Sao lưu</button>
+    <button class="btn" id="rs">Khôi phục</button>
+    <button class="btn" id="cancel">Hủy</button>
+    <button class="btn pri" id="save">Lưu tool</button>
+  </div>
+  <input type="file" id="rsFile" accept=".json" hidden>
+</div></dialog>
+
+<script>
+/* ===== THÊM CÔNG CỤ CÓ SẴN: thêm 1 dòng vào danh sách này ===== */
+const TOOLS=[
+ {id:"bang-bien-thien",name:"Vẽ bảng biến thiên",group:"Hàm số",icon:"↗↘",file:"tools/bang-bien-thien.html",desc:"Lập bảng biến thiên của hàm số, xuất hình để chèn vào bài giảng."},
+ {id:"do-thi",name:"Vẽ đồ thị",group:"Hàm số",icon:"f(x)",file:"tools/do-thi.html",desc:"Vẽ đồ thị hàm số, đánh dấu điểm đặc biệt và tải ảnh."},
+ {id:"mien-nghiem",name:"Vẽ miền nghiệm BPT",group:"Hàm số",icon:"≥",file:"tools/mien-nghiem.html",desc:"Biểu diễn miền nghiệm của bất phương trình và hệ bất phương trình."},
+ {id:"thong-ke",name:"Giải bài toán thống kê",group:"Thống kê",icon:"σ",file:"tools/thong-ke.html",desc:"Tính các số đặc trưng và giải các bài toán thống kê."},
+ {id:"hinh-khong-gian",name:"Hình không gian",group:"Hình học",icon:"⬡",file:"tools/hinh-khong-gian.html",desc:"Vẽ và quan sát khối chóp, lăng trụ, mặt cầu."},
+ {id:"he-truc-oxyz",name:"Hệ trục Oxyz",group:"Hình học",icon:"xyz",file:"tools/he-truc-oxyz.html",desc:"Biểu diễn điểm, vectơ, đường thẳng và mặt phẳng trong Oxyz."},
+ {id:"giai-tam-giac",name:"Giải tam giác",group:"Hình học",icon:"△",file:"tools/giai-tam-giac.html",desc:"Tính cạnh, góc, diện tích từ các yếu tố đã biết."},
+{id:"tap-hop-so",name:"Biểu diễn tập hợp số",group:"Hàm số",icon:"ℝ",file:"tools/tap-hop-so.html",desc:"Biểu diễn khoảng, đoạn, nửa khoảng trên trục số và thực hiện các phép giao, hợp, hiệu."},
+];
+/* ================================================================ */
+const COLORS={"Hàm số":"#2563eb","Hình học":"#0d9488","Thống kê":"#7c3aed","Của tôi":"#f97316"};
+const $=id=>document.getElementById(id);
+let custom=[],all=[],filter="Tất cả",current=null;
+
+/* ---- Lưu trữ trong trình duyệt (IndexedDB) ---- */
+const DB=()=>new Promise((ok,no)=>{const r=indexedDB.open("bct-gv",1);r.onupgradeneeded=()=>r.result.createObjectStore("tools",{keyPath:"id"});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+const dbAll=async()=>{const d=await DB();return new Promise((ok,no)=>{const q=d.transaction("tools").objectStore("tools").getAll();q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})};
+const dbDo=async(fn)=>{const d=await DB();return new Promise((ok,no)=>{const t=d.transaction("tools","readwrite");fn(t.objectStore("tools"));t.oncomplete=ok;t.onerror=()=>no(t.error)})};
+
+function build(){
+  all=[...TOOLS,...custom.map(c=>({id:c.id,name:c.name,group:"Của tôi",icon:c.icon||"★",html:c.html,desc:"Tool do bạn thêm, lưu trên máy này.",mine:true}))];
+  const groups=["Tất cả",...new Set(all.map(t=>t.group))];
+  $("chips").innerHTML="";
+  groups.forEach(g=>{const b=document.createElement("button");b.className="chip"+(g===filter?" on":"");b.style.setProperty("--c",COLORS[g]||"var(--navy)");b.textContent=g;b.onclick=()=>{filter=g;build()};$("chips").appendChild(b)});
+  const q=$("q").value.trim().toLowerCase();
+  const list=all.filter(t=>(filter==="Tất cả"||t.group===filter)&&(t.name+" "+t.desc).toLowerCase().includes(q));
+  $("grid").innerHTML="";
+  list.forEach(t=>{const c=document.createElement("button");c.className="card";c.style.setProperty("--c",COLORS[t.group]);
+    c.innerHTML='<span class="ico"></span><span class="tag"></span><h3></h3><p></p>';
+    c.querySelector(".ico").textContent=t.icon;c.querySelector(".tag").textContent=t.group;
+    c.querySelector("h3").textContent=t.name;c.querySelector("p").textContent=t.desc;
+    c.onclick=()=>show(t.id);$("grid").appendChild(c)});
+  if(!list.length)$("grid").innerHTML='<div class="empty">Không tìm thấy công cụ phù hợp.</div>';
+  $("tabs").innerHTML="";
+  all.forEach(t=>{const b=document.createElement("button");b.textContent=t.name;b.style.setProperty("--c",COLORS[t.group]);b.dataset.id=t.id;b.onclick=()=>show(t.id);$("tabs").appendChild(b)});
+  mark();
+}
+function mark(){[...$("tabs").children].forEach(b=>b.setAttribute("aria-current",b.dataset.id===current))}
+
+function show(id){
+  const t=all.find(x=>x.id===id);
+  const old=$("frame");
+  if(!t){current=null;$("home").style.display="block";old.style.display="none";old.removeAttribute("src");old.removeAttribute("srcdoc");
+    $("tabsbar").style.display="none";$("presentBtn").style.display="none";document.body.classList.remove("present");history.replaceState(null,"",location.pathname);mark();return}
+  current=id;$("home").style.display="none";
+  const f=document.createElement("iframe");f.id="frame";f.title=t.name;f.style.display="block";
+  f.setAttribute("allow","clipboard-write; clipboard-read; fullscreen");
+  if(t.mine){f.setAttribute("sandbox","allow-scripts allow-downloads allow-modals allow-popups allow-forms");f.srcdoc=t.html}
+  else f.src=t.file;
+  old.replaceWith(f);
+  $("tabsbar").style.display="flex";$("presentBtn").style.display="inline-block";$("delBtn").style.display=t.mine?"inline-block":"none";
+  if(!t.mine)history.replaceState(null,"","#"+id);else history.replaceState(null,"",location.pathname);
+  mark();
+}
+
+/* ---- Thêm / xóa / sao lưu ---- */
+const msg=m=>$("msg").textContent=m||"";
+$("addBtn").onclick=()=>{["nName","nIcon","nCode"].forEach(i=>$(i).value="");$("nFile").value="";msg();$("dlg").showModal()};
+$("cancel").onclick=()=>$("dlg").close();
+$("nFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{$("nCode").value=r.result;if(!$("nName").value)$("nName").value=f.name.replace(/\.html?$/i,"")};r.readAsText(f)};
+$("save").onclick=async()=>{
+  const name=$("nName").value.trim(),html=$("nCode").value.trim();
+  if(!name)return msg("Hãy nhập tên tool.");
+  if(!/<\s*(html|body|script|div|canvas)/i.test(html))return msg("Chưa có mã HTML hợp lệ. Hãy chọn file hoặc dán mã.");
+  const t={id:"my-"+Date.now(),name,icon:$("nIcon").value.trim()||"★",html};
+  try{await dbDo(s=>s.put(t));custom.push(t);build();$("dlg").close();show(t.id)}catch(e){msg("Không lưu được (trình duyệt đang chặn lưu trữ).")}};
+$("delBtn").onclick=async()=>{const t=all.find(x=>x.id===current);
+  if(!t||!t.mine||!confirm("Xóa tool \""+t.name+"\" khỏi máy này?"))return;
+  await dbDo(s=>s.delete(t.id));custom=custom.filter(c=>c.id!==t.id);show(null);build()};
+$("bk").onclick=()=>{if(!custom.length)return msg("Chưa có tool nào để sao lưu.");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(custom)],{type:"application/json"}));a.download="tool-cua-toi.json";a.click()};
+$("rs").onclick=()=>$("rsFile").click();
+$("rsFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>{try{const arr=JSON.parse(r.result);let n=0;
+    for(const t of arr){if(!t.id||!t.name||!t.html)continue;await dbDo(s=>s.put(t));custom=custom.filter(c=>c.id!==t.id);custom.push(t);n++}
+    build();msg("Đã khôi phục "+n+" tool.")}catch(x){msg("File sao lưu không hợp lệ.")}};r.readAsText(f);e.target.value=""};
+
+/* ---- Trình chiếu ---- */
+$("presentBtn").onclick=()=>document.body.classList.add("present");
+$("exit").onclick=()=>document.body.classList.remove("present");
+addEventListener("keydown",e=>{if(e.key==="Escape")document.body.classList.remove("present")});
+$("homeBtn").onclick=()=>show(null);
+$("q").oninput=build;
+
+(async()=>{try{custom=await dbAll()}catch(e){custom=[]}build();show(location.hash.slice(1))})();
+</script>
+</body>
+</html>

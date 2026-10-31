@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thống kê nhanh – Mẫu đơn & ghép nhóm</title>
+<style>
+:root{--bg:#f2f7ff;--card:#fff;--tx:#0f1f3d;--mut:#5b6b8a;--bd:#cfdcf3;--ac:#2563eb;--acs:#dbeafe;--er:#dc2626;--pg:#e6efff;--pri:#1d4ed8;color-scheme:light}
+html{font-size:clamp(13px,calc(.4vw + .4vh + 4px),22px);scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pg);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+:focus-visible{outline:2px solid #ea580c;outline-offset:2px}
+button,select{font:inherit;cursor:pointer}
+
+/* khung ứng dụng */
+.app{display:flex;flex-direction:column;min-height:100dvh;background:radial-gradient(70rem 28rem at 100% 0,#cfe0ff,transparent 70%),var(--pg);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.6rem 1rem;flex-wrap:wrap;padding:.55rem 1rem;color:#fff;background:linear-gradient(120deg,#1e3a8a,#2563eb 65%,#38bdf8);box-shadow:0 2px 10px rgba(30,64,175,.28)}
+.brand{display:flex;align-items:center;gap:.6rem;min-width:0}
+.logo{flex:none;width:2.1rem;height:2.1rem;border-radius:.65rem;background:#fff;display:grid;place-items:center;font-size:1.15rem}
+h1{font-size:1.15rem;margin:0;line-height:1.2}
+.seg{display:flex;gap:.2rem;padding:.2rem;border-radius:.8rem;background:rgba(255,255,255,.22)}
+.seg button{font-weight:600;font-size:.92rem;padding:.4rem 1.2rem;border:0;border-radius:.6rem;background:transparent;color:#fff}
+.seg button:hover{background:rgba(255,255,255,.18)}
+.seg button.on{background:#fff;color:var(--pri)}
+.stage{flex:1;min-height:0;display:flex;padding:.75rem}
+.split{flex:1;width:100%;max-width:56rem;margin:0 auto;min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;align-content:start}
+.pane{display:flex;flex-direction:column;gap:.75rem;min-width:0;min-height:0}
+.pane>*{flex:none}
+@media (min-aspect-ratio:1/1) and (min-width:700px){
+  html,body{height:100%;overflow:hidden}
+  .app{height:100dvh;min-height:0}
+  .split{max-width:120rem;grid-template-columns:minmax(19rem,5fr) minmax(0,6fr);grid-template-rows:minmax(0,1fr);align-content:stretch}
+  .pane{overflow-y:auto;overflow-x:hidden;padding:.15rem;margin:-.15rem;scrollbar-width:thin}
+  #chart svg{max-height:max(15rem,calc(100dvh - 18rem))}
+}
+
+/* khối */
+.card{--k:var(--ac);background:var(--card);border:1px solid var(--bd);border-radius:.9rem;box-shadow:0 1px 2px rgba(30,64,175,.08),0 8px 20px -8px rgba(30,64,175,.2);overflow:hidden;min-width:0}
+.ch{display:flex;align-items:center;gap:.5rem;margin:0;padding:.45rem .8rem;font-size:.95rem;font-weight:700;color:var(--k);background:color-mix(in srgb,var(--k) 9%,#fff);border-bottom:1px solid color-mix(in srgb,var(--k) 22%,#fff);border-left:.3rem solid var(--k)}
+.ic{flex:none;display:grid;place-items:center;width:1.45rem;height:1.45rem;border-radius:.45rem;background:var(--k);color:#fff;font-size:.82rem;font-weight:700}
+.cb{padding:.65rem .8rem}
+.hide{display:none!important}
+.empty{display:none;place-items:center;text-align:center;gap:.4rem;padding:2.5rem 1.5rem;border:2px dashed #aac3f0;border-radius:.9rem;background:rgba(255,255,255,.6);color:var(--mut)}
+.empty b{display:block;font-size:1.05rem;color:var(--pri)}
+.pane:not(:has(.card:not(.hide))) .empty{display:grid}
+
+/* nhập liệu */
+label{display:block;font-size:.85rem;font-weight:600;color:var(--mut);margin:.5rem 0 .25rem}
+label:first-child{margin-top:0}
+input,textarea,select{width:100%;padding:.5rem .7rem;border:1.5px solid var(--bd);border-radius:.6rem;background:var(--bg);color:var(--tx);font:inherit}
+input:focus,textarea:focus,select:focus{background:#fff;border-color:var(--ac)}
+textarea{min-height:6rem;resize:vertical}
+.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.hint{font-size:.8rem;color:var(--mut);margin-top:.4rem}
+.err{margin-top:.5rem;padding:.4rem .65rem;border-radius:.5rem;background:#fef2f2;border:1px solid #fecaca;color:var(--er);font-size:.88rem}
+.err:empty{display:none}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--bd);padding:.3rem .5rem;text-align:center}
+th{background:var(--acs);color:var(--pri)}
+.it-tbl td{padding:.2rem}.it-tbl input{padding:.4rem;text-align:center;background:#fff}
+.it-tbl input:focus{border-color:var(--ac)}
+.add{margin-top:.5rem;padding:.4rem .9rem;border-radius:.6rem;border:1.5px dashed var(--ac);background:var(--bg);color:var(--ac);font-weight:600}
+.add:hover{background:var(--acs)}
+.x{border:0;background:transparent;color:var(--mut);font-size:1.3rem;padding:0 .4rem}
+.x:hover{color:var(--er)}
+
+/* kết quả */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:.5rem}
+.it{--k:#2563eb;border-radius:.7rem;padding:.4rem .7rem;background:color-mix(in srgb,var(--k) 8%,#fff);border:1px solid color-mix(in srgb,var(--k) 25%,#fff);border-left:.3rem solid var(--k)}
+.it:nth-child(6n+2){--k:#0891b2}.it:nth-child(6n+3){--k:#7c3aed}.it:nth-child(6n+4){--k:#16a34a}.it:nth-child(6n+5){--k:#ea580c}.it:nth-child(6n+6){--k:#4f46e5}
+.it small{display:block;color:var(--mut);font-size:.75rem;line-height:1.25}
+.it b{font-size:1.1rem;word-break:break-word}
+.it.wide{grid-column:1/-1}
+.sub{margin:.9rem 0 .4rem;font-size:.9rem;font-weight:700;color:var(--pri)}
+#tbl th{background:var(--ac);color:#fff;border-color:#1d4ed8}
+#tbl tr:nth-child(even) td{background:var(--bg)}
+.note{font-size:.8rem;color:var(--mut);margin-top:.6rem;line-height:1.5}
+
+/* biểu đồ */
+#chart{background:#fff;border-radius:.6rem;border:1px solid var(--bd);overflow-x:auto}
+#chart svg{display:block;width:100%;height:auto}
+@media (max-width:600px){#chart svg{min-width:26rem}}
+.btns{display:flex;gap:.5rem;margin-top:.6rem}
+.btns button{flex:1;padding:.5rem;border-radius:.6rem;border:1.5px solid var(--ac);background:#fff;color:var(--ac);font-weight:600}
+.btns button:hover{background:var(--acs)}
+.btns button#dpng{background:var(--ac);color:#fff}
+.btns button#dpng:hover{background:var(--pri)}
+
+/* lời giải */
+#sc .cb{background:var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
+.chip{display:flex;align-items:center;gap:.35rem;margin:0;padding:.3rem .75rem;border:1.5px solid var(--bd);border-radius:99px;background:#fff;font-size:.85rem;font-weight:500;color:var(--tx);cursor:pointer;transition:background .15s,border-color .15s}
+.chip:hover{border-color:#93b4f0}
+.chip input{width:auto;padding:0;accent-color:#7c3aed}
+.chip:has(input:checked){background:#f1eaff;border-color:#7c3aed;color:#5b21b6;font-weight:600}
+.sol{background:#fff;color:#111;border-radius:.6rem;padding:1rem;border:1px solid var(--bd);font:1.06rem/1.75 "Times New Roman",Times,serif;overflow-x:auto}
+.sol p{margin:0 0 .75rem}.sol .st{display:block;font-weight:bold;margin-bottom:2px}
+.sol .ln{margin:0 0 .25rem .9rem}.sol sub{font-size:.7em}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.3;margin:0 3px}
+.fr>span{padding:0 4px}.fr>span:first-child{border-bottom:1px solid #111}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand"><span class="logo">📊</span><h1>Thống kê nhanh</h1></div>
+  <div class="seg">
+    <button id="m1" class="on">Mẫu đơn</button>
+    <button id="m2">Mẫu ghép nhóm</button>
+  </div>
+</header>
+<main class="stage"><div class="split">
+
+<section class="pane">
+<div class="card">
+  <h2 class="ch"><span class="ic">✎</span>Nhập số liệu</h2>
+  <div class="cb">
+  <div id="p1">
+    <label for="sm">Cách nhập</label>
+    <select id="sm"><option value="tab" selected>Bảng tần số (giá trị – tần số)</option><option value="list">Dãy số liệu (dán cả dãy)</option></select>
+    <div id="sl" class="hide">
+      <label for="data">Số liệu (cách nhau bởi dấu cách, xuống dòng hoặc dấu “;”)</label>
+      <textarea id="data" placeholder="Ví dụ: 5 7 7 8 9 10 10 10 12 30"></textarea>
+    </div>
+    <div id="stab">
+      <div class="tw" style="margin-top:8px"><table class="it-tbl"><thead><tr><th>Giá trị</th><th>Tần số</th><th style="border:0;background:none"></th></tr></thead><tbody id="sb"></tbody></table></div>
+      <button class="add" id="addr" type="button">+ Thêm dòng</button>
+    </div>
+    <div class="hint">Số thập phân có thể gõ dấu phẩy hoặc dấu chấm. Nhấn Enter để sang ô kế tiếp.</div>
+  </div>
+  <div id="p2" class="hide">
+    <div class="row">
+      <div><label for="a">Mút đầu</label><input id="a" inputmode="decimal" placeholder="150"></div>
+      <div><label for="h">Độ dài nhóm</label><input id="h" inputmode="decimal" placeholder="10"></div>
+      <div><label for="k">Số nhóm</label><input id="k" inputmode="numeric" placeholder="5"></div>
+    </div>
+    <div class="tw" style="margin-top:10px"><table class="it-tbl" id="gt"></table></div>
+  </div>
+  <div class="row2" style="margin-top:8px">
+    <div><label for="dec">Số chữ số thập phân</label>
+    <select id="dec"><option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+  </div>
+  <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div id="res" class="card hide" style="--k:#0891b2">
+  <h2 class="ch"><span class="ic">Σ</span>Kết quả</h2>
+  <div class="cb">
+  <div class="grid" id="grid"></div>
+  <div id="tbl"></div>
+  <div class="note" id="note"></div>
+  </div>
+</div>
+</section>
+
+<section class="pane">
+<div id="cc" class="card hide">
+  <h2 class="ch"><span class="ic">▥</span>Biểu đồ</h2>
+  <div class="cb">
+  <div class="row2">
+    <div><label for="ct">Loại biểu đồ</label><select id="ct"></select></div>
+    <div><label for="tt">Tiêu đề (tuỳ chọn)</label><input id="tt" placeholder="Nhập tiêu đề"></div>
+  </div>
+  <div id="chart" style="margin-top:10px"></div>
+  <div class="btns"><button id="dsvg">Lưu SVG</button><button id="dpng">Lưu PNG</button></div>
+  <div class="note" id="dmsg">Mở lưu bằng nút trên; có thể chèn SVG/PNG vào Word hoặc LaTeX.</div>
+  </div>
+</div>
+
+<div id="sc" class="card hide" style="--k:#7c3aed">
+  <h2 class="ch"><span class="ic">≡</span>Lời giải &amp; công thức</h2>
+  <div class="cb">
+  <div class="chips" id="chips"></div>
+  <div id="sol" class="sol"></div>
+  <div class="note">Chọn hoặc bỏ các mục ở trên, rồi chụp khung trắng để dán vào bài soạn.</div>
+  </div>
+</div>
+
+<div class="empty"><div><b>Chưa có kết quả</b>Nhập ít nhất 2 số liệu ở khung bên cạnh; biểu đồ và lời giải sẽ hiện ở đây.</div></div>
+</section>
+
+</div></main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let mode='single',R=null;
+const fn=(x,d)=>(+x.toFixed(d)).toString().replace('.',',');
+const fmt=x=>isFinite(x)?fn(x,+$('dec').value):'—';
+const ax=v=>fn(v,4);
+const nums=s=>s.split(/[\s;]+/).filter(Boolean).map(t=>parseFloat(t.replace(',','.'))).filter(v=>!isNaN(v));
+const med=a=>{const n=a.length,m=n>>1;return n%2?a[m]:(a[m-1]+a[m])/2};
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function single(){
+  let xs;
+  if($('sm').value=='list')xs=nums($('data').value);
+  else{xs=[];$('sb').querySelectorAll('tr').forEach(r=>{const i=r.querySelectorAll('input'),v=parseFloat(i[0].value.replace(',','.')),c=i[1].value.trim();
+    if(isNaN(v)&&!c)return;
+    if(isNaN(v))throw new Error('Có dòng thiếu giá trị.');
+    const q=c===''?0:Number(c);
+    if(!Number.isInteger(q)||q<0)throw new Error('Tần số phải là số nguyên không âm.');
+    if(xs.length+q>200000)throw new Error('Tần số quá lớn.');
+    for(let t=0;t<q;t++)xs.push(v)})}
+  xs.sort((a,b)=>a-b);const n=xs.length;
+  if(n<2)throw new Error('Nhập ít nhất 2 số liệu để bắt đầu.');
+  const h=n>>1,q1=med(xs.slice(0,h)),q2=med(xs),q3=med(xs.slice(n-h));
+  const mean=xs.reduce((s,v)=>s+v,0)/n,vr=xs.reduce((s,v)=>s+(v-mean)**2,0)/n;
+  const m=new Map();xs.forEach(v=>m.set(v,(m.get(v)||0)+1));
+  const fm=[...m],mx=Math.max(...fm.map(e=>e[1]));
+  const iq=q3-q1,lo=q1-1.5*iq,hi=q3+1.5*iq;
+  return {type:'single',n,xs,fm,mx,modes:fm.filter(e=>e[1]==mx).map(e=>e[0]),mean,vr,sd:Math.sqrt(vr),q1,q2,q3,iq,lo,hi,
+    out:xs.filter(v=>v<lo||v>hi),min:xs[0],max:xs[n-1]};
+}
+function grouped(){
+  const a=parseFloat($('a').value.replace(',','.')),h=parseFloat($('h').value.replace(',','.')),k=parseInt($('k').value),f=[...document.querySelectorAll('#gt .gf')].map(i=>{const v=parseFloat(i.value.replace(',','.'));return isNaN(v)?0:v});
+  if(isNaN(a)||!(h>0)||!(k>=1))throw new Error('Nhập mút đầu, độ dài nhóm (>0) và số nhóm.');
+  if(f.length!==k)throw new Error('Đã nhập '+f.length+'/'+k+' tần số.');
+  if(f.some(v=>v<0))throw new Error('Tần số không được âm.');
+  const n=f.reduce((s,v)=>s+v,0);if(n<=0)throw new Error('Tổng tần số phải lớn hơn 0.');
+  const c=f.map((_,i)=>a+(i+.5)*h),mean=f.reduce((s,v,i)=>s+v*c[i],0)/n;
+  const vr=f.reduce((s,v,i)=>s+v*c[i]**2,0)/n-mean**2;
+  const qt=p=>{const t=p*n;let cum=0;for(let i=0;i<k;i++){if(f[i]>0&&cum+f[i]>=t-1e-12)return a+i*h+(t-cum)/f[i]*h;cum+=f[i]}return a+k*h};
+  const q1=qt(.25),q2=qt(.5),q3=qt(.75),iq=q3-q1,mx=Math.max(...f),j=f.indexOf(mx);
+  const d1=mx-(f[j-1]||0),d2=mx-(f[j+1]||0);
+  const mo=a+j*h+(d1+d2>0?d1/(d1+d2):.5)*h;
+  return {type:'grouped',a,h,k,f,c,n,mean,vr,sd:Math.sqrt(Math.max(vr,0)),q1,q2,q3,iq,lo:q1-1.5*iq,hi:q3+1.5*iq,mo,ties:f.filter(v=>v==mx).length>1,j};
+}
+
+function calc(){
+  $('err').textContent='';
+  try{R=mode=='single'?single():grouped()}catch(e){R=null;$('err').textContent=e.message}
+  render();
+}
+const item=(l,v,w)=>`<div class="it${w?' wide':''}"><small>${l}</small><b>${v}</b></div>`;
+function render(){
+  $('res').classList.toggle('hide',!R);$('cc').classList.toggle('hide',!R);$('sc').classList.toggle('hide',!R);
+  if(!R)return;
+  let g='';
+  g+=item('Cỡ mẫu n',fn(R.n,0))+item('Số trung bình x̄',fmt(R.mean));
+  g+=item('Q₁',fmt(R.q1))+item('Q₂ (trung vị)',fmt(R.q2))+item('Q₃',fmt(R.q3))+item('Khoảng tứ phân vị ΔQ',fmt(R.iq));
+  let mode_;
+  if(R.type=='single'){
+    mode_=R.mx==1?'Không có (mỗi giá trị xuất hiện 1 lần)':R.modes.map(fmt).join('; ')+' (xuất hiện '+R.mx+' lần)';
+  }else mode_=fmt(R.mo)+(R.ties?' (có nhiều nhóm cùng tần số lớn nhất)':'');
+  g+=item('Mốt',mode_,1);
+  g+=item('Mốc ngoại lệ dưới: Q₁ − 1,5ΔQ',fmt(R.lo))+item('Mốc ngoại lệ trên: Q₃ + 1,5ΔQ',fmt(R.hi));
+  if(R.type=='single')g+=item('Giá trị ngoại lệ',R.out.length?R.out.map(fmt).join('; '):'Không có',1);
+  g+=item('Phương sai s²',fmt(R.vr))+item('Độ lệch chuẩn s',fmt(R.sd));
+  if(R.type=='single')g+=item('Nhỏ nhất',fmt(R.min))+item('Lớn nhất',fmt(R.max))+item('Khoảng biến thiên',fmt(R.max-R.min));
+  $('grid').innerHTML=g;
+  const pc=v=>fn(v/R.n*100,+$('dec').value)+'%';
+  let t='',cum=0,rows='';
+  if(R.type=='grouped'){
+    R.f.forEach((v,i)=>{cum+=v;rows+=`<tr><td>[${ax(R.a+i*R.h)}; ${ax(R.a+(i+1)*R.h)})</td><td>${v}</td><td>${pc(v)}</td><td>${pc(cum)}</td><td>${ax(R.c[i])}</td></tr>`});
+    t=`<div class="sub">Bảng tần số ghép nhóm</div><div class="tw"><table><tr><th>Nhóm</th><th>Tần số</th><th>Tần số tương đối</th><th>TSTĐ tích luỹ</th><th>Giá trị đại diện</th></tr>${rows}<tr><td><b>Tổng</b></td><td><b>${fn(R.n,2)}</b></td><td><b>100%</b></td><td></td><td></td></tr></table></div>`;
+  }else{
+    R.fm.forEach(e=>{cum+=e[1];rows+=`<tr><td>${ax(e[0])}</td><td>${e[1]}</td><td>${pc(e[1])}</td><td>${pc(cum)}</td></tr>`});
+    t=`<div class="sub">Bảng tần số</div><div class="tw"><table><tr><th>Giá trị</th><th>Tần số</th><th>Tần số tương đối</th><th>TSTĐ tích luỹ</th></tr>${rows}<tr><td><b>Tổng</b></td><td><b>${R.n}</b></td><td><b>100%</b></td><td></td></tr></table></div>`;
+  }
+  $('tbl').innerHTML=t;
+  $('note').textContent=R.type=='single'
+   ?'Q₁, Q₃ là trung vị của nửa dưới và nửa trên (bỏ trung vị nếu n lẻ). Giá trị ngoại lệ: nhỏ hơn mốc dưới hoặc lớn hơn mốc trên.'
+   :'Trung vị, Q₁, Q₃ và mốt tính theo công thức nội suy trên nhóm chứa. Với mẫu ghép nhóm, mốc ngoại lệ chỉ để tham khảo.';
+  solve();
+  chart();
+}
+
+/* ---------- Biểu đồ (SVG nền trắng, màu cố định để chèn vào bài) ---------- */
+const W=640,H=380,M={l:56,r:24,t:44,b:56},iw=W-M.l-M.r,ih=H-M.t-M.b;
+const T=(x,y,s,a,ex)=>`<text x="${x}" y="${y}" text-anchor="${a||'middle'}" fill="#333" ${ex||''}>${esc(s)}</text>`;
+const niceStep=(r,c)=>{const q=r/c,p=Math.pow(10,Math.floor(Math.log10(q))),f=q/p;return(f<1.5?1:f<3?2:f<7?5:10)*p};
+const xLine=`<line x1="${M.l}" x2="${W-M.r}" y1="${M.t+ih}" y2="${M.t+ih}" stroke="#333"/>`;
+function frame(s){
+  const ti=$('tt').value.trim();
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="Arial, Helvetica, sans-serif" font-size="12"><rect width="${W}" height="${H}" fill="#fff"/>${ti?T(W/2,26,ti,'middle','font-size="15" font-weight="bold"'):''}${s}</svg>`;
+}
+function yAxis(mx){
+  const st=Math.max(1,niceStep(mx,5)),top=Math.ceil(mx/st)*st;let s='';
+  for(let v=0;v<=top+1e-9;v+=st){const y=M.t+ih-v/top*ih;s+=`<line x1="${M.l}" x2="${W-M.r}" y1="${y}" y2="${y}" stroke="#ddd"/>`+T(M.l-8,y+4,ax(v),'end')}
+  s+=`<line x1="${M.l}" x2="${M.l}" y1="${M.t}" y2="${M.t+ih}" stroke="#333"/><text transform="translate(14 ${M.t+ih/2}) rotate(-90)" text-anchor="middle" fill="#333">Tần số</text>`;
+  return{y:v=>M.t+ih-v/top*ih,s};
+}
+function barC(){
+  const d=R.fm,n=d.length,Y=yAxis(R.mx),bw=iw/n,sk=Math.ceil(n/14);let s=Y.s+xLine;
+  d.forEach((e,i)=>{const y=Y.y(e[1]);
+    s+=`<rect x="${M.l+i*bw+bw*.15}" y="${y}" width="${bw*.7}" height="${M.t+ih-y}" fill="#4f7cff" stroke="#2a4fcf"/>`;
+    if(i%sk==0)s+=T(M.l+i*bw+bw/2,M.t+ih+18,ax(e[0]))});
+  return frame(s+T(W/2,H-12,'Giá trị'));
+}
+function histC(poly){
+  const{a,h,k,f}=R,lo=poly?a-h:a,hi=poly?a+k*h+h:a+k*h,X=v=>M.l+(v-lo)/(hi-lo)*iw,Y=yAxis(Math.max(...f));
+  let s=Y.s+xLine;
+  f.forEach((v,i)=>{const x0=X(a+i*h),y=Y.y(v);
+    s+=`<rect x="${x0}" y="${y}" width="${X(a+(i+1)*h)-x0}" height="${M.t+ih-y}" fill="${poly?'#e3eaff':'#4f7cff'}" stroke="#2a4fcf"/>`});
+  const sk=Math.ceil((k+1)/12);
+  if(poly){
+    const p=[[a-h/2,0],...f.map((v,i)=>[a+(i+.5)*h,v]),[a+k*h+h/2,0]];
+    s+=`<polyline fill="none" stroke="#d6336c" stroke-width="2" points="${p.map(q=>X(q[0])+','+Y.y(q[1])).join(' ')}"/>`;
+    p.forEach(q=>s+=`<circle cx="${X(q[0])}" cy="${Y.y(q[1])}" r="3.5" fill="#d6336c"/>`);
+    R.c.forEach((v,i)=>{if(i%sk==0)s+=T(X(v),M.t+ih+18,ax(v))});
+  }else for(let i=0;i<=k;i++)if(i%sk==0||i==k)s+=T(X(a+i*h),M.t+ih+18,ax(a+i*h));
+  return frame(s+T(W/2,H-12,'Giá trị'));
+}
+function boxC(){
+  let lo,hi,wl,wh,out=[];
+  if(R.type=='single'){const ins=R.xs.filter(v=>v>=R.lo&&v<=R.hi);wl=ins[0];wh=ins[ins.length-1];out=R.out;lo=R.min;hi=R.max}
+  else{wl=lo=R.a;wh=hi=R.a+R.k*R.h}
+  const pd=(hi-lo||1)*.06,d0=lo-pd,d1=hi+pd,X=v=>M.l+(v-d0)/(d1-d0)*iw,cy=M.t+ih/2-10,bh=64,st=niceStep(d1-d0,8);
+  let s=xLine;
+  for(let v=Math.ceil(d0/st)*st;v<=d1+1e-9;v=+(v+st).toFixed(10))
+    s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${M.t+ih}" y2="${M.t+ih+5}" stroke="#333"/>`+T(X(v),M.t+ih+20,ax(v));
+  const L=(x1,y1,x2,y2,w)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#2a4fcf" stroke-width="${w||1.5}"/>`;
+  s+=L(X(wl),cy,X(R.q1),cy)+L(X(R.q3),cy,X(wh),cy)+L(X(wl),cy-12,X(wl),cy+12)+L(X(wh),cy-12,X(wh),cy+12);
+  s+=`<rect x="${X(R.q1)}" y="${cy-bh/2}" width="${Math.max(X(R.q3)-X(R.q1),1)}" height="${bh}" fill="#e3eaff" stroke="#2a4fcf" stroke-width="1.5"/>`;
+  s+=`<line x1="${X(R.q2)}" x2="${X(R.q2)}" y1="${cy-bh/2}" y2="${cy+bh/2}" stroke="#d6336c" stroke-width="3"/>`;
+  out.forEach(v=>s+=`<circle cx="${X(v)}" cy="${cy}" r="4" fill="none" stroke="#d6336c" stroke-width="1.5"/>`);
+  s+=T(X(R.q1),cy+bh/2+16,'Q₁='+ax(R.q1))+T(X(R.q2),cy-bh/2-8,'Q₂='+ax(R.q2))+T(X(R.q3),cy+bh/2+16,'Q₃='+ax(R.q3));
+  return frame(s);
+}
+function chart(){
+  if(!R)return;
+  const v=$('ct').value;
+  $('chart').innerHTML=v=='bar'?barC():v=='hist'?histC(0):v=='poly'?histC(1):boxC();
+}
+
+/* ---------- Giao diện ---------- */
+function setMode(m){
+  mode=m;$('m1').classList.toggle('on',m=='single');$('m2').classList.toggle('on',m!='single');
+  $('p1').classList.toggle('hide',m!='single');$('p2').classList.toggle('hide',m=='single');
+  $('ct').innerHTML=m=='single'
+    ?'<option value="bar">Biểu đồ cột (tần số)</option><option value="box">Biểu đồ hộp</option>'
+    :'<option value="hist">Biểu đồ tần số (cột)</option><option value="poly">Đa giác tần số</option><option value="box">Biểu đồ hộp</option>';
+  calc();
+}
+$('m1').onclick=()=>setMode('single');$('m2').onclick=()=>setMode('grouped');
+$('data').addEventListener('input',calc);
+['a','h','k'].forEach(i=>$(i).addEventListener('input',()=>{buildG();calc()}));
+let gv=[];
+$('gt').addEventListener('input',()=>{gv=[...document.querySelectorAll('#gt .gf')].map(i=>i.value);calc()});
+$('gt').addEventListener('keydown',e=>{if(e.key!='Enter')return;e.preventDefault();const l=[...document.querySelectorAll('#gt .gf')],i=l.indexOf(e.target);if(l[i+1])l[i+1].focus()});
+function buildG(){
+  const a=parseFloat($('a').value.replace(',','.')),h=parseFloat($('h').value.replace(',','.')),k=parseInt($('k').value);
+  if(isNaN(a)||!(h>0)||!(k>=1)||k>40){$('gt').innerHTML='<tr><td class="hint" style="border:0;text-align:left">Nhập mút đầu, độ dài nhóm và số nhóm (tối đa 40) để hiện bảng tần số.</td></tr>';return}
+  let s='<tr><th>Nhóm</th><th>Tần số</th></tr>';
+  for(let i=0;i<k;i++)s+=`<tr><td>[${ax(a+i*h)}; ${ax(a+(i+1)*h)})</td><td><input class="gf" inputmode="numeric" value="${esc(gv[i]||'')}"></td></tr>`;
+  $('gt').innerHTML=s;
+}
+function addRow(v,c){
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td><input class="sv" inputmode="decimal"></td><td><input class="sf" inputmode="numeric"></td><td style="border:0"><button class="x" type="button" tabindex="-1" aria-label="Xoá dòng">×</button></td>';
+  const i=tr.querySelectorAll('input');if(v!==undefined)i[0].value=v;if(c!==undefined)i[1].value=c;
+  $('sb').appendChild(tr);return i[0];
+}
+$('addr').onclick=()=>addRow().focus();
+$('sb').addEventListener('input',calc);
+$('sb').addEventListener('click',e=>{if(e.target.classList.contains('x')){e.target.closest('tr').remove();calc()}});
+$('sb').addEventListener('keydown',e=>{
+  if(e.key!='Enter')return;e.preventDefault();
+  const tr=e.target.closest('tr');
+  if(e.target.classList.contains('sv'))tr.querySelector('.sf').focus();
+  else{const nx=tr.nextElementSibling;(nx?nx.querySelector('.sv'):addRow()).focus()}
+});
+$('sm').onchange=()=>{
+  const t=$('sm').value=='tab';$('sl').classList.toggle('hide',t);$('stab').classList.toggle('hide',!t);
+  if(t&&[...$('sb').querySelectorAll('.sv')].every(i=>!i.value)){
+    const m=new Map();nums($('data').value).sort((a,b)=>a-b).forEach(v=>m.set(v,(m.get(v)||0)+1));
+    $('sb').innerHTML='';m.forEach((c,v)=>addRow(fn(v,6),c));addRow();
+    if(!m.size)for(let i=0;i<4;i++)addRow();
+  }
+  calc();
+};
+for(let i=0;i<5;i++)addRow();
+buildG();
+$('dec').onchange=render;$('ct').onchange=chart;$('tt').addEventListener('input',chart);
+
+/* ---------- Lời giải ---------- */
+const sel={mean:1,q2:1,q13:1,mode:1,out:1,var:0,rf:0};
+const CH=[['mean','Số trung bình'],['q2','Trung vị'],['q13','Q₁, Q₃'],['mode','Mốt'],['out','Ngoại lệ'],['var','Phương sai, độ lệch chuẩn'],['rf','Tần số tương đối']];
+$('chips').innerHTML=CH.map(c=>`<label class="chip"><input type="checkbox" data-k="${c[0]}"${sel[c[0]]?' checked':''}>${c[1]}</label>`).join('');
+$('chips').addEventListener('change',e=>{sel[e.target.dataset.k]=e.target.checked?1:0;solve()});
+const F=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const eq=x=>Math.abs(+x.toFixed(+$('dec').value)-x)<1e-9?'=':'≈';
+const L=s=>`<div class="ln">${s}</div>`,B=s=>`<b>${s}</b>`;
+const trm=a=>a.slice(0,8).join(' + ')+(a.length>8?' + …':'');
+const lst=(a,m)=>a.slice(0,m).map(ax).join('; ')+(a.length>m?'; …':'');
+function mdl(a,nm){
+  const l=a.length,m=l>>1;
+  if(l%2)return `${nm} = số liệu thứ ${(l+1)/2} = ${B(fmt(a[m]))}`;
+  const v=(a[m-1]+a[m])/2;
+  return `${nm} = ${F(`số liệu thứ ${l/2} + số liệu thứ ${l/2+1}`,'2')} = ${F(ax(a[m-1])+' + '+ax(a[m]),'2')} ${eq(v)} ${B(fmt(v))}`;
+}
+function qd(p,nm,fr,val){
+  const t=p*R.n;let cum=0,i=0;
+  for(;i<R.k-1;i++){if(R.f[i]>0&&cum+R.f[i]>=t-1e-12)break;cum+=R.f[i]}
+  const u=R.a+i*R.h,m=R.f[i];
+  return [`${fr} = ${fmt(t)}. Nhóm chứa ${nm} là [${ax(u)}; ${ax(u+R.h)}) vì ${fmt(cum)} < ${fmt(t)} ≤ ${fmt(cum+m)}.`,
+    `${nm} = ${ax(u)} + ${F(fmt(t)+' − '+fmt(cum),fn(m,2))}·${ax(R.h)} ${eq(val)} ${B(fmt(val))}`];
+}
+function solve(){
+  if(!R)return;
+  const g=R.type=='grouped',n=R.n,rn=fn(n,2),dd=+$('dec').value;
+  let i=0;
+  const sec=(t,...ls)=>`<p><span class="st">${'abcdefg'[i++]}) ${t}</span>${ls.filter(Boolean).map(L).join('')}</p>`;
+  let o=`<p><span class="st" style="font-size:1.1em">Lời giải</span>${L('Cỡ mẫu: n = '+rn+'.')}${g?'':L('Mẫu số liệu sắp xếp theo thứ tự không giảm: '+lst(R.xs,30)+'.')}</p>`;
+  const sk='<sub>k</sub>';
+  if(sel.mean){
+    const v=g?'c':'x',pr=g?R.f.map((f,j)=>ax(R.c[j])+'·'+f):R.fm.map(e=>e[1]==1?ax(e[0]):ax(e[0])+'·'+e[1]);
+    o+=sec('Số trung bình',
+      g?'Giá trị đại diện của nhóm [uᵢ; uᵢ₊₁) là cᵢ = (uᵢ + uᵢ₊₁)/2; nᵢ là tần số của nhóm.':'xᵢ là các giá trị khác nhau của mẫu, nᵢ là tần số của xᵢ.',
+      `x̄ = ${F(`${v}₁n₁ + ${v}₂n₂ + … + ${v}${sk}n${sk}`,'n')}`,
+      `x̄ = ${F(trm(pr),rn)} ${eq(R.mean)} ${B(fmt(R.mean))}`);
+  }
+  if(sel.q2){
+    o+=g?sec('Trung vị (Q₂)','Nhóm chứa trung vị là nhóm đầu tiên có tần số tích luỹ ≥ n/2.',
+      `Q₂ = u<sub>m</sub> + ${F('n/2 − C','n<sub>m</sub>')}·(u<sub>m+1</sub> − u<sub>m</sub>)`,
+      'Trong đó [u<sub>m</sub>; u<sub>m+1</sub>) là nhóm chứa trung vị, C là tổng tần số các nhóm đứng trước nó, n<sub>m</sub> là tần số của nhóm đó.',...qd(.5,'Q₂','n/2',R.q2))
+    :sec('Trung vị (Q₂)','Nếu n lẻ, Q₂ là số liệu ở chính giữa; nếu n chẵn, Q₂ là trung bình cộng của hai số liệu ở giữa.',mdl(R.xs,'Q₂'));
+  }
+  if(sel.q13){
+    if(g)o+=sec('Tứ phân vị Q₁, Q₃','Tính tương tự trung vị, thay n/2 bởi n/4 (với Q₁) và 3n/4 (với Q₃).',...qd(.25,'Q₁','n/4',R.q1),...qd(.75,'Q₃','3n/4',R.q3));
+    else{
+      const h=R.n>>1,lo=R.xs.slice(0,h),up=R.xs.slice(R.n-h);
+      o+=sec('Tứ phân vị Q₁, Q₃','Q₁ là trung vị của nửa số liệu bên trái Q₂; Q₃ là trung vị của nửa bên phải Q₂ (nếu n lẻ thì không tính Q₂ vào hai nửa).',
+        `Nửa trái (${h} số liệu): ${lst(lo,20)}.`,mdl(lo,'Q₁'),`Nửa phải (${h} số liệu): ${lst(up,20)}.`,mdl(up,'Q₃'));
+    }
+  }
+  if(sel.mode){
+    if(g){
+      const j=R.j,nj=R.f[j],pv=R.f[j-1]||0,nx=R.f[j+1]||0,u=R.a+j*R.h;
+      o+=sec('Mốt','Nhóm chứa mốt là nhóm có tần số lớn nhất.',
+        `M₀ = u<sub>j</sub> + ${F('n<sub>j</sub> − n<sub>j−1</sub>','(n<sub>j</sub> − n<sub>j−1</sub>) + (n<sub>j</sub> − n<sub>j+1</sub>)')}·h`,
+        `Nhóm [${ax(u)}; ${ax(u+R.h)}) có tần số lớn nhất (${fn(nj,2)}).`,
+        `M₀ = ${ax(u)} + ${F(fn(nj,2)+' − '+fn(pv,2),`(${fn(nj,2)} − ${fn(pv,2)}) + (${fn(nj,2)} − ${fn(nx,2)})`)}·${ax(R.h)} ${eq(R.mo)} ${B(fmt(R.mo))}`);
+    }else o+=sec('Mốt','Mốt là giá trị có tần số lớn nhất.',R.mx==1?'Mỗi giá trị xuất hiện đúng 1 lần nên mẫu số liệu không có mốt.':`Giá trị ${R.modes.map(ax).join('; ')} xuất hiện nhiều nhất (${R.mx} lần) nên M₀ = ${B(R.modes.map(ax).join('; '))}.`);
+  }
+  if(sel.out){
+    const ccl=g?'Với mẫu ghép nhóm, ta so sánh hai mốc này với các mút của các nhóm để nhận xét.':(R.out.length?`Các giá trị ngoại lệ là: ${B(R.out.map(ax).join('; '))}.`:'Không có giá trị nào nhỏ hơn mốc dưới hoặc lớn hơn mốc trên nên mẫu số liệu không có giá trị ngoại lệ.');
+    o+=sec('Giá trị ngoại lệ',
+      `ΔQ = Q₃ − Q₁ = ${fmt(R.q3)} − ${fmt(R.q1)} ${eq(R.iq)} ${B(fmt(R.iq))}`,
+      'Giá trị x là ngoại lệ nếu x < Q₁ − 1,5ΔQ hoặc x > Q₃ + 1,5ΔQ.',
+      `Q₁ − 1,5ΔQ = ${fmt(R.q1)} − 1,5·${fmt(R.iq)} ${eq(R.lo)} ${B(fmt(R.lo))}`,
+      `Q₃ + 1,5ΔQ = ${fmt(R.q3)} + 1,5·${fmt(R.iq)} ${eq(R.hi)} ${B(fmt(R.hi))}`,ccl);
+  }
+  if(sel.var){
+    const s1=g?R.f.reduce((s,f,j)=>s+f*R.c[j]**2,0):R.vr*n;
+    o+=sec('Phương sai và độ lệch chuẩn',
+      g?`s² = ${F('1','n')}·(n₁c₁² + n₂c₂² + … + n${sk}c${sk}²) − x̄²`:`s² = ${F('1','n')}·[n₁(x₁ − x̄)² + … + n${sk}(x${sk} − x̄)²]`,
+      g?`s² = ${F(fmt(s1),rn)} − (${fmt(R.mean)})² ${eq(R.vr)} ${B(fmt(R.vr))}`:`s² = ${F(fmt(s1),rn)} ${eq(R.vr)} ${B(fmt(R.vr))}`,
+      `s = √s² = √${fmt(R.vr)} ${eq(R.sd)} ${B(fmt(R.sd))}`);
+  }
+  if(sel.rf){
+    const arr=g?R.f:R.fm.map(e=>e[1]),nm=j=>g?`nhóm [${ax(R.a+j*R.h)}; ${ax(R.a+(j+1)*R.h)})`:`giá trị ${ax(R.fm[j][0])}`;
+    o+=sec('Tần số tương đối',`Tần số tương đối: fᵢ = ${F('nᵢ','n')}·100%.`,
+      ...arr.slice(0,4).map((v,j)=>`f<sub>${j+1}</sub> (${nm(j)}) = ${F(fn(v,2),rn)}·100% ${eq(v/n*100)} ${B(fn(v/n*100,dd)+'%')}`),
+      arr.length>4?'Các giá trị còn lại xem ở bảng tần số phía trên.':'');
+  }
+  $('sol').innerHTML=o;
+}
+
+async function save(name,data){
+  try{
+    const d=window.claude&&await claude.use('downloads');
+    if(!d){$('dmsg').textContent='Trình duyệt này chưa hỗ trợ lưu tệp: hãy chụp màn hình biểu đồ.';return}
+    await d.save({filename:name,data});
+  }catch(e){if(!e||e.code!='declined')$('dmsg').textContent='Không lưu được tệp ('+(e&&e.code||'lỗi')+').'}
+}
+$('dsvg').onclick=()=>{const s=$('chart').innerHTML;if(s)save('bieu-do.svg',s)};
+$('dpng').onclick=()=>{
+  const s=$('chart').innerHTML;if(!s)return;
+  const img=new Image();
+  img.onload=()=>{const c=document.createElement('canvas');c.width=W*2;c.height=H*2;const x=c.getContext('2d');
+    x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+    c.toBlob(b=>b&&save('bieu-do.png',b))};
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
+};
+setMode('single');
+</script>
+</body>
+</html>
