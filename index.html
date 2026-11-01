@@ -164,7 +164,7 @@ function show(id){
   const f=document.createElement("iframe");f.id="frame";f.title=t.name;f.style.display="block";
   f.setAttribute("allow","clipboard-write; clipboard-read; fullscreen");
   if(t.mine){f.setAttribute("sandbox","allow-scripts allow-downloads allow-modals allow-popups allow-forms");f.srcdoc=t.html}
-  else f.src=t.file;
+  else f.src=t.file+"?t="+Date.now();
   old.replaceWith(f);
   $("tabsbar").style.display="flex";$("presentBtn").style.display="inline-block";$("delBtn").style.display=t.mine?"inline-block":"none";
   if(!t.mine)history.replaceState(null,"","#"+id);else history.replaceState(null,"",location.pathname);
