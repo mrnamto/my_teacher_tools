@@ -3,73 +3,160 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Miền nghiệm & Quy hoạch tuyến tính</title>
-<style>@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&display=swap');
-:root{--blue:#2563eb;--navy:#0a2f63;--sky:#eaf2ff;--line:#dbe7fb;--ink:#16233b;--muted:#5b6b85;--ok:#0d9488;--warn:#f97316;--r:14px;--acc:#2563eb;--soft:color-mix(in srgb,var(--acc) 12%,#fff);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+<title>Miền nghiệm &amp; Quy hoạch tuyến tính</title>
+<style>
+:root{--bg:#f2f7ff;--card:#fff;--tx:#0f1f3d;--mut:#5b6b8a;--bd:#cfdcf3;--ac:#2563eb;--acs:#dbeafe;--er:#dc2626;--pg:#e6efff;--pri:#1d4ed8;--soft:#eaf2ff;color-scheme:light}
+html{font-size:clamp(13px,calc(.4vw + .4vh + 4px),22px);scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{height:100%}
-body{margin:0;padding:16px;font-family:"Be Vietnam Pro","Segoe UI",Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.5}
-h1,h2,h3{color:var(--navy);margin:0 0 10px}
-h3{font-size:14px}
-.app{display:grid;grid-template-columns:clamp(320px,31vw,430px) 1fr;gap:14px;height:calc(100dvh - 32px)}
-.side{overflow:auto;padding-right:4px}
-.stage{min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px}
-#cw{flex:1;min-height:0;min-width:0}
-.stage canvas{display:block;width:100%;height:100%;background:#fff;border:1px solid var(--line);border-radius:var(--r);cursor:grab;touch-action:none}
-.panel{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
-.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-button,.btn{font-family:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--navy);padding:9px 16px;border-radius:999px;cursor:pointer;transition:.15s}
-button:hover{background:var(--soft)}
-button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
-button.primary:hover{filter:brightness(.92)}
-button.danger,button.x{color:#dc2626}
-input,select{font-family:inherit;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;color:var(--ink);max-width:100%}
-input:focus,select:focus,button:focus-visible{outline:3px solid color-mix(in srgb,var(--acc) 30%,#fff);border-color:var(--acc)}
-input[type=range]{padding:0;accent-color:var(--acc)}
-input[type=checkbox]{accent-color:var(--acc);width:18px;height:18px}
-table{border-collapse:collapse;width:100%}
-th{background:var(--soft);color:var(--navy)}
-th,td{border:1px solid var(--line);padding:6px 10px;text-align:center}
+body{margin:0;background:var(--pg);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+:focus-visible{outline:2px solid #ea580c;outline-offset:2px}
+button,select{font:inherit;cursor:pointer}
+
+/* khung ứng dụng */
+.app{display:flex;flex-direction:column;min-height:100dvh;background:radial-gradient(70rem 28rem at 100% 0,#cfe0ff,transparent 70%),var(--pg);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.6rem 1rem;flex-wrap:wrap;padding:.55rem 1rem;color:#fff;background:linear-gradient(120deg,#1e3a8a,#2563eb 65%,#38bdf8);box-shadow:0 2px 10px rgba(30,64,175,.28)}
+.brand{display:flex;align-items:center;gap:.6rem;min-width:0}
+.logo{flex:none;width:2.1rem;height:2.1rem;border-radius:.65rem;background:#fff;display:grid;place-items:center;font-size:1.15rem}
+h1{font-size:1.15rem;margin:0;line-height:1.2}
+.brand small{display:block;font-size:.75rem;opacity:.85;line-height:1.2}
+.stage{flex:1;min-height:0;display:flex;padding:.75rem}
+.split{flex:1;width:100%;max-width:56rem;margin:0 auto;min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;align-content:start}
+.pane{display:flex;flex-direction:column;gap:.75rem;min-width:0;min-height:0}
+.pane>*{flex:none}
+#pg{order:-1}
+#cw{height:max(18rem,62vh)}
+@media (min-aspect-ratio:1/1) and (min-width:700px){
+  html,body{height:100%;overflow:hidden}
+  .app{height:100dvh;min-height:0}
+  .split{max-width:120rem;grid-template-columns:minmax(23rem,4fr) minmax(0,7fr);grid-template-rows:minmax(0,1fr);align-content:stretch}
+  .pane{overflow-y:auto;overflow-x:hidden;padding:.15rem;margin:-.15rem;scrollbar-width:thin}
+  #panel{order:1}
+  #pg{order:2;overflow:hidden}
+  #pg>.card{flex:1;min-height:0;display:flex;flex-direction:column}
+  #pg .cb{flex:1;min-height:0;display:flex;flex-direction:column}
+  #cw{flex:1;min-height:0;height:auto}
+}
+
+/* khối */
+.card{--k:var(--ac);background:var(--card);border:1px solid var(--bd);border-radius:.9rem;box-shadow:0 1px 2px rgba(30,64,175,.08),0 8px 20px -8px rgba(30,64,175,.2);overflow:hidden;min-width:0}
+.ch{display:flex;align-items:center;gap:.5rem;margin:0;padding:.45rem .8rem;font-size:.95rem;font-weight:700;color:var(--k);background:color-mix(in srgb,var(--k) 9%,#fff);border-bottom:1px solid color-mix(in srgb,var(--k) 22%,#fff);border-left:.3rem solid var(--k)}
+.ic{flex:none;display:grid;place-items:center;width:1.45rem;height:1.45rem;border-radius:.45rem;background:var(--k);color:#fff;font-size:.82rem;font-weight:700}
+.cb{padding:.65rem .8rem}
+summary.ch{cursor:pointer;list-style:none}
+summary.ch::-webkit-details-marker{display:none}
+summary.ch::after{content:"▾";margin-left:auto;transition:transform .15s}
+details:not([open])>summary.ch::after{transform:rotate(-90deg)}
+details:not([open])>summary.ch{border-bottom-color:transparent}
+
+/* nhập liệu */
+label{font-weight:600;color:var(--mut)}
+input,select,textarea{width:100%;min-width:0;padding:.42rem .6rem;border:1.5px solid var(--bd);border-radius:.6rem;background:var(--bg);color:var(--tx);font:inherit}
+input:focus,select:focus,textarea:focus{background:#fff;border-color:var(--ac)}
+textarea{font:.82rem/1.45 ui-monospace,Menlo,Consolas,monospace;resize:vertical;min-height:4.5rem}
+.field>label{display:block;font-size:.85rem;margin:0 0 .25rem}
+.note{font-size:.8rem;color:var(--mut);line-height:1.5;margin-top:.4rem}
+.error{color:var(--er);font-size:.85rem;font-weight:600}
+.error:not(:empty){margin-top:.4rem;padding:.35rem .6rem;border-radius:.5rem;background:#fef2f2;border:1px solid #fecaca}
+.row{display:flex;align-items:center;gap:.4rem;margin:.45rem 0;flex-wrap:wrap}
+.row b{min-width:1.9rem;font-style:italic;color:var(--pri)}
+.row input[type=number]{width:4.6rem;padding:.38rem .4rem;text-align:center;background:#fff}
+.row select{width:auto;padding:.38rem .4rem}
+.row button.x{padding:.15rem .6rem;font-size:1.2rem;line-height:1.2;border:0;background:transparent;color:var(--mut)}
+.row button.x:hover{color:var(--er);background:transparent}
+#rows .row:first-child{margin-top:.8rem}
+.nn{width:6rem!important}
+
+button{padding:.45rem .9rem;border-radius:.6rem;border:1.5px solid var(--ac);background:#fff;color:var(--ac);font-weight:600;width:auto}
+button:hover{background:var(--acs)}
+button.primary{background:var(--ac);color:#fff}
+button.primary:hover{background:var(--pri)}
+button.add{width:100%;margin-top:.3rem;border-style:dashed;background:var(--bg)}
+button.add:hover{background:var(--acs)}
+.btns{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.6rem}
+.btns .note{margin:0}
+
+/* tùy chỉnh */
+#set{display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.3rem 1.2rem}
+.set{display:flex;align-items:center;gap:.5rem;margin:0;font-weight:500;color:var(--tx)}
+.set>span{flex:0 0 7.2rem;color:var(--mut);font-size:.82rem;font-weight:600;line-height:1.25}
+.set input[type=range]{flex:1;min-width:3.5rem;padding:0;border:0;background:none;accent-color:var(--ac)}
+.set select{flex:1;padding:.3rem .4rem;font-size:.88rem}
+.set input[type=color]{width:2.6rem;height:1.9rem;padding:.1rem;cursor:pointer}
+.set input[type=checkbox]{width:1.15rem;height:1.15rem;padding:0;accent-color:var(--ac)}
+.set output{flex:0 0 2.2rem;text-align:right;font-variant-numeric:tabular-nums;font-size:.82rem;color:var(--tx)}
+.set .nn{flex:none}
+
+/* kết quả */
+.result{background:var(--bg);border:1px solid var(--bd);border-radius:.6rem;padding:.55rem .8rem;font-size:.95rem}
+.result p{margin:.4rem 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--bd);padding:.3rem .5rem;text-align:center}
+th{background:var(--ac);color:#fff;border-color:var(--pri)}
+.result td{background:#fff}
 tr.best td{background:#fff1ef;color:#c0392b;font-weight:600}
-.note{color:var(--muted);font-size:13px}
-.result{background:var(--soft);border:1px solid color-mix(in srgb,var(--acc) 25%,#fff);border-radius:var(--r);padding:12px 14px;font-size:14px}
-.result p{margin:6px 0}
-.row{display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap}
-.row b{min-width:28px;font-style:italic;color:var(--navy)}
-.row input[type=number]{width:66px;padding:8px}
-.row select{padding:8px 6px}
-.row button.x{padding:6px 11px;border-radius:10px}
-textarea{font:13px ui-monospace,Consolas,monospace;width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;resize:vertical;color:var(--ink)}
-.field label{display:block;font-weight:600;font-size:13px;color:var(--navy);margin-bottom:4px}
-.error{color:#dc2626;font-size:13px;font-weight:600}
-.sol{font-size:13px}.sol p{margin:6px 0 2px}.sol ul{margin:2px 0 8px;padding-left:18px}
-#add{margin-top:6px;width:100%;border-radius:12px}
-.set{display:flex;align-items:center;gap:8px;margin:6px 0;font-weight:500}
-.set>span{flex:0 0 118px;color:var(--muted);font-size:13px}
-.set input[type=range]{flex:1;min-width:70px}
-.set select{flex:1;padding:6px 8px;min-width:0}
-.set input[type=color]{width:40px;height:30px;padding:2px}
-.set output{flex:0 0 32px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
-@media (orientation:portrait),(max-width:800px){.app{grid-template-columns:1fr;grid-template-rows:62vh auto;height:auto}.stage{order:-1}.side{overflow:visible}body{padding:10px}}
+#sol{background:#fff;color:#111;border:1px solid var(--bd);border-radius:.6rem;padding:.8rem 1rem;font:1.03rem/1.7 "Times New Roman",Times,serif}
+#sol:empty{display:none}
+.sol p{margin:.6rem 0 .1rem}.sol p:first-child{margin-top:0}
+.sol ul{margin:.1rem 0 .5rem;padding-left:1.3rem}
+
+/* biểu đồ */
+#cw{position:relative;overflow:hidden;background:#fff;border-radius:.6rem}
+#cw::after{content:"";position:absolute;inset:0;border:1px solid var(--bd);border-radius:.6rem;pointer-events:none}
+#cv{position:absolute;inset:0;display:block;width:100%;height:100%;background:#fff;cursor:grab;touch-action:none}
 </style>
 </head>
 <body>
 <div class="app" id="app">
-<aside class="side" id="panel">
-<div class="panel"><h3>Hệ bất phương trình</h3><div class="field"><label>Gõ nhanh (LaTeX)</label><textarea id="q" rows="3" spellcheck="false" placeholder="x+2y\le4; x\ge0; y>=0"></textarea><div class="note">Ngăn cách bằng <b>;</b> hoặc xuống dòng. Hỗ trợ \le \ge &lt; &gt; &lt;= &gt;= \frac{1}{2}x. Dấu phẩy là dấu thập phân.</div><div id="qe" class="error"></div></div>
-<div id="rows"></div><button id="add" class="primary">+ Thêm bất phương trình</button></div>
-<div class="panel"><h3>Hàm mục tiêu</h3>
-<div class="row"><b>F =</b><input type="number" step="any" data-k="m" value="3"><i>x</i> +<input type="number" step="any" data-k="n" value="2"><i>y</i>
-<select data-k="mode"><option value="max">Lớn nhất</option><option value="min">Nhỏ nhất</option><option value="none">Không tìm</option></select></div></div>
-<div class="panel"><h3>Tùy chỉnh hiển thị</h3><div id="set"></div></div>
-<div class="panel"><h3>Kết quả</h3><div id="res" class="result"></div></div>
-<div class="panel"><h3>Lời giải (theo SGK)</h3><div id="sol" class="sol"></div></div>
-</aside>
-<main class="stage">
-<div class="toolbar"><button id="png" class="primary" hidden>⬇ Xuất PNG</button><button id="reset">Đặt lại khung nhìn</button><span class="note">Kéo chuột để di chuyển · cuộn để thu phóng · nhấp đúp để đặt lại</span></div>
-<div id="cw"><canvas id="cv" aria-label="Đồ thị miền nghiệm"></canvas></div>
-</main>
+<header class="top">
+  <div class="brand"><span class="logo">📐</span><div><h1>Miền nghiệm &amp; Quy hoạch tuyến tính</h1><small>Vẽ miền nghiệm, tìm đỉnh và giá trị lớn nhất, nhỏ nhất của F</small></div></div>
+</header>
+<main class="stage"><div class="split">
+
+<section class="pane" id="panel">
+  <div class="card">
+    <h2 class="ch"><span class="ic">≤</span>Hệ bất phương trình</h2>
+    <div class="cb">
+      <div class="field"><label for="q">Gõ nhanh (LaTeX)</label><textarea id="q" rows="3" spellcheck="false" placeholder="x+2y\le4; x\ge0; y>=0"></textarea><div class="note">Ngăn cách bằng <b>;</b> hoặc xuống dòng. Hỗ trợ \le \ge &lt; &gt; &lt;= &gt;= \frac{1}{2}x. Dấu phẩy là dấu thập phân.</div><div id="qe" class="error"></div></div>
+      <div id="rows"></div><button id="add" class="add">+ Thêm bất phương trình</button>
+    </div>
+  </div>
+
+  <div class="card" style="--k:#ea580c">
+    <h2 class="ch"><span class="ic">F</span>Hàm mục tiêu</h2>
+    <div class="cb">
+      <div class="row" style="margin:0"><b>F =</b><input type="number" step="any" data-k="m" value="3"><i>x</i> +<input type="number" step="any" data-k="n" value="2"><i>y</i>
+      <select data-k="mode"><option value="max">Lớn nhất</option><option value="min">Nhỏ nhất</option><option value="none">Không tìm</option></select></div>
+    </div>
+  </div>
+
+  <details class="card" open style="--k:#16a34a">
+    <summary class="ch"><span class="ic">⚙</span>Tùy chỉnh hiển thị</summary>
+    <div class="cb"><div id="set"></div></div>
+  </details>
+
+  <div class="card" style="--k:#0d9488">
+    <h2 class="ch"><span class="ic">Σ</span>Kết quả</h2>
+    <div class="cb"><div id="res" class="result"></div></div>
+  </div>
+
+  <div class="card" style="--k:#7c3aed">
+    <h2 class="ch"><span class="ic">≡</span>Lời giải (theo SGK)</h2>
+    <div class="cb" style="background:var(--bg)"><div id="sol" class="sol"></div></div>
+  </div>
+</section>
+
+<section class="pane" id="pg">
+  <div class="card" style="--k:#0891b2">
+    <h2 class="ch"><span class="ic">▥</span>Đồ thị miền nghiệm</h2>
+    <div class="cb">
+      <div class="btns"><button id="png" class="primary" hidden>⬇ Xuất PNG</button><button id="reset">Đặt lại khung nhìn</button><span class="note">Kéo chuột để di chuyển · cuộn để thu phóng · nhấp đúp để đặt lại</span></div>
+      <div id="cw"><canvas id="cv" aria-label="Đồ thị miền nghiệm"></canvas></div>
+    </div>
+  </div>
+</section>
+
+</div></main>
 </div>
 <script>
 const $=s=>document.querySelector(s),SUBS='₀₁₂₃₄₅₆₇₈₉',sub=n=>String(n).split('').map(d=>SUBS[d]).join('');
@@ -97,7 +184,7 @@ const FONTS=[["'Times New Roman',Times,serif",'Times (SGK)'],["Arial,Helvetica,s
 const CT=[
 ['fs','Cỡ chữ','range',10,30,1,15],['font','Phông chữ','select',FONTS,FONTS[0][0]],
 ['lw','Nét đồ thị','range',1,7,0.5,2],['lc','Màu đường biên','color','#000000'],
-['hg','Khoảng cách sọc','range',4,24,1,9],['hw','Nét sọc','range',0.5,4,0.5,1],['ha','Góc nghiêng sọc (°)','range',0,175,5,45],['hc','Màu sọc','color','#222222'],
+['hg','Khoảng cách sọc','range',4,24,1,9],['hw','Nét sọc','range',0,2,0.2,1],['ha','Góc nghiêng sọc (°)','range',0,175,5,45],['hc','Màu sọc','color','#222222'],
 ['zoom','Thu phóng','range',0.2,5,0.05,1],['sm','Tỉ lệ trục','select',[['fit','Tự động (mỗi trục một tỉ lệ)'],['eq','Bằng nhau (1:1)'],['custom','Tùy chỉnh vạch đơn vị']],'fit'],['ux','1 vạch trục x =','num',1],['uy','1 vạch trục y =','num',1],['frac','Dạng số','select',[['1','Phân số'],['0','Thập phân']],'1'],
 ['tick','Giá trị trên trục','select',[['int','Chỉ giao điểm'],['all','Tất cả giá trị'],['none','Ẩn']],'int'],
 ['inter','Giao điểm','select',[['feas','Đỉnh miền nghiệm'],['all','Mọi giao điểm đường biên'],['none','Ẩn']],'feas'],
@@ -108,7 +195,7 @@ $('#set').innerHTML=CT.map(([k,l,t,a,b,c,d])=>{
  let v,ctl;
  if(t=='range'){S[k]=d;ctl=`<input type="range" data-k="${k}" min="${a}" max="${b}" step="${c}" value="${d}"><output>${d}</output>`}
  else if(t=='select'){S[k]=b;ctl=`<select data-k="${k}">${a.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select>`}
- else if(t=='num'){S[k]=a;ctl=`<input type="number" data-k="${k}" min="0" step="any" value="${a}" style="width:90px">`}
+ else if(t=='num'){S[k]=a;ctl=`<input type="number" data-k="${k}" min="0" step="any" value="${a}" class="nn">`}
  else if(t=='color'){S[k]=a;ctl=`<input type="color" data-k="${k}" value="${a}">`}
  else{S[k]=a;ctl=`<input type="checkbox" data-k="${k}" ${a?'checked':''}>`}
  return `<label class="set"><span>${l}</span>${ctl}</label>`}).join('');
@@ -194,7 +281,7 @@ function draw(){
   const[px,py]=base(q.A,q.B,q.C),gx=q.A/sx,gy=-q.B/sy,nl=Math.hypot(gx,gy),nx=gx/nl,ny=gy/nl,tx=-ny,ty=nx,B=6000;
   ctx.save();ctx.beginPath();ctx.moveTo(px-tx*B,py-ty*B);ctx.lineTo(px+tx*B,py+ty*B);ctx.lineTo(px+tx*B+nx*B,py+ty*B+ny*B);ctx.lineTo(px-tx*B+nx*B,py-ty*B+ny*B);ctx.closePath();ctx.clip();
   ctx.translate(ox,oy);ctx.rotate(S.ha*Math.PI/180);ctx.strokeStyle=S.hc;ctx.lineWidth=S.hw;ctx.beginPath();
-  const R=Math.hypot(W,H)+Math.hypot(ox-W/2,oy-H/2);for(let u=-R;u<=R;u+=S.hg){ctx.moveTo(u,-R);ctx.lineTo(u,R)}ctx.stroke();ctx.restore()});
+  const R=Math.hypot(W,H)+Math.hypot(ox-W/2,oy-H/2);for(let u=-R;u<=R;u+=S.hg){ctx.moveTo(u,-R);ctx.lineTo(u,R)}if(S.hw>0)ctx.stroke();ctx.restore()});
  // trục
  ctx.strokeStyle='#000';ctx.fillStyle='#000';ctx.lineWidth=1.4;
  ctx.beginPath();ctx.moveTo(4,oy);ctx.lineTo(W-8,oy);ctx.moveTo(ox,H-4);ctx.lineTo(ox,8);ctx.stroke();
