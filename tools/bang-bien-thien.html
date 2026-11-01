@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vẽ bảng biến thiên</title>
+<script>window.MathJax={svg:{fontCache:'none'},startup:{typeset:false}};</script>
+<script id="mjs" src="tex-svg.js" async></script>
+<style>
+:root{--bg:#f2f7ff;--card:#fff;--tx:#0f1f3d;--mut:#5b6b8a;--bd:#cfdcf3;--ac:#2563eb;--acs:#dbeafe;--er:#dc2626;--pg:#e6efff;--pri:#1d4ed8;color-scheme:light}
+html{font-size:clamp(13px,calc(.4vw + .4vh + 4px),22px);scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--pg);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+:focus-visible{outline:2px solid #ea580c;outline-offset:2px}
+button,select{font:inherit;cursor:pointer}
+
+/* khung ứng dụng */
+.app{display:flex;flex-direction:column;min-height:100dvh;background:radial-gradient(70rem 28rem at 100% 0,#cfe0ff,transparent 70%),var(--pg);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.6rem 1rem;flex-wrap:wrap;padding:.55rem 1rem;color:#fff;background:linear-gradient(120deg,#1e3a8a,#2563eb 65%,#38bdf8);box-shadow:0 2px 10px rgba(30,64,175,.28)}
+.brand{display:flex;align-items:center;gap:.6rem;min-width:0;flex:1 1 14rem}
+.logo{flex:none;width:2.1rem;height:2.1rem;border-radius:.65rem;background:#fff;display:grid;place-items:center;font-size:1.15rem}
+h1{font-size:1.15rem;margin:0;line-height:1.2}
+.seg{display:flex;gap:.2rem;padding:.2rem;border-radius:.8rem;background:rgba(255,255,255,.22)}
+.seg button{font-weight:600;font-size:.92rem;padding:.4rem 1.2rem;border:0;border-radius:.6rem;background:transparent;color:#fff}
+.seg button:hover{background:rgba(255,255,255,.18)}
+.seg button.on{background:#fff;color:var(--pri)}
+.tools{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;flex-wrap:wrap;flex:1 1 14rem;min-width:0}
+.tools small{font-size:.78rem;line-height:1.3;text-align:right;max-width:24rem}
+.top .ok{color:#bbf7d0}.top .w{color:#fde68a}
+.tb{display:inline-block;margin:0;padding:.38rem .9rem;border:1.5px solid rgba(255,255,255,.55);border-radius:.6rem;background:rgba(255,255,255,.16);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.tb:hover{background:rgba(255,255,255,.3)}
+
+.stage{flex:1;min-height:0;display:flex;padding:.75rem}
+.split{flex:1;width:100%;max-width:56rem;margin:0 auto;min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;align-content:start}
+.pane{display:flex;flex-direction:column;gap:.75rem;min-width:0;min-height:0}
+.pane>*{flex:none}
+@media (min-aspect-ratio:1/1) and (min-width:700px){
+  html,body{height:100%;overflow:hidden}
+  .app{height:100dvh;min-height:0}
+  .split{max-width:120rem;grid-template-columns:minmax(21rem,4fr) minmax(0,7fr);grid-template-rows:minmax(0,1fr);align-content:stretch}
+  body.free .split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .pane{overflow-y:auto;overflow-x:hidden;padding:.15rem;margin:-.15rem;scrollbar-width:thin}
+  #out svg{max-height:max(14rem,calc(100dvh - 20rem))}
+}
+
+/* khối */
+.card{--k:var(--ac);background:var(--card);border:1px solid var(--bd);border-radius:.9rem;box-shadow:0 1px 2px rgba(30,64,175,.08),0 8px 20px -8px rgba(30,64,175,.2);overflow:hidden;min-width:0}
+.ch{display:flex;align-items:center;gap:.5rem;margin:0;padding:.45rem .8rem;font-size:.95rem;font-weight:700;color:var(--k);background:color-mix(in srgb,var(--k) 9%,#fff);border-bottom:1px solid color-mix(in srgb,var(--k) 22%,#fff);border-left:.3rem solid var(--k)}
+.ic{flex:none;display:grid;place-items:center;width:1.45rem;height:1.45rem;border-radius:.45rem;background:var(--k);color:#fff;font-size:.82rem;font-weight:700}
+.cb{padding:.65rem .8rem}
+summary.ch{cursor:pointer;list-style:none}
+summary.ch::-webkit-details-marker{display:none}
+summary.ch::after{content:"▾";margin-left:auto;transition:transform .15s}
+details:not([open])>summary.ch::after{transform:rotate(-90deg)}
+details:not([open])>summary.ch{border-bottom-color:transparent}
+
+/* nhập liệu */
+label{font-weight:600;color:var(--mut)}
+input,select{width:100%;padding:.5rem .7rem;border:1.5px solid var(--bd);border-radius:.6rem;background:var(--bg);color:var(--tx);font:inherit}
+input:focus,select:focus{background:#fff;border-color:var(--ac)}
+.fld{display:flex;gap:.6rem;align-items:center;margin:0 0 .65rem}
+.fld label{margin:0;flex:none;font-size:.88rem}
+.fld select{flex:1}
+#fc{display:grid;grid-template-columns:repeat(auto-fill,minmax(7.5rem,1fr));gap:.5rem .7rem}
+#fc .fl{grid-column:1/-1;margin:0;padding:.45rem .7rem;border-radius:.6rem;background:var(--acs);color:var(--pri);text-align:center;font:italic 700 1.15rem/1.4 "Times New Roman",Times,serif}
+#fc label{display:flex;align-items:center;gap:.45rem;margin:0;font:italic 700 1.05rem "Times New Roman",Times,serif;color:var(--pri)}
+#fc input{flex:1;min-width:0;font:600 .95rem system-ui,sans-serif;text-align:center;background:#fff}
+#fi{margin-top:.65rem}
+#fi:empty{display:none}
+#fi p{margin:0;padding:.5rem .75rem;border-radius:.6rem;background:var(--bg);border:1px solid var(--bd);line-height:1.7;color:var(--tx)}
+#fi small,.hint{font-size:.8rem;color:var(--mut);line-height:1.55}
+.hint{margin-top:.55rem}
+.add{margin-top:.65rem;padding:.4rem .9rem;border-radius:.6rem;border:1.5px dashed var(--ac);background:var(--bg);color:var(--ac);font-weight:600}
+.add:hover{background:var(--acs)}
+#n{width:5rem;text-align:center}
+.tw{overflow-x:auto;scrollbar-width:thin;padding-bottom:.2rem}
+.g{border-collapse:collapse;width:100%;min-width:var(--lw,40rem);table-layout:fixed}
+.g th{padding:.2rem .4rem;text-align:right;font:italic 700 1rem "Times New Roman",Times,serif;color:var(--pri);border:0;background:none}
+.g td{padding:.2rem;border:0}
+.g input,.g select{width:100%;min-width:0;padding:.38rem .2rem;text-align:center;text-align-last:center;background:#fff;font-size:.9rem}
+.g td .y2{margin-top:.25rem}
+
+/* thông báo */
+#msg:not(:empty){margin-top:.55rem}
+#msg>div,#fi>.e{margin:.3rem 0 0;padding:.4rem .65rem;border-radius:.5rem;font-size:.88rem;border:1px solid}
+#msg .e,#fi>.e{background:#fef2f2;border-color:#fecaca;color:var(--er)}
+#msg .w{background:#fffbeb;border-color:#fde68a;color:#92400e}
+#msg .ok{background:#f0fdf4;border-color:#bbf7d0;color:#15803d}
+
+/* kết quả */
+#out{overflow:auto;background:#fff;border:1px solid var(--bd);border-radius:.6rem;padding:.6rem;scrollbar-width:thin}
+#out svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.btns{display:flex;gap:.5rem;margin-top:.65rem}
+.btns button{flex:1;padding:.5rem;border-radius:.6rem;border:1.5px solid var(--ac);background:#fff;color:var(--ac);font-weight:600}
+.btns button:hover{background:var(--acs)}
+.btns button.p{background:var(--ac);color:#fff}
+.btns button.p:hover{background:var(--pri)}
+.note{font-size:.8rem;color:var(--mut);margin:.55rem 0 0;line-height:1.5}
+.note:empty{display:none}
+
+/* tùy chọn */
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.5rem 1rem}
+.opts label{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin:0;font-size:.88rem;color:var(--tx)}
+.opts input:not([type=checkbox]){width:6.5rem;padding:.35rem .5rem;text-align:center}
+.opts select{width:9.5rem;padding:.35rem .5rem}
+.opts input[type=checkbox]{width:1.15rem;height:1.15rem;padding:0;accent-color:var(--ac)}
+#cn{display:contents}
+#cn input{width:9.5rem!important;text-align:left!important}
+</style></head><body>
+<div class="app">
+<header class="top">
+  <div class="brand"><span class="logo">📈</span><h1>Vẽ bảng biến thiên</h1></div>
+  <div class="seg"><button id="t1" class="on">Nhập hàm</button><button id="t2">Tự do</button></div>
+  <div class="tools"><small id="mjn"></small>
+    <button id="sv" class="tb" type="button">Lưu dữ liệu</button>
+    <label class="tb">Nạp dữ liệu<input id="ld" type="file" accept=".json" hidden></label></div>
+</header>
+<main class="stage"><div class="split">
+
+<section class="pane">
+  <div class="card" id="p1">
+    <h2 class="ch"><span class="ic">ƒ</span>Nhập hàm số</h2>
+    <div class="cb">
+      <div class="fld"><label for="ft">Dạng hàm</label><select id="ft"></select></div>
+      <div id="fc"></div>
+      <div id="fi"></div>
+      <div class="hint">Điền hệ số (số nguyên, thập phân hoặc phân số như 3/2); bảng tự tính và vẽ. Nhấn Tab hoặc Enter để sang ô kế tiếp.</div>
+      <button class="add" id="to2" type="button">Chỉnh tiếp ở chế độ Tự do</button>
+    </div>
+  </div>
+
+  <div class="card" id="p2" hidden style="--k:#0891b2">
+    <h2 class="ch"><span class="ic">✎</span>Chế độ Tự do: mỗi cột là một điểm của bảng</h2>
+    <div class="cb">
+      <div class="fld"><label for="n">Số điểm (cả 2 mút)</label><input id="n" type="number" min="2" max="12"></div>
+      <div class="tw scr" id="free"></div>
+      <div class="hint"><b>y′:</b> 0 = y′ bằng 0 · | = điểm trung gian · ‖ cả y = y và y′ đều không xác định (nhập y trái, y phải) · ‖ chỉ y′ = y′ không xác định nhưng y có giá trị.<br>Ô giữa hai điểm là dấu y′ của khoảng đó. Gõ <b>inf</b>, <b>-inf</b>, <b>11/5</b>, <b>sqrt(3)</b>, <b>pi</b>, hoặc TeX như <b>\dfrac{1}{2}</b>, <b>\ln 2</b>.</div>
+    </div>
+  </div>
+
+  <details class="card" open style="--k:#7c3aed">
+    <summary class="ch"><span class="ic">⚙</span>Tùy chọn hiển thị</summary>
+    <div class="cb opts">
+      <label>Độ rộng cột (px)<input data-o="step" type="number"></label>
+      <label>Tự giãn cột theo chữ<input data-o="auto" type="checkbox"></label>
+      <label>Chiều cao hàng f(x)<input data-o="fh" type="number"></label>
+      <label>Chiều cao hàng x, y′<input data-o="hr" type="number"></label>
+      <label>Kẻ đường dọc tại điểm y′ = 0<input data-o="v0" type="checkbox"></label>
+      <label>Cỡ chữ<input data-o="fs" type="number"></label>
+      <label>Độ dày nét<input data-o="lw" type="number" step="0.1"></label>
+      <label>Độ nét ảnh PNG<select data-o="sc"><option value="2">x2</option><option value="3">x3 (in ấn)</option><option value="4">x4</option></select></label>
+      <label>Tên hàng<select data-o="sty"><option value="f">x, f′(x), f(x)</option><option value="y">x, y′, y</option><option value="c">Tự nhập (TeX)…</option></select></label>
+      <div id="cn" hidden><label>Hàng 1<input data-o="n0" type="text"></label><label>Hàng 2<input data-o="n1" type="text"></label><label>Hàng 3<input data-o="n2" type="text"></label></div>
+    </div>
+  </details>
+</section>
+
+<section class="pane">
+  <div class="card" style="--k:#0891b2">
+    <h2 class="ch"><span class="ic">▦</span>Bảng biến thiên</h2>
+    <div class="cb">
+      <div id="out"></div>
+      <div id="msg"></div>
+      <div class="btns"><button class="p" id="cp" type="button">Sao chép ảnh</button><button id="dl" type="button">Tải PNG</button><button id="ds" type="button">Tải SVG</button></div>
+      <p class="note" id="info"></p>
+    </div>
+  </div>
+</section>
+
+</div></main>
+</div>
+<script>
+const FONTA="'Times New Roman','STIX Two Text',serif";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const fx=n=>+n.toFixed(2),Q=(x,y,t,y2)=>({x,t:t||'0',y,y2:y2||''});
+let st={pts:[Q('-inf','2'),Q('-1','-inf','‖','+inf'),Q('0','3','|'),Q('4','11/5','|'),Q('+inf','2')],sg:['-','-','-','-']};
+let o={step:170,auto:true,fh:150,hr:44,fs:22,lw:1.3,sc:3,sty:'f',v0:true,n0:'t',n1:"v'(t)",n2:'v(t)'},mj=false,cache={},cur={W:1,H:1};
+const yL=i=>st.pts[i].y,yR=i=>{const p=st.pts,q=p[i];return i>0&&i<p.length-1&&q.t=='‖'?q.y2:q.y};
+function num(s){s=(s||'').trim().replace(/−/g,'-');if(!s)return NaN;
+ const m=s.match(/^([+-]?)\s*(inf(inity)?|∞)$/i);if(m)return m[1]=='-'?-Infinity:Infinity;
+ const t=s.replace(/sqrt/g,'Math.sqrt').replace(/pi/g,'Math.PI').replace(/(\d)Math/g,'$1*Math').replace(/\^/g,'**');
+ if(/[^0-9+\-*\/().\s]/.test(t.replace(/Math\.sqrt|Math\.PI/g,'')))return NaN;
+ try{const v=Function('return('+t+')')();return typeof v=='number'?v:NaN}catch(e){return NaN}}
+function check(){const E=[],W=[],P=st.pts,N=P.length,sg=st.sg;
+ P.forEach((p,i)=>{if(!(p.x||'').trim())E.push('Điểm '+(i+1)+': thiếu giá trị x.');
+  if(i>0&&i<N-1){const a=sg[i-1],b=sg[i];
+   if(p.t=='|'&&a!=b)E.push(`Điểm ${i+1}: đường đơn “|” cần hai khoảng cùng dấu y′ (nếu đổi dấu hãy chọn 0 hoặc ‖).`);
+   if(p.t=='‖'&&(!(p.y||'').trim()||!(p.y2||'').trim()))E.push(`Điểm ${i+1}: ‖ cần đủ y bên trái và y bên phải.`);
+   if(p.t=='0'&&a==b)W.push(`Điểm ${i+1}: y′=0 nhưng không đổi dấu (như x³), mũi tên được gộp.`)}
+  else if(!(p.y||'').trim())W.push('Mút '+(i?'phải':'trái')+' chưa có giá trị y.')});
+ for(let i=0;i<N-1;i++){const a=num(P[i].x),b=num(P[i+1].x);if(!isNaN(a)&&!isNaN(b)&&a>=b)E.push(`x của điểm ${i+1} phải nhỏ hơn x của điểm ${i+2}.`);
+  const u=num(yR(i)),v=num(yL(i+1));if(!isNaN(u)&&!isNaN(v)&&(st.sg[i]=='+'?v<=u:v>=u))E.push(`Khoảng ${i+1}: dấu y′ ${st.sg[i]=='+'?'+':'−'} nhưng y ${st.sg[i]=='+'?'không tăng':'không giảm'}.`)}
+ return{E,W}}
+
+
+/* ===== Chuyển cách gõ tắt sang TeX, dựng nhãn bằng MathJax (hoặc chữ đơn giản nếu chưa có) ===== */
+function cvt(s){let p;do{p=s;s=s.replace(/sqrt\(([^()]*)\)/g,'\\sqrt{$1}')}while(s!=p);return s.replace(/pi/g,'\\pi ').replace(/\^(-?\d+)/g,'^{$1}')}
+function slash(s){let d=0;for(let i=0;i<s.length;i++){const c=s[i];if('({'.includes(c))d++;else if(')}'.includes(c))d--;else if(c=='/'&&!d)return i}return -1}
+const unp=n=>{if(n[0]=='('&&n.slice(-1)==')'){let d=0;for(let i=0;i<n.length;i++){if(n[i]=='(')d++;if(n[i]==')'&&!--d&&i<n.length-1)return n}return n.slice(1,-1)}return n};
+function toTex(s){s=s.trim();if(/[\\{]/.test(s))return s;
+ let m=s.match(/^([+-]?)\s*(inf(inity)?|∞)$/i);if(m)return(m[1]||'+')+'\\infty ';
+ s=cvt(s.replace(/∞/g,'\\infty ').replace(/−/g,'-'));let g='';m=s.match(/^([+-])\s*(.*)$/);if(m){g=m[1];s=m[2]}
+ const k=slash(s);if(k>0)return g+'\\dfrac{'+unp(s.slice(0,k).trim())+'}{'+unp(s.slice(k+1).trim())+'}';return g+s}
+const plain=s=>s.trim().replace(/-/g,'−').replace(/sqrt\(([^)]*)\)/g,'√$1').replace(/pi/g,'π').replace(/inf(inity)?/gi,'∞').replace(/^∞/,'+∞');
+const mc=document.createElement('canvas').getContext('2d');
+function fb(s,fs,raw){const t=raw?s.replace(/'/g,'′'):plain(s),it=raw&&/[A-Za-z]/.test(s);mc.font=(it?'italic ':'')+fs+'px '+FONTA;const w=mc.measureText(t).width;
+ return{w,asc:.75*fs,dsc:.2*fs,m:(x,y)=>`<text x="${fx(x)}" y="${fx(y+.25*fs)}" text-anchor="middle" font-size="${fs}" font-family="${FONTA}" ${it?'font-style="italic" ':''}fill="#000" stroke="none">${esc(t)}</text>`}}
+function lab(s,fs,raw){s=s||'';const key=fs+'|'+(raw?1:0)+'|'+s;if(cache[key])return cache[key];let r;
+ if(!s.trim())r={w:0,asc:0,dsc:0,m:()=>''};
+ else if(mj){try{const n=MathJax.tex2svg(raw?s:toTex(s),{display:false}),svg=n.querySelector('svg');
+  if(svg&&!n.querySelector('[data-mjx-error]')){const vbs=svg.getAttribute('viewBox'),vb=vbs.split(/[\s,]+/).map(Number),em=fs/1000,w=vb[2]*em,asc=-vb[1]*em,dsc=(vb[1]+vb[3])*em,inner=svg.innerHTML;
+   r={w,asc,dsc,m:(x,y)=>`<svg x="${fx(x-w/2)}" y="${fx(y+.25*fs-asc)}" width="${fx(w)}" height="${fx(asc+dsc)}" viewBox="${vbs}" style="color:#000;overflow:visible">${inner}</svg>`}}}catch(e){}}
+ return cache[key]=r||fb(s,fs,raw)}
+
+/* ===== Vẽ bảng thành SVG ===== */
+function render(){
+ const P=st.pts,N=P.length,sg=st.sg,fs=o.fs,lw=o.lw,L=s=>lab(s,fs),isD=i=>i>0&&i<N-1&&P[i].t=='‖';
+ const runs=[];{let cur={a:0,b:1,d:sg[0],mids:[]};
+  for(let i=1;i<N-1;i++){const t=P[i].t;
+   if((t=='0'||t=='|'||t=='D')&&sg[i-1]==sg[i]){cur.mids.push(i);cur.b=i+1}else{runs.push(cur);cur={a:i,b:i+1,d:sg[i],mids:[]}}}
+  runs.push(cur)}
+ let mw=0;P.forEach(p=>[p.x,p.y,p.y2].forEach(s=>{if(s)mw=Math.max(mw,L(s).w)}));
+ const nm=o.sty=='c'?[o.n0,o.n1,o.n2]:o.sty=='f'?['x',"f'(x)",'f(x)']:['x',"y'",'y'];
+ const nw=Math.max(...nm.map(s=>lab(s,fs,1).w)),step=o.auto?Math.max(o.step,mw*1.7+fs*2):o.step;
+ const M=Math.ceil(lw)+1,Lw=Math.round(Math.max(fs*4.4,nw+fs*1.6)),Xl=M+Lw,Xr=Xl+(N-1)*step,r0=M,r1=r0+o.hr,r2=r1+o.hr,r3=r2+o.fh,W=Xr+M,H=r3+M;
+ const ln=[],lb=[],line=(a,b,x,y)=>ln.push(`<line x1="${fx(a)}" y1="${fx(b)}" x2="${fx(x)}" y2="${fx(y)}"/>`);
+ const tx=(s,x,y,bg,raw)=>{if(!(s||'').trim())return;const l=lab(s,fs,raw);
+  if(bg)lb.push(`<rect x="${fx(x-l.w/2-2)}" y="${fx(y+.25*fs-l.asc-1)}" width="${fx(l.w+4)}" height="${fx(l.asc+l.dsc+2)}" fill="#fff" stroke="none"/>`);lb.push(l.m(x,y))};
+ const px=i=>Xl+i*step,e=fs*1.6,hi=r2+fs*1.3,lo=r3-fs*1.3,ofs=fs*.4;
+ ln.push(`<rect x="${M}" y="${r0}" width="${Xr-M}" height="${r3-r0}"/>`);line(M,r1,Xr,r1);line(M,r2,Xr,r2);line(Xl,r0,Xl,r3);
+ [[r0,r1],[r1,r2],[r2,r3]].forEach((r,i)=>tx(nm[i],M+Lw/2,(r[0]+r[1])/2,0,1));
+ P.forEach((p,i)=>tx(p.x,i==0?Xl+e:i==N-1?Xr-e:px(i),(r0+r1)/2));
+ for(let i=1;i<N-1;i++){const t=P[i].t,x=px(i);
+  if(t=='‖'){line(x-2.5,r1,x-2.5,r3);line(x+2.5,r1,x+2.5,r3)}
+  else if(t=='D'){line(x-2.5,r1,x-2.5,r2);line(x+2.5,r1,x+2.5,r2)}
+  else{if(t!='0'||o.v0)line(x,r1,x,r2);if(t=='0')tx('0',x,(r1+r2)/2,1,1)}}
+ sg.forEach((s,i)=>tx(s=='+'?'+':'-',(px(i)+px(i+1))/2,(r1+r2)/2,0,1));
+ runs.forEach(r=>{
+  const A=L(yR(r.a)),B=L(yL(r.b)),up=r.d=='+';
+  const sx=r.a==0?Xl+e:isD(r.a)?px(r.a)+5+A.w/2:px(r.a),ex=r.b==N-1?Xr-e:isD(r.b)?px(r.b)-5-B.w/2:px(r.b);
+  const sy=up?lo:hi,ey=up?hi:lo;
+  if(r.a==0||isD(r.a))tx(yR(r.a),sx,sy,isD(r.a));
+  tx(yL(r.b),ex,ey,isD(r.b));
+  const x1=sx+A.w/2+6,x2=ex-B.w/2-6,y1=sy+(up?-ofs:ofs),y2=ey+(up?ofs:-ofs),ly=x=>y1+(y2-y1)*(x-x1)/(x2-x1);
+  const gp=r.mids.map(i=>{const s=P[i].y;if(!(s||'').trim())return null;const l=L(s),x=px(i);return{s,x,y:ly(x),g:l.w/2+4}}).filter(Boolean);
+  const seg=(a,b)=>{if(b>a)line(a,ly(a),b,ly(b))};let cx=x1;
+  gp.forEach(g=>{seg(cx,g.x-g.g);cx=g.x+g.g});seg(cx,x2);
+  const an=Math.atan2(y2-y1,x2-x1);[-.45,.45].forEach(d=>line(x2,y2,x2-9*Math.cos(an+d),y2-9*Math.sin(an+d)));
+  gp.forEach(g=>tx(g.s,g.x,g.y))});
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${fx(W)}" height="${fx(H)}" viewBox="0 0 ${fx(W)} ${fx(H)}" style="width:${fx(W/16)}rem;color:#000"><rect width="100%" height="100%" fill="#fff"/><g stroke="#000" stroke-width="${lw}" fill="none">${ln.join('')}</g>${lb.join('')}</svg>`;
+ return{svg,W,H}}
+
+function go(){const r=check();let d;
+ try{d=render()}catch(er){$('#msg').innerHTML='<div class=e>Lỗi vẽ: '+esc(er.message)+'</div>';return}
+ cur=d;$('#out').innerHTML=d.svg;
+ $('#msg').innerHTML=r.E.map(s=>`<div class=e>⚠ ${esc(s)}</div>`).join('')+r.W.map(s=>`<div class=w>• ${esc(s)}</div>`).join('')+(r.E.length||r.W.length?'':'<div class=ok>✓ Dữ liệu hợp lệ</div>')}
+
+/* ===== Xuất ảnh ===== */
+function svgText(S){const s=$('#out svg').cloneNode(true);s.setAttribute('width',Math.ceil(cur.W*S));s.setAttribute('height',Math.ceil(cur.H*S));s.removeAttribute('style');return new XMLSerializer().serializeToString(s)}
+function png(){const S=+o.sc;return new Promise((ok,no)=>{const im=new Image();
+ im.onload=()=>{const c=document.createElement('canvas');c.width=Math.ceil(cur.W*S);c.height=Math.ceil(cur.H*S);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);c.toBlob(b=>b?ok(b):no(new Error('toBlob')),'image/png')};
+ im.onerror=()=>no(new Error('img'));im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgText(S))})}
+const save=(url,name)=>{const a=document.createElement('a');a.href=url;a.download=name;a.click()};
+const info=t=>{$('#info').textContent=t};
+$('#cp').onclick=()=>{if(!navigator.clipboard||!window.ClipboardItem)return info('Trình duyệt không cho sao chép ảnh. Hãy dùng “Tải PNG”.');
+ navigator.clipboard.write([new ClipboardItem({'image/png':png()})]).then(()=>info('Đã sao chép. Về Word nhấn Ctrl+V.')).catch(()=>info('Không sao chép được. Hãy dùng “Tải PNG”.'))};
+$('#dl').onclick=()=>png().then(b=>save(URL.createObjectURL(b),'bang-bien-thien.png')).catch(()=>info('Không xuất được PNG.'));
+$('#ds').onclick=()=>save(URL.createObjectURL(new Blob([svgText(1)],{type:'image/svg+xml'})),'bang-bien-thien.svg');
+$('#sv').onclick=()=>save(URL.createObjectURL(new Blob([JSON.stringify({st,o})],{type:'application/json'})),'bang-bien-thien.json');
+$('#ld').onchange=ev=>{const f=ev.target.files[0];if(!f)return;f.text().then(t=>{try{const j=JSON.parse(t);st=j.st;Object.assign(o,j.o);drawForm();syncOpt();go();tab(2);info('Đã nạp dữ liệu.')}catch(er){info('File không hợp lệ.')}})};
+
+/* ===== Tab Tự do: lưới nhập giống bảng ===== */
+function drawForm(){const P=st.pts,N=P.length;$('#n').value=N;let a='',b='',c='';
+ const op=[['0','0'],['|','|'],['‖','‖ cả y'],['D','‖ chỉ y′']];
+ P.forEach((p,i)=>{const mid=i>0&&i<N-1,two=mid&&p.t=='‖';
+  a+=`<td><input data-i=${i} data-k=x value="${esc(p.x)}"></td>`;
+  b+=`<td>${mid?`<select data-i=${i} data-k=t>${op.map(q=>`<option value="${q[0]}"${p.t==q[0]?' selected':''}>${q[1]}</option>`).join('')}</select>`:''}</td>`;
+  c+=`<td><input data-i=${i} data-k=y value="${esc(p.y)}"${two?' placeholder="y trái"':''}>${two?`<br><input class="y2" data-i=${i} data-k=y2 value="${esc(p.y2)}" placeholder="y phải">`:''}</td>`;
+  if(i<N-1){a+='<td></td>';c+='<td></td>';b+=`<td><select data-s=${i}><option value="+"${st.sg[i]=='+'?' selected':''}>+</option><option value="-"${st.sg[i]=='-'?' selected':''}>−</option></select></td>`}});
+ document.documentElement.style.setProperty('--lw',(2.2+N*5.6+(N-1)*3.2)+'rem');
+ const cg='<colgroup><col style="width:2.2rem">'+P.map((_,i)=>'<col>'+(i<N-1?'<col style="width:3.2rem">':'')).join('')+'</colgroup>';
+ $('#free').innerHTML=`<table class="g">${cg}<tr><th>x</th>${a}</tr><tr><th>y′</th>${b}</tr><tr><th>y</th>${c}</tr></table>`}
+$('#free').addEventListener('input',ev=>{const t=ev.target;
+ if(t.dataset.i!==undefined){st.pts[t.dataset.i][t.dataset.k]=t.value;if(t.dataset.k=='t')drawForm()}else if(t.dataset.s!==undefined)st.sg[t.dataset.s]=t.value;go()});
+$('#n').onchange=()=>{const n=Math.max(2,Math.min(12,+$('#n').value||2)),P=st.pts;
+ while(P.length<n){P.splice(P.length-1,0,{x:'',t:'0',y:'',y2:''});st.sg.push('+')}
+ while(P.length>n){P.splice(P.length-2,1);st.sg.pop()}drawForm();go()};
+
+/* ===== Nhập hàm bằng hệ số: tính chính xác bằng phân số và căn ===== */
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a),lcm=(a,b)=>a/gcd(a,b)*b;
+const R=(n,d=1)=>{if(d<0){n=-n;d=-d}const g=gcd(n,d)||1;return{n:n/g,d:d/g}};
+const ra=(a,b)=>R(a.n*b.d+b.n*a.d,a.d*b.d),rm=(a,b)=>R(a.n*b.n,a.d*b.d),neg=a=>R(-a.n,a.d),rs=(a,b)=>ra(a,neg(b)),rd=(a,b)=>R(a.n*b.d,a.d*b.n),rf=a=>a.n/a.d,Z=R(0),O=R(1),sn=x=>x>0?1:-1;
+const E=(p,q,r)=>({p,q:q||Z,r:r||1});
+const ea=(a,b)=>E(ra(a.p,b.p),ra(a.q,b.q),a.q.n?a.r:b.r);
+const em=(a,b)=>{const r=a.q.n?a.r:b.r;return E(ra(rm(a.p,b.p),rm(rm(a.q,b.q),R(r))),ra(rm(a.p,b.q),rm(b.p,a.q)),r)};
+const ei=a=>{if(!a.q.n)return E(rd(O,a.p));const den=rs(rm(a.p,a.p),rm(rm(a.q,a.q),R(a.r)));return E(rd(a.p,den),rd(neg(a.q),den),a.r)};
+const ef=a=>rf(a.p)+rf(a.q)*Math.sqrt(a.r);
+const pt=p=>{p=p.slice();while(p.length>1&&!p[p.length-1].n)p.pop();return p};
+const pm=(a,b)=>{const r=Array(a.length+b.length-1).fill(Z);a.forEach((x,i)=>b.forEach((y,j)=>r[i+j]=ra(r[i+j],rm(x,y))));return r};
+const pdv=p=>p.length>1?p.slice(1).map((c,i)=>rm(c,R(i+1))):[Z];
+const ps=(a,b)=>pt(Array.from({length:Math.max(a.length,b.length)},(_,i)=>rs(a[i]||Z,b[i]||Z)));
+const pe=(p,x)=>p.reduceRight((s,c)=>ea(em(s,x),E(c)),E(Z)),pf=(p,x)=>p.reduceRight((s,c)=>s*x+rf(c),0);
+const isq=n=>{const r=Math.round(Math.sqrt(n));return r*r==n?r:-1};
+const sqf=m=>{let k=1,r=m;for(let i=2;i*i<=r;i++)while(r%(i*i)==0){r/=i*i;k*=i}return[k,r]};
+function quad(c0,c1,c2){const D=rs(rm(c1,c1),rm(R(4),rm(c2,c0)));if(D.n<0)return[];
+ const mb=neg(c1),h=rm(R(2),c2);if(!D.n)return[E(rd(mb,h))];
+ const a=isq(D.n),b=isq(D.d);
+ if(a>=0&&b>=0){const s=R(a,b);return[E(rd(rs(mb,s),h)),E(rd(ra(mb,s),h))]}
+ const[k,r]=sqf(D.n*D.d),q=rd(R(k,D.d),h),t=rd(mb,h);return[E(t,q,r),E(t,neg(q),r)]}
+function roots(g){g=pt(g);const out=[];while(g.length>1&&!g[0].n){out.push(E(Z));g=g.slice(1)}
+ if(g.length==2)out.push(E(rd(neg(g[0]),g[1])));else if(g.length==3)out.push(...quad(g[0],g[1],g[2]));return out}
+function fE(e){const S0=lcm(e.p.d,e.q.d);let P=e.p.n*(S0/e.p.d),Q_=e.q.n*(S0/e.q.d),S=S0;const g=gcd(gcd(P,Q_),S)||1;P/=g;Q_/=g;S/=g;
+ let n=(P?''+P:'')+(Q_?(Q_>0&&P?'+':'')+(Q_==1?'':Q_==-1?'-':Q_)+'sqrt('+e.r+')':'');if(!n)n='0';
+ return S==1?n:(P&&Q_?'('+n+')':n)+'/'+S}
+const show=s=>s.replace(/sqrt\((\d+)\)/g,'√$1');
+function polyStr(p){let s='';for(let i=p.length-1;i>=0;i--){const c=p[i];if(!c.n)continue;const a=R(Math.abs(c.n),c.d);
+ let t=(a.n==1&&a.d==1&&i>0)?'':a.d==1?''+a.n:`(${a.n}/${a.d})`;t+=i==0?'':i==1?'x':'x^'+i;s+=(c.n<0?'-':(s?'+':''))+t}return s||'0'}
+function build(N,D){
+ const g=ps(pm(pdv(N),D),pm(N,pdv(D)));if(g.length==1&&!g[0].n)return{err:'y′ ≡ 0: hàm là hằng số.'};
+ const asym=D.length==2?[E(rd(neg(D[0]),D[1]))]:[];
+ if(asym.length){const v=pe(N,asym[0]);if(!v.p.n&&!v.q.n)return{err:'Tử và mẫu có nghiệm chung (hàm rút gọn được), hãy rút gọn trước.'}}
+ const all=roots(g).map(e=>({e,t:'0'})).concat(asym.map(e=>({e,t:'V'}))).sort((a,b)=>ef(a.e)-ef(b.e));
+ const cr=all.filter((c,i)=>!i||Math.abs(ef(c.e)-ef(all[i-1].e))>1e-9),xs=cr.map(c=>ef(c.e)),sgs=[];
+ for(let i=0;i<=xs.length;i++){const x=!xs.length?0:i==0?xs[0]-1:i==xs.length?xs[i-1]+1:(xs[i-1]+xs[i])/2;sgs.push(pf(g,x)>0?'+':'-')}
+ const dN=N.length-1,dD=D.length-1;let yl,yr;
+ if(dN==dD)yl=yr=fE(E(rd(N[dN],D[dD])));
+ else{const s=sn(rf(N[dN]))*sn(rf(D[dD])),k=dN-dD;yr=s>0?'+inf':'-inf';yl=s*(k%2?-1:1)>0?'+inf':'-inf'}
+ const pts=[Q('-inf',yl)];
+ cr.forEach((c,i)=>{const xt=fE(c.e);
+  if(c.t=='V'){const s0=sn(pf(N,xs[i])),sd=sn(rf(D[1]));pts.push(Q(xt,s0*-sd>0?'+inf':'-inf','‖',s0*sd>0?'+inf':'-inf'))}
+  else pts.push(Q(xt,sgs[i]==sgs[i+1]?'':fE(em(pe(N,c.e),ei(pe(D,c.e))))))});
+ pts.push(Q('+inf',yr));
+ const rt=cr.filter(c=>c.t=='0').map(c=>'x = '+show(fE(c.e)));
+ const info=`<p><b>Tập xác định:</b> ${asym.length?'ℝ \\ {'+show(fE(asym[0]))+'}':'ℝ'}<br><b>Tử số của y′:</b> ${polyStr(g)}<br><b>Nghiệm của tử số:</b> ${rt.length?rt.join('; '):'không có'}<br><small>Cần chỉnh thêm thì chuyển sang tab Tự do.</small></p>`;
+ return{pts,sg:sgs,info}}
+const FT={
+ f3:{n:'Bậc 3',l:'y = ax³ + bx² + cx + d',c:'abcd',v:c=>c[0].n?'':'a phải khác 0.',f:c=>[[c[3],c[2],c[1],c[0]],[O]]},
+ f4:{n:'Trùng phương',l:'y = ax⁴ + bx² + c',c:'abc',v:c=>c[0].n?'':'a phải khác 0.',f:c=>[[c[2],Z,c[1],Z,c[0]],[O]]},
+ f2:{n:'Bậc 2',l:'y = ax² + bx + c',c:'abc',v:c=>c[0].n?'':'a phải khác 0.',f:c=>[[c[2],c[1],c[0]],[O]]},
+ fh:{n:'Nhất biến',l:'y = (ax + b) / (cx + d)',c:'abcd',v:c=>!c[2].n?'c phải khác 0 (nếu không hàm là bậc nhất).':!rs(rm(c[0],c[3]),rm(c[1],c[2])).n?'ad − bc = 0: hàm là hằng số.':'',f:c=>[[c[1],c[0]],[c[3],c[2]]]},
+ fq:{n:'Bậc 2 / bậc 1',l:'y = (ax² + bx + c) / (dx + e)',c:'abcde',v:c=>!c[0].n?'a phải khác 0.':!c[3].n?'d phải khác 0.':'',f:c=>[[c[2],c[1],c[0]],[c[4],c[3]]]}};
+function pr(s){s=(s||'').trim().replace(',','.').replace('−','-');if(!s)return Z;const m=s.match(/^([+-]?)(\d+)(?:\.(\d+))?(?:\/(\d+))?$/);if(!m)return null;
+ let n=+(m[2]+(m[3]||'')),d=Math.pow(10,(m[3]||'').length);if(m[4]){if(m[3]||+m[4]==0)return null;d*=+m[4]}return R(m[1]=='-'?-n:n,d)}
+const fi=h=>{$('#fi').innerHTML=h};
+const DEF={f3:[1,0,-3,2],f4:[1,-2,0],f2:[1,-2,3],fh:[2,1,1,-1],fq:[1,-2,2,1,-1]};
+function drawFC(focus){const k=$('#ft').value,F=FT[k];
+ $('#fc').innerHTML=`<p class="fl"><b>${F.l}</b></p>`+[...F.c].map((ch,i)=>`<label>${ch} <input data-c=${i} inputmode="decimal" value="${DEF[k][i]}"></label>`).join('');
+ if(focus)$('#fc input').focus();applyF()}
+function applyF(){const F=FT[$('#ft').value],c=[];let bad=0;
+ document.querySelectorAll('#fc input').forEach(el=>{const v=pr(el.value);if(!v)bad=1;c.push(v||Z)});
+ if(bad)return fi('<div class=e>Hệ số chưa hợp lệ (dùng số nguyên, số thập phân hoặc phân số như 3/2).</div>');
+ const er=F.v(c);if(er)return fi(`<div class=e>⚠ ${er}</div>`);
+ const[N,D]=F.f(c);let r;try{r=build(pt(N),pt(D))}catch(x){return fi('<div class=e>Lỗi tính toán: '+esc(x.message)+'</div>')}
+ if(r.err)return fi(`<div class=e>⚠ ${r.err}</div>`);
+ st={pts:r.pts,sg:r.sg};drawForm();go();fi(r.info)}
+$('#ft').innerHTML=Object.keys(FT).map(k=>`<option value="${k}">${FT[k].n}</option>`).join('');
+$('#ft').onchange=()=>drawFC(true);
+$('#fc').addEventListener('input',applyF);
+$('#fc').addEventListener('focusin',ev=>{if(ev.target.select)ev.target.select()});
+$('#fc').addEventListener('keydown',ev=>{if(ev.key!='Enter')return;const a=[...document.querySelectorAll('#fc input')],i=a.indexOf(ev.target);if(a[i+1]){ev.preventDefault();a[i+1].focus()}});
+
+/* ===== Tab, tùy chọn, nạp MathJax ===== */
+function tab(n){$('#p1').hidden=n!=1;$('#p2').hidden=n!=2;$('#t1').classList.toggle('on',n==1);$('#t2').classList.toggle('on',n==2);document.body.classList.toggle('free',n==2)}
+$('#t1').onclick=()=>tab(1);$('#t2').onclick=()=>tab(2);$('#to2').onclick=()=>tab(2);
+const vis=()=>{$('#cn').hidden=o.sty!='c'};
+function syncOpt(){document.querySelectorAll('[data-o]').forEach(el=>{const v=o[el.dataset.o];if(el.type=='checkbox')el.checked=v;else el.value=v});vis()}
+document.querySelectorAll('[data-o]').forEach(el=>el.oninput=()=>{const k=el.dataset.o;o[k]=el.type=='checkbox'?el.checked:(k=='sty'||k[0]=='n')?el.value:(+el.value||o[k]);vis();go()});
+const note=()=>{const n=$('#mjn');n.textContent=mj?'✓ Công thức: MathJax':'Chưa tìm thấy tex-svg.js: đang dùng chữ đơn giản (đặt file tex-svg.js cạnh file HTML)';n.className=mj?'ok':'w'};
+const tm=setInterval(()=>{if(window.MathJax&&MathJax.startup&&MathJax.startup.promise){clearInterval(tm);clearTimeout(to);
+ MathJax.startup.promise.then(()=>{mj=true;cache={};go();note()})}},100);
+const to=setTimeout(()=>{clearInterval(tm);note()},6000);
+syncOpt();drawFC(false);
+</script>
+</body></html>
