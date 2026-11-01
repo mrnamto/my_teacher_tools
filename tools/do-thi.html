@@ -6,99 +6,207 @@
 <script>window.MathJax={startup:{typeset:false},svg:{fontCache:"local"}}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
 <style>
-:root{--bg:#f6f5f1;--fg:#1c1c1a;--card:#fff;--bd:#d8d6cf;--ac:#17407a;--mu:#6b6a64;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181b;--fg:#ecebe6;--card:#222428;--bd:#3a3d44;--ac:#8fb4f0;--mu:#a09f98}}
-:root[data-theme="dark"]{--bg:#17181b;--fg:#ecebe6;--card:#222428;--bd:#3a3d44;--ac:#8fb4f0;--mu:#a09f98}
-*{box-sizing:inherit}html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font:15px/1.45 "Source Sans 3",system-ui,sans-serif;padding:12px;max-width:760px;margin:auto}
-h1{font:600 20px Georgia,serif;margin:4px 0 10px}
-section{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-bottom:10px}
-h2{font:600 14px system-ui,sans-serif;margin:0 0 8px;color:var(--ac)}
-label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:2px}
-input,select,textarea,button{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:6px;min-width:0;width:100%}
-button{cursor:pointer;background:var(--ac);color:var(--bg);border-color:var(--ac);font-weight:600;width:auto}
-button.s{background:transparent;color:var(--fg);border-color:var(--bd)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
-.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:8px}
-.r{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
-.r label{flex-direction:row;align-items:center;gap:6px;font-size:14px;color:var(--fg)}.r input[type=checkbox]{width:auto}
-#cv{display:block;margin:auto;background:#fff;border-radius:4px;max-width:100%;border:1px solid var(--bd)}
-textarea{height:170px;font:12px/1.4 ui-monospace,Menlo,monospace}
-.chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--bd);border-radius:14px;padding:2px 4px 2px 10px;margin:4px 4px 0 0}
-.chip button{padding:0 8px;background:none;color:var(--fg);border:0}
-#st{font-size:13px;color:var(--mu);min-height:18px}
-.sp{display:flex;gap:4px}.sp input{flex:1;text-align:center;-moz-appearance:textfield}
+:root{--bg:#f2f7ff;--card:#fff;--tx:#0f1f3d;--mut:#5b6b8a;--bd:#cfdcf3;--ac:#2563eb;--acs:#dbeafe;--er:#dc2626;--pg:#e6efff;--pri:#1d4ed8;--fg:#0f1f3d;--mu:#5b6b8a;color-scheme:light}
+html{font-size:clamp(13px,calc(.4vw + .4vh + 4px),22px);scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--pg);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+:focus-visible{outline:2px solid #ea580c;outline-offset:2px}
+button,select{font:inherit;cursor:pointer}
+
+/* khung ứng dụng */
+.app{display:flex;flex-direction:column;min-height:100dvh;background:radial-gradient(70rem 28rem at 100% 0,#cfe0ff,transparent 70%),var(--pg);padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.6rem 1rem;flex-wrap:wrap;padding:.55rem 1rem;color:#fff;background:linear-gradient(120deg,#1e3a8a,#2563eb 65%,#38bdf8);box-shadow:0 2px 10px rgba(30,64,175,.28)}
+.brand{display:flex;align-items:center;gap:.6rem;min-width:0;flex:1 1 16rem}
+.logo{flex:none;width:2.1rem;height:2.1rem;border-radius:.65rem;background:#fff;display:grid;place-items:center;font-size:1.15rem}
+h1{font-size:1.15rem;margin:0;line-height:1.2}
+.brand small{display:block;font-size:.75rem;opacity:.85;line-height:1.2}
+.seg{display:flex;gap:.2rem;padding:.2rem;border-radius:.8rem;background:rgba(255,255,255,.22)}
+.seg button{font-weight:600;font-size:.92rem;padding:.4rem 1.2rem;border:0;border-radius:.6rem;background:transparent;color:#fff;width:auto}
+.seg button:hover{background:rgba(255,255,255,.18)}
+.seg button.on{background:#fff;color:var(--pri)}
+.tools{flex:1 1 16rem;min-width:0;text-align:right}
+.tools small{font-size:.76rem;line-height:1.3;opacity:.9}
+.stage{flex:1;min-height:0;display:flex;padding:.75rem}
+.split{flex:1;width:100%;max-width:56rem;margin:0 auto;min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;align-content:start}
+.pane{display:flex;flex-direction:column;gap:.75rem;min-width:0;min-height:0}
+.pane>*{flex:none}
+@media (max-width:900px){.tools{display:none}}
+@media (min-aspect-ratio:1/1) and (min-width:700px){
+  html,body{height:100%;overflow:hidden}
+  .app{height:100dvh;min-height:0}
+  .split{max-width:120rem;grid-template-columns:minmax(23rem,4fr) minmax(0,7fr);grid-template-rows:minmax(0,1fr);align-content:stretch}
+  .pane{overflow-y:auto;overflow-x:hidden;padding:.15rem;margin:-.15rem;scrollbar-width:thin}
+  #pk{order:1}
+  #pg{order:2;overflow:hidden}
+  #pg>#gs{flex:1;min-height:0;display:flex;flex-direction:column}
+  #gs .cb{flex:1;min-height:0;display:flex;flex-direction:column}
+  #cvw{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+}
+
+/* khối */
+.card{--k:var(--ac);background:var(--card);border:1px solid var(--bd);border-radius:.9rem;box-shadow:0 1px 2px rgba(30,64,175,.08),0 8px 20px -8px rgba(30,64,175,.2);overflow:hidden;min-width:0}
+.ch{display:flex;align-items:center;gap:.5rem;margin:0;padding:.45rem .8rem;font-size:.95rem;font-weight:700;color:var(--k);background:color-mix(in srgb,var(--k) 9%,#fff);border-bottom:1px solid color-mix(in srgb,var(--k) 22%,#fff);border-left:.3rem solid var(--k)}
+.ic{flex:none;display:grid;place-items:center;width:1.45rem;height:1.45rem;border-radius:.45rem;background:var(--k);color:#fff;font-size:.82rem;font-weight:700}
+.cb{padding:.65rem .8rem}
+summary.ch{cursor:pointer;list-style:none}
+summary.ch::-webkit-details-marker{display:none}
+summary.ch::after{content:"▾";margin-left:auto;transition:transform .15s}
+details:not([open])>summary.ch::after{transform:rotate(-90deg)}
+details:not([open])>summary.ch{border-bottom-color:transparent}
+
+/* nhập liệu */
+label{display:flex;flex-direction:column;gap:.2rem;font-size:.8rem;font-weight:600;color:var(--mut)}
+input,select,textarea{width:100%;min-width:0;padding:.45rem .65rem;border:1.5px solid var(--bd);border-radius:.6rem;background:var(--bg);color:var(--tx);font:inherit}
+input:focus,select:focus,textarea:focus{background:#fff;border-color:var(--ac)}
+input[type=color]{padding:.15rem .25rem;height:2.25rem;cursor:pointer}
+textarea{height:6rem;font:.78rem/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical;margin-top:.55rem}
+button{padding:.45rem .9rem;border-radius:.6rem;border:1.5px solid var(--ac);background:var(--ac);color:#fff;font-weight:600;width:auto}
+button:hover{background:var(--pri);border-color:var(--pri)}
+button.s{background:#fff;color:var(--ac)}
+button.s:hover{background:var(--acs)}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr));gap:.5rem .6rem}
+.mt{margin-top:.6rem}
+.r{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.6rem}
+.r label,.ck label{flex-direction:row;align-items:center;gap:.45rem;font-size:.9rem;font-weight:500;color:var(--tx)}
+.r input[type=checkbox],.ck input[type=checkbox]{width:1.1rem;height:1.1rem;padding:0;flex:none;accent-color:var(--ac)}
+.ck{display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:.4rem .8rem;margin-top:.7rem}
+.hint{font-size:.8rem;color:var(--mut);line-height:1.55;margin:.6rem 0 0}
+#sres{margin:.6rem 0 0;padding:.45rem .7rem;border-radius:.6rem;background:var(--bg);border:1px solid var(--bd);font-size:.9rem}
+#sres:empty{display:none}
+.br{border:1.5px solid var(--bd);border-radius:.7rem;padding:.55rem .65rem;margin-bottom:.55rem;background:color-mix(in srgb,var(--ac) 3%,#fff)}
+.fl{font:italic 700 1.1rem "Times New Roman",Times,serif}
+
+/* nút tăng giảm */
+.sp{display:flex;gap:.25rem}
+.sp input{flex:1;text-align:center;-moz-appearance:textfield}
 .sp input::-webkit-inner-spin-button,.sp input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.sp button{flex:none;width:32px;padding:0;font-size:18px;line-height:1;touch-action:manipulation}
-h1 small{display:block;font:400 12px system-ui,sans-serif;color:var(--mu);margin-top:2px}
-#cv{cursor:grab}
-.chip.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}#cvw{overflow:hidden;text-align:center}#tkbox textarea{height:90px;margin-top:8px}
-@media (min-width:1000px){html,body{height:100%;overflow:hidden}body{max-width:none;padding:0;margin:0}
-#app{display:grid;grid-template-columns:minmax(420px,4fr) 6fr;height:100vh}
-#pk{order:1;overflow:auto;padding:12px;border-right:1px solid var(--bd)}
-#pg{order:2;display:flex;flex-direction:column;padding:12px;min-width:0;height:100vh}
-#gs{flex:1;min-height:0;display:flex;flex-direction:column;margin:0}
-#cvw{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}}
-.tabs{display:flex;gap:8px;margin-bottom:10px}.tabs button{flex:1}.tb:not(.on){background:transparent;color:var(--fg);border-color:var(--bd)}
+.sp button{flex:none;width:2rem;padding:0;font-size:1.15rem;line-height:1;touch-action:manipulation}
+
+/* thẻ đồ thị / điểm */
+#gls,#pls{display:flex;flex-wrap:wrap;gap:.4rem}
+#gls{margin-top:.65rem}
+#pls{margin-top:.55rem}
+#gls:empty,#pls:empty{display:none}
+.chip{display:inline-flex;align-items:center;gap:.2rem;margin:0;padding:.15rem .3rem .15rem .75rem;border:1.5px solid var(--bd);border-radius:99px;background:#fff;font-size:.85rem;transition:background .15s,border-color .15s}
+.chip:hover{border-color:#93b4f0}
+.chip.on{background:#f1eaff;border-color:#7c3aed;color:#5b21b6;font-weight:600}
+.chip button{padding:.1rem .35rem;background:none;border:0;color:inherit;font-weight:inherit;text-align:left}
+.chip button:hover{background:none;color:var(--er)}
+.chip button.cp:hover{color:inherit}
+
+/* biểu đồ */
+#cvw{overflow:hidden;text-align:center;background:#f7faff;border:1px solid var(--bd);border-radius:.6rem}
+#cv{display:block;margin:auto;background:#fff;max-width:100%;cursor:grab}
+#st{font-size:.85rem;color:var(--mut);min-height:1.2rem}
+#tkbox:not([hidden]){display:block}
 </style></head><body>
-<main id="app"><div id="pg"><section id="gs"><div id="cvw"><canvas id="cv" title="Kéo nền để dịch khung nhìn, kéo số hoặc tên để dời nhãn, cuộn chuột để phóng to hoặc thu nhỏ"></canvas></div>
-<div class="r"><button id="bc">Sao chép PNG</button><button class="s" id="bd">Tải PNG</button><button class="s" id="bk">Sao chép TikZ</button><button class="s" id="rv">Đặt lại khung nhìn</button><button class="s" id="rl">Đặt lại nhãn</button><span id="st"></span></div>
-<div id="tkbox" hidden><textarea id="tk" readonly spellcheck="false"></textarea></div></section></div>
-<div id="pk"><h1>📈 Đồ Thị SGK<small>Vẽ đồ thị hàm số chuẩn sách giáo khoa</small></h1>
-<section id="gl"><div class="r" style="margin-top:0"><button id="ga">+ Vẽ thêm đồ thị</button><span style="font-size:12px;color:var(--mu)">Bấm vào một thẻ để chọn đồ thị cần chỉnh sửa</span></div>
-<div class="g" style="margin-top:8px"><label>Tên đồ thị đang chỉnh<input id="cn" placeholder="(C) hoặc (C_1)"></label><label>Đặt nhãn tại x =<input id="cnx" placeholder="tự động"></label><label>Màu nét<input id="ccol" type="color" value="#000000"></label><label>Kiểu nét<select id="cds"><option value="0">Nét liền</option><option value="1">Nét đứt</option><option value="2">Nét chấm</option></select></label></div><div id="gls"></div></section>
+<div class="app">
+<header class="top">
+  <div class="brand"><span class="logo">📈</span><div><h1>Đồ Thị SGK</h1><small>Vẽ đồ thị hàm số chuẩn sách giáo khoa</small></div></div>
+  <div class="seg tabs" role="tablist"><button class="on" id="t1" role="tab">Từ hàm số</button><button id="t2" role="tab">Từ điểm</button><button id="t3" role="tab">Nhiều công thức</button></div>
+  <div class="tools"><small>Kéo nền để dịch · kéo số hoặc tên để dời nhãn · cuộn chuột để phóng to, thu nhỏ</small></div>
+</header>
+<main class="stage" id="app"><div class="split">
 
-<div class="tabs" role="tablist"><button class="tb on" id="t1" role="tab">Từ hàm số</button><button class="tb" id="t2" role="tab">Từ điểm</button><button class="tb" id="t3" role="tab">Nhiều công thức</button></div>
-<section id="p1"><h2>Hàm số</h2>
-<label>Loại hàm<select id="ty"></select></label>
-<div class="g" id="co" style="margin-top:8px"></div>
-<label style='margin-top:8px'>Dạng đồ thị<select id='am'><option value='0'>y = f(x)</option><option value='1'>y = |f(x)|</option><option value='2'>y = f(|x|)</option></select></label></section>
-<section id="p2" hidden><h2>Dựng hàm từ điểm và đặc điểm</h2>
-<label>Dạng hàm và dữ kiện<select id="sty"></select></label>
-<div class="g" id="sin" style="margin-top:8px"></div>
-<div class="r"><label><input type="checkbox" id="mk" checked>Đánh dấu các điểm đã nhập</label></div>
-<p id="sres" style="margin:8px 0 0;font-size:14px"></p>
-<p style="margin:4px 0 0;font-size:12px;color:var(--mu)">Có thể nhập pi, pi/2, 3*pi/2... cho các giá trị góc. Hệ số tìm được sẽ tự điền sang tab "Từ hàm số" để tinh chỉnh. Hàm chỉ được dựng khi bạn sửa một ô hoặc đổi dạng hàm.</p></section>
+<section class="pane" id="pg">
+  <div class="card" id="gs" style="--k:#0891b2">
+    <h2 class="ch"><span class="ic">▥</span>Đồ thị</h2>
+    <div class="cb">
+      <div id="cvw"><canvas id="cv" title="Kéo nền để dịch khung nhìn, kéo số hoặc tên để dời nhãn, cuộn chuột để phóng to hoặc thu nhỏ"></canvas></div>
+      <div class="r"><button id="bc">Sao chép PNG</button><button class="s" id="bd">Tải PNG</button><button class="s" id="bk">Sao chép TikZ</button><button class="s" id="rv">Đặt lại khung nhìn</button><button class="s" id="rl">Đặt lại nhãn</button><span id="st"></span></div>
+      <div id="tkbox" hidden><textarea id="tk" readonly spellcheck="false"></textarea></div>
+    </div>
+  </div>
+</section>
 
-<section id='p3' hidden><h2>Hàm nhiều công thức</h2><div id='pc'></div>
-<div class='r'><button id='pa' class='s'>+ Thêm nhánh</button></div>
-<p style='margin:8px 0 0;font-size:12px;color:var(--mu)'>Để trống đầu mút = vô cực. Chấm đặc: điểm thuộc đồ thị; chấm rỗng: điểm không thuộc. Muốn vẽ trị tuyệt đối dạng nhiều nhánh, dùng hai nhánh bậc nhất hoặc bậc hai với hai khoảng tương ứng.</p></section>
+<section class="pane" id="pk">
 
-<section><h2>Khung nhìn</h2>
-<div class="g">
-<label>x nhỏ nhất<input id="x0" type="number" step="any"></label><label>x lớn nhất<input id="x1" type="number" step="any"></label>
-<label>y nhỏ nhất<input id="y0" type="number" step="any"></label><label>y lớn nhất<input id="y1" type="number" step="any"></label>
-<label>Trục x<select id="xs"><option value="1">Số thường</option><option value="pi">Chia theo π</option><option value="pih">Chia theo π/2</option></select></label><label>1 ô lưới Ox =<input id="ux" type="number" step="any" min="0" value="1"></label>
-<label>1 ô lưới Oy =<input id="ys" type="number" step="any" min="0" value="1"></label>
-</div>
-<div class="r"><label><input type="checkbox" id="gr">Lưới</label><label><input type="checkbox" id="as" checked>Tiệm cận</label></div>
-<div class="r"><label><input type="checkbox" id="ex">Gióng tọa độ đỉnh / cực trị</label><label><input type="checkbox" id="exl" checked>Ghi giá trị trên trục</label><label><input type="checkbox" id="exd" checked>Chấm điểm</label><label><input type="checkbox" id="ix">Giao điểm với trục</label><label><input type="checkbox" id="ic">Giao điểm giữa các đồ thị</label><label><input type="checkbox" id="exv" checked>Giá trị chính xác (căn, phân số)</label><label><input type="checkbox" id="mj" checked>Công thức MathJax</label></div>
-<div class="g" style="margin-top:8px"><label>Số ghi trên trục<select id="tl"><option value="all">Tất cả</option><option value="sp">Chỉ giao điểm và cực trị</option><option value="cu">Tùy chọn</option></select></label><label id="lcx" hidden>Giá trị trên Ox<input id="tlx" placeholder="-2 pi/2"></label><label id="lcy" hidden>Giá trị trên Oy<input id="tly" placeholder="-4 3"></label></div>
-<p id="tlh" hidden style="margin:6px 0 0;font-size:12px;color:var(--mu)">Ngăn cách bằng dấu cách hoặc dấu chấm phẩy; nhận cả pi, pi/2. Giá trị lẻ sẽ có thêm vạch riêng.</p></section>
+<section class="card" id="gl" style="--k:#7c3aed">
+  <h2 class="ch"><span class="ic">≋</span>Các đồ thị</h2>
+  <div class="cb">
+    <div class="r" style="margin-top:0"><button id="ga">+ Vẽ thêm đồ thị</button><span class="hint" style="margin:0">Bấm vào một thẻ để chọn đồ thị cần chỉnh sửa</span></div>
+    <div class="g mt"><label>Tên đồ thị đang chỉnh<input id="cn" placeholder="(C) hoặc (C_1)"></label><label>Đặt nhãn tại x =<input id="cnx" placeholder="tự động"></label><label>Màu nét<input id="ccol" type="color" value="#000000"></label><label>Kiểu nét<select id="cds"><option value="0">Nét liền</option><option value="1">Nét đứt</option><option value="2">Nét chấm</option></select></label></div>
+    <div id="gls"></div>
+  </div>
+</section>
 
-<section><h2>Kiểu chữ và nét</h2>
-<div class="g">
-<label>Phông<select id="fo"><option value="'Times New Roman',Times,serif">Times New Roman</option><option value="'STIX Two Text','Times New Roman',serif">STIX Two Text</option><option value="Georgia,serif">Georgia</option><option value="Arial,Helvetica,sans-serif">Arial</option><option value="'Courier New',monospace">Courier New</option></select></label>
-<label>Cỡ chữ (px)<input id="fs" type="number" value="15" min="8" max="40"></label>
-<label>Nét trục (px)<input id="aw" type="number" value="1.5" min="0.5" max="6" step="0.5"></label>
-<label>Nét đồ thị đang chỉnh (px)<input id="cw" type="number" value="2" min="0.5" max="8" step="0.5"></label>
-<label>Cỡ công thức (%)<input id="mjs" type="number" value="100" min="40" max="200" step="5"></label><label>Cỡ điểm (px)<input id="pr" type="number" value="3.5" min="1" max="10" step="0.5"></label>
-<label>1 đơn vị (cm, TikZ)<input id="cm" type="number" value="0.8" min="0.2" max="3" step="0.1"></label>
-</div></section>
+<section class="card" id="p1">
+  <h2 class="ch"><span class="ic">ƒ</span>Hàm số</h2>
+  <div class="cb">
+    <label>Loại hàm<select id="ty"></select></label>
+    <div class="g mt" id="co"></div>
+    <label class="mt">Dạng đồ thị<select id="am"><option value="0">y = f(x)</option><option value="1">y = |f(x)|</option><option value="2">y = f(|x|)</option></select></label>
+  </div>
+</section>
 
-<section><h2>Điểm bổ sung</h2>
-<div class="g">
-<label>x<input id="px" type="number" step="any"></label>
-<label>y (trống = trên đồ thị)<input id="py" type="number" step="any"></label>
-<label>Tên điểm<input id="pl" placeholder="A"></label>
-</div>
-<div class="r"><button id="ap">Thêm điểm</button><label><input type="checkbox" id="pj">Đường chiếu xuống trục</label></div>
-<div id="pls"></div></section>
+<section class="card" id="p2" hidden>
+  <h2 class="ch"><span class="ic">✎</span>Dựng hàm từ điểm và đặc điểm</h2>
+  <div class="cb">
+    <label>Dạng hàm và dữ kiện<select id="sty"></select></label>
+    <div class="g mt" id="sin"></div>
+    <div class="r"><label><input type="checkbox" id="mk" checked>Đánh dấu các điểm đã nhập</label></div>
+    <p id="sres"></p>
+    <p class="hint">Có thể nhập pi, pi/2, 3*pi/2... cho các giá trị góc. Hệ số tìm được sẽ tự điền sang tab "Từ hàm số" để tinh chỉnh. Hàm chỉ được dựng khi bạn sửa một ô hoặc đổi dạng hàm.</p>
+  </div>
+</section>
 
+<section class="card" id="p3" hidden>
+  <h2 class="ch"><span class="ic">{</span>Hàm nhiều công thức</h2>
+  <div class="cb">
+    <div id="pc"></div>
+    <div class="r" style="margin-top:0"><button id="pa" class="s">+ Thêm nhánh</button></div>
+    <p class="hint">Để trống đầu mút = vô cực. Chấm đặc: điểm thuộc đồ thị; chấm rỗng: điểm không thuộc. Muốn vẽ trị tuyệt đối dạng nhiều nhánh, dùng hai nhánh bậc nhất hoặc bậc hai với hai khoảng tương ứng.</p>
+  </div>
+</section>
+
+<details class="card" open style="--k:#16a34a">
+  <summary class="ch"><span class="ic">⛶</span>Khung nhìn</summary>
+  <div class="cb">
+    <div class="g">
+      <label>x nhỏ nhất<input id="x0" type="number" step="any"></label><label>x lớn nhất<input id="x1" type="number" step="any"></label>
+      <label>y nhỏ nhất<input id="y0" type="number" step="any"></label><label>y lớn nhất<input id="y1" type="number" step="any"></label>
+      <label>Trục x<select id="xs"><option value="1">Số thường</option><option value="pi">Chia theo π</option><option value="pih">Chia theo π/2</option></select></label><label>1 ô lưới Ox =<input id="ux" type="number" step="any" min="0" value="1"></label>
+      <label>1 ô lưới Oy =<input id="ys" type="number" step="any" min="0" value="1"></label>
+    </div>
+    <div class="ck"><label><input type="checkbox" id="gr">Lưới</label><label><input type="checkbox" id="as" checked>Tiệm cận</label><label><input type="checkbox" id="ex">Gióng tọa độ đỉnh / cực trị</label><label><input type="checkbox" id="exl" checked>Ghi giá trị trên trục</label><label><input type="checkbox" id="exd" checked>Chấm điểm</label><label><input type="checkbox" id="ix">Giao điểm với trục</label><label><input type="checkbox" id="ic">Giao điểm giữa các đồ thị</label><label><input type="checkbox" id="exv" checked>Giá trị chính xác (căn, phân số)</label><label><input type="checkbox" id="mj" checked>Công thức MathJax</label></div>
+    <div class="g mt"><label>Số ghi trên trục<select id="tl"><option value="all">Tất cả</option><option value="sp">Chỉ giao điểm và cực trị</option><option value="cu">Tùy chọn</option></select></label><label id="lcx" hidden>Giá trị trên Ox<input id="tlx" placeholder="-2 pi/2"></label><label id="lcy" hidden>Giá trị trên Oy<input id="tly" placeholder="-4 3"></label></div>
+    <p class="hint" id="tlh" hidden>Ngăn cách bằng dấu cách hoặc dấu chấm phẩy; nhận cả pi, pi/2. Giá trị lẻ sẽ có thêm vạch riêng.</p>
+  </div>
+</details>
+
+<details class="card" open style="--k:#ea580c">
+  <summary class="ch"><span class="ic">Aa</span>Kiểu chữ và nét</summary>
+  <div class="cb">
+    <div class="g">
+      <label>Phông<select id="fo"><option value="'Times New Roman',Times,serif">Times New Roman</option><option value="'STIX Two Text','Times New Roman',serif">STIX Two Text</option><option value="Georgia,serif">Georgia</option><option value="Arial,Helvetica,sans-serif">Arial</option><option value="'Courier New',monospace">Courier New</option></select></label>
+      <label>Cỡ chữ (px)<input id="fs" type="number" value="15" min="8" max="40"></label>
+      <label>Nét trục (px)<input id="aw" type="number" value="1.5" min="0.5" max="6" step="0.5"></label>
+      <label>Nét đồ thị đang chỉnh (px)<input id="cw" type="number" value="2" min="0.5" max="8" step="0.5"></label>
+      <label>Cỡ công thức (%)<input id="mjs" type="number" value="100" min="40" max="200" step="5"></label><label>Cỡ điểm (px)<input id="pr" type="number" value="3.5" min="1" max="10" step="0.5"></label>
+      <label>1 đơn vị (cm, TikZ)<input id="cm" type="number" value="0.8" min="0.2" max="3" step="0.1"></label>
+    </div>
+  </div>
+</details>
+
+<details class="card" open style="--k:#4f46e5">
+  <summary class="ch"><span class="ic">•</span>Điểm bổ sung</summary>
+  <div class="cb">
+    <div class="g">
+      <label>x<input id="px" type="number" step="any"></label>
+      <label>y (trống = trên đồ thị)<input id="py" type="number" step="any"></label>
+      <label>Tên điểm<input id="pl" placeholder="A"></label>
+    </div>
+    <div class="r"><button id="ap">Thêm điểm</button><label><input type="checkbox" id="pj">Đường chiếu xuống trục</label></div>
+    <div id="pls"></div>
+  </div>
+</details>
+
+</section>
 </div></main>
-
+</div>
 <script>
-const $=i=>document.getElementById(i),PI=Math.PI,M=30;
+const $=i=>document.getElementById(i),PI=Math.PI,M=30,WQ='(min-aspect-ratio:1/1) and (min-width:700px)';
 const T={
 lin:{n:'y = ax + b',p:'ab',d:[1,1],r:[-4,4,-4,4],f:(x,[a,b])=>a*x+b},
 quad:{n:'y = ax² + bx + c',p:'abc',d:[1,-2,-3],r:[-4,5,-5,6],f:(x,[a,b,c])=>(a*x+b)*x+c},
@@ -240,8 +348,8 @@ function draw(c,s,k){if(c.canvas===$('cv'))HIT=[];const u=layout.u,W=layout.W,H=
   if(p.l){c.font=`italic ${fs*1.1}px ${s.fo}`;c.textAlign='left';c.textBaseline='bottom';LB(c,'pt'+p.l+fm(p.x),p.l,x+s.pr+2,y-s.pr,s,p.l)}})}
 
 function render(){const s=S(),cv=$('cv'),dpr=window.devicePixelRatio||1;
- const wide=matchMedia('(min-width:1000px)').matches,bx=$('cvw');
- const aw=(wide?bx.clientWidth:Math.min(document.body.clientWidth-24,740))-2*M,ah=(wide?bx.clientHeight:420+2*M)-2*M;
+ const wide=matchMedia(WQ).matches,bx=$('cvw');
+ const aw=bx.clientWidth-2*M,ah=(wide?bx.clientHeight:420+2*M)-2*M;
  const xr=(s.x1-s.x0)/s.cu,yr=(s.y1-s.y0)/s.cv,u=Math.max(4,Math.min(aw/xr,ah/yr));
  layout={u,cu:s.cu,cv:s.cv,W:u*xr+2*M,H:u*yr+2*M};
  cv.width=layout.W*dpr;cv.height=layout.H*dpr;cv.style.width=layout.W+'px';cv.style.height=layout.H+'px';
@@ -343,7 +451,7 @@ function pcT(L=PC){const ps=L.map(p=>({t:T[p.k],P:p.c.map(v=>parseFloat(v)||0),l
 function endDots(s){if(!s.t.pieces)return[];const o=[],{x0,x1,y0,y1}=s;
  s.t.pieces.forEach(p=>[[p.lo,p.lc],[p.hi,p.hc]].forEach(([x,cl])=>{if(!isFinite(x)||x<x0||x>x1)return;const y=p.t.f(x,p.P);if(isFinite(y)&&y>=y0&&y<=y1)o.push({x,y,c:cl})}));return o}
 const esc=v=>String(v).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/</g,'&lt;');
-function pcDraw(){$('pc').innerHTML=PC.map((p,i)=>{const t=T[p.k];return `<div style='border:1px solid var(--bd);border-radius:6px;padding:8px;margin-bottom:8px'><label>Nhánh ${i+1}: dạng hàm<select data-i='${i}' class='pk'>${Object.keys(T).map(k=>`<option value='${k}' ${k==p.k?'selected':''}>${T[k].n}</option>`).join('')}</select></label><div class='g' style='margin-top:6px'>${[...t.p].map((c,j)=>`<label>${c}<input type='number' step='any' data-i='${i}' data-j='${j}' class='pcf2' value='${p.c[j]}'></label>`).join('')}<label>Từ x =<input data-i='${i}' class='plo' value='${esc(p.lo)}'></label><label>Đến x =<input data-i='${i}' class='phi' value='${esc(p.hi)}'></label></div><div class='r'><label><input type='checkbox' data-i='${i}' class='plc' ${p.lc?'checked':''}>Đặc đầu trái</label><label><input type='checkbox' data-i='${i}' class='phc' ${p.hc?'checked':''}>Đặc đầu phải</label>${PC.length>1?`<button class='s pdel' data-i='${i}'>Xóa nhánh</button>`:''}</div></div>`}).join('');
+function pcDraw(){$('pc').innerHTML=PC.map((p,i)=>{const t=T[p.k];return `<div class='br'><label>Nhánh ${i+1}: dạng hàm<select data-i='${i}' class='pk'>${Object.keys(T).map(k=>`<option value='${k}' ${k==p.k?'selected':''}>${T[k].n}</option>`).join('')}</select></label><div class='g' style='margin-top:6px'>${[...t.p].map((c,j)=>`<label>${c}<input type='number' step='any' data-i='${i}' data-j='${j}' class='pcf2' value='${p.c[j]}'></label>`).join('')}<label>Từ x =<input data-i='${i}' class='plo' value='${esc(p.lo)}'></label><label>Đến x =<input data-i='${i}' class='phi' value='${esc(p.hi)}'></label></div><div class='r'><label><input type='checkbox' data-i='${i}' class='plc' ${p.lc?'checked':''}>Đặc đầu trái</label><label><input type='checkbox' data-i='${i}' class='phc' ${p.hc?'checked':''}>Đặc đầu phải</label>${PC.length>1?`<button class='s pdel' data-i='${i}'>Xóa nhánh</button>`:''}</div></div>`}).join('');
  const q=(c,fn)=>document.querySelectorAll('#pc .'+c).forEach(e=>fn(e,PC[+e.dataset.i]));
  q('pk',(e,p)=>e.onchange=()=>{p.k=e.value;p.c=T[p.k].d.slice();pcDraw();render()});
  q('pcf2',(e,p)=>e.oninput=()=>{p.c[+e.dataset.j]=e.value;render()});
@@ -454,4 +562,6 @@ const pu={ux:1,ys:1};
  if(k!=1){$(a).value=+($(a).value*k).toPrecision(8);$(b).value=+($(b).value*k).toPrecision(8)}render()}));
 ['xs'].forEach(i=>$(i).addEventListener('change',()=>{$('ux').disabled=$('xs').value!='1'}));
 window.onresize=render;setType();ldF();
-</script></body></html>
+new ResizeObserver(()=>{if(matchMedia(WQ).matches)render()}).observe($('cvw'));
+</script>
+</body></html>
