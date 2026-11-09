@@ -154,7 +154,7 @@ code{background:var(--sky);color:var(--pri);padding:.05rem .3rem;border-radius:.
      <button class="tb" data-tool="sel" aria-pressed="true">Kéo điểm / nhãn</button><button class="tb" data-tool="pan" title="Kéo khung nhìn (hoặc giữ Space, hoặc chuột giữa)">Bàn tay</button>
     </div></div>
     <div class="tg"><span class="tl">Dựng hình</span><div class="tr">
-     <button class="tb" data-tool="padd">Điểm trên cạnh</button><button class="tb" data-tool="sseg">Nối điểm</button><select id="ss" aria-label="Kiểu nét của đoạn nối"><option value="a">Nét tự động</option><option value="0">Nét liền</option><option value="1">Nét đứt</option></select>
+     <button class="tb" data-tool="padd">Điểm trên cạnh</button><button class="tb" data-tool="pmid" title="Bấm vào một cạnh để lấy trung điểm của cạnh đó">Trung điểm</button><button class="tb" data-tool="sseg">Nối điểm</button><select id="ss" aria-label="Kiểu nét của đoạn nối"><option value="a">Nét tự động</option><option value="0">Nét liền</option><option value="1">Nét đứt</option></select>
     </div></div>
     <div class="tg"><span class="tl">Bút vẽ</span><div class="tr">
      <button class="tb" data-tool="pen">Bút</button><button class="tb" data-tool="seg">Đoạn</button><button class="tb" data-tool="line">Đường</button><button class="tb" data-tool="dot">Điểm</button><button class="tb" data-tool="erase">Tẩy</button>
@@ -200,7 +200,7 @@ code{background:var(--sky);color:var(--pri);padding:.05rem .3rem;border-radius:.
     <div><label for="h">Chiều cao h</label><input id="h" type="number" step="0.5" min="0.5" value="5"></div>
     <div id="rtBox"><label for="rt">Tỉ lệ đáy trên / đáy dưới</label><input id="rt" type="number" step="0.1" min="0.1" max="0.9" value="0.5"></div>
    </div>
-   <div id="pyOpt"><div class="row"><div><label for="ft">Chân đường cao H</label><select id="ft"></select></div><div id="fkBox"><label for="fk" id="fkl">Đỉnh</label><select id="fk"></select></div></div><p class="hint" id="ftMsg" style="margin-top:.3rem"></p></div>
+   <div id="pyOpt"><div class="row"><div><label for="ft">Chân đường cao H</label><select id="ft"></select></div><div id="fkBox"><label for="fk" id="fkl">Đỉnh</label><select id="fk"></select></div></div><label style="display:flex;align-items:center;gap:.45rem;margin:.5rem 0 0;font-size:.85rem;color:var(--ink)"><input id="fh" type="checkbox" checked style="width:auto;margin:0"> Hiện chân đường cao H và đường cao</label><p class="hint" id="ftMsg" style="margin-top:.3rem"></p></div>
    
    <label for="names">Đặt tên đỉnh theo thứ tự (đáy trước, đỉnh chóp sau; để trống = tự động). Hoặc bấm đúp vào đỉnh trên hình để đổi tên.</label>
    <input id="names" placeholder="A,B,C,D,S">
@@ -391,10 +391,10 @@ const hit=(it,p)=>{
 const snap=p=>{if(!$('snap').checked)return p;let b=null,bd=16/Z();for(const n in scr){const q=scr[n],d=Math.hypot(q[0]-p[0],q[1]-p[1]);if(d<bd){bd=d;b=q;}}return b?[b[0],b[1]]:p;};
 const erase=p=>{const n=DOC.ink.length;DOC.ink=DOC.ink.filter(it=>!hit(it,p));if(DOC.ink.length!==n)redraw();};
 /* lịch sử hoàn tác chung: nét bút, điểm, đoạn, mặt, ký hiệu, vị trí nhãn */
-const snapState=()=>JSON.stringify({...DOC,names:$('names').value,inp:['a','b','cd'].map(k=>$(k).value),ft:$('ft').value,fk:$('fk').value});
+const snapState=()=>JSON.stringify({...DOC,names:$('names').value,inp:['a','b','cd'].map(k=>$(k).value),ft:$('ft').value,fk:$('fk').value,fh:$('fh').checked});
 function pushHist(str){hist.push(str);if(hist.length>80)hist.shift();redo=[];}
 function commit(){if(pre!==null&&snapState()!==pre)pushHist(pre);pre=null;}
-function loadState(str){const o=JSON.parse(str);if(o.names!==undefined)$('names').value=o.names;delete o.names;if(o.inp)['a','b','cd'].forEach((k,j)=>{$(k).value=o.inp[j];});delete o.inp;if(o.ft!==undefined){$('ft').value=o.ft;$('fk').value=o.fk;}delete o.ft;delete o.fk;Object.assign(DOC,o);DOC.cus=DOC.cus||null;cur=null;}
+function loadState(str){const o=JSON.parse(str);if(o.names!==undefined)$('names').value=o.names;delete o.names;if(o.inp)['a','b','cd'].forEach((k,j)=>{$(k).value=o.inp[j];});delete o.inp;if(o.ft!==undefined){$('ft').value=o.ft;$('fk').value=o.fk;}delete o.ft;delete o.fk;if(o.fh!==undefined)$('fh').checked=o.fh;delete o.fh;Object.assign(DOC,o);DOC.cus=DOC.cus||null;cur=null;}
 function undoInk(){
   if(!hist.length){$('netMsg').textContent='Không còn thao tác nào để hoàn tác.';return;}
   redo.push(snapState());loadState(hist.pop());render();$('netMsg').textContent='Đã hoàn tác.';
@@ -679,14 +679,22 @@ function hitEdge(p){let b=null,bd=1e9;emap.forEach(e=>{const d=dseg(p,e.p,e.q);i
 function edgeT(a,b,p){const dx=b[0]-a[0],dy=b[1]-a[1];return Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy||1)));}
 function nextName(){const used=new Set(known);for(const c of 'MNPQRTUVWXYZKLEFGHIJ')if(!used.has(c))return c;let i=1;while(used.has('M'+i))i++;return 'M'+i;}
 function addEdgePt(h,p){const t=edgeT(h.p,h.q,p);if(t<.04||t>.96)return null;const name=nextName();DOC.pts.push({name,p1:h.a,p2:h.b,t:+t.toFixed(4)});render();return name;}
+function addMid(h){
+  const d=DOC.pts.find(x=>x.p1!==undefined&&Math.abs(x.t-.5)<1e-6&&((x.p1===h.a&&x.p2===h.b)||(x.p1===h.b&&x.p2===h.a)));
+  if(d){$('netMsg').textContent=`Đã có trung điểm của ${h.a}${h.b}: ${d.name}.`;return d.name;}
+  const name=nextName();DOC.pts.push({name,p1:h.a,p2:h.b,t:.5,mid:1});render();
+  $('netMsg').textContent=`${name} là trung điểm của ${h.a}${h.b}.`;return name;
+}
 function moveOnEdge(name,p){
   const q=DOC.pts.find(x=>x.name===name);if(!q||!scr[q.p1]||!scr[q.p2])return;
+  if(q.mid){$('netMsg').textContent=`${q.name} là trung điểm của ${q.p1}${q.p2} nên cố định. Xóa đi nếu muốn đặt lại.`;return;}
   q.t=+Math.max(.02,Math.min(.98,edgeT(scr[q.p1],scr[q.p2],p))).toFixed(4);
   render();$('netMsg').textContent=`${q.p1}${q.name} / ${q.p1}${q.p2} = ${q.t.toFixed(2)}`;
 }
 function hover(p){
   const g=$('hov');if(!g)return;let o='';
   if(tool==='padd'){const q=nearPt(p),c=!q&&nearIx(p);if(q)o=ringAt(scr[q]);else if(c)o=ringAt(c.p);else{const h=hitEdge(p);if(h){const t=edgeT(h.p,h.q,p);o=`<line x1="${h.p[0]}" y1="${h.p[1]}" x2="${h.q[0]}" y2="${h.q[1]}" stroke="#d62828" stroke-width="5" stroke-linecap="round" opacity=".45"/>`+(t>.04&&t<.96?ringAt([h.p[0]+t*(h.q[0]-h.p[0]),h.p[1]+t*(h.q[1]-h.p[1])]):'');}}}
+  else if(tool==='pmid'){const h=hitEdge(p);if(h)o=`<line x1="${h.p[0]}" y1="${h.p[1]}" x2="${h.q[0]}" y2="${h.q[1]}" stroke="#d62828" stroke-width="5" stroke-linecap="round" opacity=".45"/>`+ringAt([(h.p[0]+h.q[0])/2,(h.p[1]+h.q[1])/2]);}
   else if(tool==='sseg'){const q=nearAny(p),c=!q&&nearIx(p);if(q)o=ringAt(scr[q]);else if(c)o=ringAt(c.p);}
   else if(tool==='sel'){const q=nearPt(p)||nearName(p,vnames,12);if(q)o=ringAt(scr[q]);}
   g.innerHTML=o;
@@ -720,9 +728,9 @@ function render(){
   const P={};
   m.nm.forEach((s,i)=>P[s]=m.V[i]);
   const Sp=m.py?m.V[m.n]:null,vk=Sp?m.V.slice(0,m.n).findIndex(v=>d2(v,Sp)<1e-5):-1,hOK=!!Sp&&vk<0;
-  const hBusy=hOK&&(m.nm.includes('H')||DOC.pts.some(q=>q.name==='H')),ho=hOK&&!hBusy;
+  const hBusy=hOK&&(m.nm.includes('H')||DOC.pts.some(q=>q.name==='H')),hUsed=DOC.pts.some(q=>q.p1==='H'||q.p2==='H'||(q.x&&q.x.includes('H')))||DOC.segs.some(g=>g.a==='H'||g.b==='H')||DOC.fills.some(f=>f.n.includes('H'))||DOC.marks.some(q=>q.a==='H'||q.b==='H'||q.v==='H'),hOff=hOK&&!hBusy&&!$('fh').checked&&!hUsed,ho=hOK&&!hBusy&&!hOff;
   if(ho)P.H=[Sp[0],Sp[1],0];
-  if($('ftMsg'))$('ftMsg').textContent=!m.py?'':vk>=0?`Chân đường cao trùng đỉnh ${m.nm[vk]}: ${m.nm[m.n]}${m.nm[vk]} ⊥ (${m.nm.slice(0,m.n).join('')}).`:hBusy?'Tên H đã được dùng nên không hiện chân đường cao H.':'';
+  if($('ftMsg'))$('ftMsg').textContent=!m.py?'':vk>=0?`Chân đường cao trùng đỉnh ${m.nm[vk]}: ${m.nm[m.n]}${m.nm[vk]} ⊥ (${m.nm.slice(0,m.n).join('')}).`:hBusy?'Tên H đã được dùng nên không hiện chân đường cao H.':(hOK&&!$('fh').checked&&hUsed)?'Chưa ẩn được H vì đang có điểm hoặc đoạn dùng H. Hãy xóa chúng trước.':'';
   DOC.pts=DOC.pts.filter(q=>{if(q.x){if(!q.x.every(x=>P[x]))return false;const r=meet(...q.x.map(x=>P[x]));if(!r)return false;P[q.name]=r;return true;}if(!P[q.p1]||!P[q.p2])return false;const u=P[q.p1],v=P[q.p2];P[q.name]=u.map((x,i)=>x+q.t*(v[i]-x));return true;});
   DOC.segs=DOC.segs.filter(g=>P[g.a]&&P[g.b]);
   DOC.fills=DOC.fills.filter(f=>f.n.every(x=>P[x]));
@@ -926,6 +934,7 @@ $('svg').addEventListener('pointerdown',e=>{
   if(e.button>1)return;const p=ptr(e);pre=snapState();
   if(tool==='sel'){const n=e.target.dataset&&e.target.dataset.n;if(n)dr={n,s:p,o:DOC.lo[n]||[0,0]};else{const q=nearPt(p);if(q)dr={pt:q};else{const v=nearName(p,vnames,12);if(v===null){dr={pan:1,cx:e.clientX,cy:e.clientY,vb:{...vb}};$('svg').setPointerCapture(e.pointerId);e.preventDefault();return;}beginVx();dr={vx:vnames.indexOf(v)};}}}
   else if(tool==='padd'){const q=nearPt(p),c=!q&&nearIx(p);if(q)dr={pt:q};else if(c)dr={pt:addIx(c)};else{const h=hitEdge(p);const nm=h&&addEdgePt(h,p);if(!nm)return;dr={pt:nm};}}
+  else if(tool==='pmid'){const h=hitEdge(p);if(h)addMid(h);dr={};}
   else if(tool==='sseg'){const q0=nearAny(p),c=!q0&&nearIx(p),q=q0||(c&&addIx(c));if(!q)return;dr={sa:q,cur:p};}
   else if(tool==='erase'){dr={};erase(p);}
   else if(tool==='dot'){DOC.ink.push({t:'dot',a:snap(p),...ps()});redraw();return;}
@@ -950,7 +959,7 @@ $('svg').addEventListener('pointermove',e=>{
   commit();
   dr=null;
 }));
-$('svg').addEventListener('dblclick',e=>{if(tool!=='sel'&&tool!=='padd')return;const p=ptr(e),q=nearPt(p)||nearName(p,vnames,12);if(q)askRename(q);});
+$('svg').addEventListener('dblclick',e=>{if(tool!=='sel'&&tool!=='padd'&&tool!=='pmid')return;const p=ptr(e),q=nearPt(p)||nearName(p,vnames,12);if(q)askRename(q);});
 $('svg').addEventListener('pointerleave',()=>{if(!dr){const g=$('hov');if(g)g.innerHTML='';}});
 document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>setTool(b.dataset.tool)));
 document.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{$('pc').value=b.dataset.c;}));
@@ -958,6 +967,7 @@ $('fo').addEventListener('input',onFold);
 $('nn').addEventListener('input',()=>{clearAll();setBases();render();});
 $('type').addEventListener('change',()=>{setBases();$('names').value='';clearAll();render();});
 ['base','a','b','cd','h','rt','names','al','k','lw','fs','ff','fy','tv'].forEach(i=>$(i).addEventListener('input',render));
+$('fh').addEventListener('change',()=>{const n=$('fh').checked;$('fh').checked=!n;const b=snapState();$('fh').checked=n;render();if(snapState()!==b)pushHist(b);});
 $('ft').addEventListener('input',onFoot);$('fk').addEventListener('input',onFoot);
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('chip')===false&&e.target.tagName==='B')e.target.click();});
 ['addPt','addSeg','addFill','addMark','renamePt','del','clearInk','clearAdded','resetLo','resetShape'].forEach(n=>{
