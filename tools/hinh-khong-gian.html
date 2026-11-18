@@ -89,9 +89,8 @@ details.sub{margin-top:.5rem;font-size:.85rem}
 details.sub>summary{color:var(--acc);font-weight:600;cursor:pointer}
 .hint{font-size:.8rem;color:var(--mut);margin:.4rem 0 0;line-height:1.5}
 code{background:var(--sky);color:var(--pri);padding:.05rem .3rem;border-radius:.3rem;font-size:.92em}
-#items:empty{display:none}
-#items:not(:empty){margin-top:.6rem;padding:.4rem .6rem .5rem;border:1.5px dashed #aac3f0;border-radius:.7rem;background:var(--sky2)}
-#items:not(:empty)::before{content:"Đã thêm";display:block;font-size:.8rem;font-weight:700;color:var(--pri)}
+#items{margin-top:.2rem}
+#items:empty::before{content:"Chưa có đối tượng nào. Dùng các công cụ dựng ở trên.";display:block;margin-top:.3rem;font-size:.8rem;color:var(--mut)}
 .chip{display:inline-flex;gap:.5rem;align-items:center;background:var(--sky);color:var(--pri);border-radius:99px;padding:.15rem .5rem .15rem .8rem;margin:.35rem .35rem 0 0;font-size:.82rem}
 .chip b{cursor:pointer;color:#b3261e;font-size:1.1rem;line-height:1}
 
@@ -135,8 +134,25 @@ code{background:var(--sky);color:var(--pri);padding:.05rem .3rem;border-radius:.
 .dlgb{overflow:auto}
 #tzo{width:100%;height:min(44vh,26rem);font:.78rem/1.45 ui-monospace,Menlo,Consolas,monospace;border:1.5px solid var(--line);border-radius:.6rem;padding:.5rem;resize:vertical;white-space:pre;background:var(--sky2);color:var(--ink)}
 .dlgb .row button{margin-top:.5rem}
+/* hộp công cụ trong bảng điều khiển */
+.tbx .tg{margin-top:.55rem}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(8.4rem,1fr));gap:.3rem}
+.tgrid .tb{display:flex;align-items:center;gap:.4rem;text-align:left;padding:.36rem .5rem;line-height:1.2}
+.tgrid .tb i{font-style:normal;flex:none;width:1.25rem;text-align:center;font-weight:700}
+.prow{display:flex;flex-wrap:wrap;gap:.35rem .6rem;align-items:center}
+.topt{margin-top:.55rem;padding:.45rem .6rem;border-radius:.6rem;background:var(--sky2);border:1px solid var(--line)}
+.topt .prow+.prow{margin-top:.35rem}
+.topt input[type=text]{width:7.5rem;padding:.2rem .45rem}
+.topt select{width:auto;padding:.2rem .4rem}
+#tip{margin:.35rem 0 0}
+.acts2{display:flex;flex-wrap:wrap;gap:.3rem}
+.chip .eye{color:var(--pri);font-size:.95rem}
+.chip.off{opacity:.5}
+.chip.bad{background:#fde2e1;color:#b3261e}
 </style>
-<script src="common.js?v=3"></script></head>
+<script src="common.js?v=3"></script>
+<script>/* dự phòng khi không tải được common.js: đọc số, phân số, căn (2√3, 3/2, 0,5) */
+window.xev=window.xev||(s=>{s=String(s).trim().replace(/,/g,'.').replace(/×/g,'*').replace(/(\d)\s*√/g,'$1*√').replace(/√\s*\(?\s*([\d.]+)\s*\)?/g,'Math.sqrt($1)');if(!/^[\d.+\-*/() ]*(Math\.sqrt\([\d.]+\)[\d.+\-*/() ]*)*$/.test(s)||!s)return NaN;try{return Function('return('+s+')')();}catch(e){return NaN;}});</script></head>
 <body>
 <div class="app">
 <header class="top">
@@ -146,37 +162,9 @@ code{background:var(--sky);color:var(--pri);padding:.05rem .3rem;border-radius:.
 <div class="wrap">
 
  <div class="card stage">
-  <div class="sh"><span class="ic">▥</span>Hình vẽ<button class="tb" id="tgt" type="button" aria-expanded="true" onclick="toggleTools()" title="Ẩn hoặc hiện thanh công cụ (phím T) để có thêm chỗ cho hình">Ẩn công cụ</button></div>
+  <div class="sh"><span class="ic">▥</span>Hình vẽ</div>
   <div class="sb">
    <div class="cv"><svg id="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540"></svg><div class="zm"><button class="tb" onclick="zoomBy(1.25)" title="Phóng to (+)">+</button><button class="tb" onclick="zoomBy(0.8)" title="Thu nhỏ (−)">−</button><button class="tb" onclick="zoomFit()" title="Vừa khung (0)">Vừa khung</button><button class="tb" onclick="centerView()" title="Đưa hình về giữa khung, giữ nguyên zoom (C)">Căn giữa</button><span id="zv">100%</span></div><p id="netMsg"></p></div>
-   <div class="tgs" role="toolbar" aria-label="Công cụ">
-    <div class="tg"><span class="tl">Chọn</span><div class="tr">
-     <button class="tb" data-tool="sel" aria-pressed="true">Kéo điểm / nhãn</button><button class="tb" data-tool="pan" title="Kéo khung nhìn (hoặc giữ Space, hoặc chuột giữa)">Bàn tay</button>
-    </div></div>
-    <div class="tg"><span class="tl">Dựng hình</span><div class="tr">
-     <button class="tb" data-tool="padd">Điểm trên cạnh</button><button class="tb" data-tool="pmid" title="Bấm vào một cạnh để lấy trung điểm của cạnh đó">Trung điểm</button><button class="tb" data-tool="sseg">Nối điểm</button><select id="ss" aria-label="Kiểu nét của đoạn nối"><option value="a">Nét tự động</option><option value="0">Nét liền</option><option value="1">Nét đứt</option></select><input id="segc" type="color" value="#14213d" title="Màu nét của đoạn nối" aria-label="Màu nét của đoạn nối" style="width:34px;height:30px;padding:1px"><select id="segw" aria-label="Độ đậm của đoạn nối" title="Độ đậm của đoạn nối"><option value="0.6">Mảnh</option><option value="1" selected>Vừa</option><option value="1.6">Đậm</option><option value="2.4">Rất đậm</option></select>
-    </div></div>
-    <div class="tg"><span class="tl">Bút vẽ</span><div class="tr">
-     <button class="tb" data-tool="pen">Bút</button><button class="tb" data-tool="seg">Đoạn</button><button class="tb" data-tool="line">Đường</button><button class="tb" data-tool="dot">Điểm</button><button class="tb" data-tool="erase">Tẩy</button>
-    </div></div>
-    <div class="tg"><span class="tl">Màu và nét</span><div class="tr">
-     <button class="sw" data-c="#d62828" style="background:#d62828" aria-label="Đỏ"></button><button class="sw" data-c="#1d4ed8" style="background:#1d4ed8" aria-label="Xanh dương"></button><button class="sw" data-c="#16a34a" style="background:#16a34a" aria-label="Xanh lá"></button><button class="sw" data-c="#111111" style="background:#111111" aria-label="Đen"></button>
-     <input id="pc" type="color" value="#d62828" aria-label="Màu tùy chọn">
-     <label class="inl">Dày <input id="pw" type="range" min="2" max="12" value="4"></label>
-     <label class="inl"><input id="pd" type="checkbox"> Đứt</label>
-    </div></div>
-    <div class="tg"><span class="tl">Bắt dính</span><div class="tr">
-     <label class="inl"><input id="snap" type="checkbox" checked> Đỉnh</label>
-     <label class="inl" title="Hoặc giữ phím Shift khi kéo"><input id="vz" type="checkbox"> Kéo theo chiều cao</label>
-    </div></div>
-    <div class="tg"><span class="tl">Thao tác</span><div class="tr">
-     <button class="tb" onclick="undoInk()" title="Ctrl+Z">Hoàn tác</button><button class="tb" onclick="redoInk()" title="Ctrl+Y">Làm lại</button><button class="tb" onclick="clearInk()">Xóa nét bút</button><button class="tb" onclick="clearAdded()">Xóa điểm &amp; đoạn đã thêm</button>
-    </div></div>
-    <div class="tg"><span class="tl">Trải hình</span><div class="tr">
-     <label class="inl">Mức trải <input id="fo" type="range" min="0" max="100" value="0"> <b id="fov">0</b>%</label>
-     <label class="inl" title="Xoay dần góc nhìn về nhìn từ trên để thấy hình trải đúng kích thước"><input id="tv" type="checkbox"> Nhìn từ trên khi trải</label>
-    </div></div>
-   </div>
   </div>
  </div>
 
@@ -209,6 +197,10 @@ code{background:var(--sky);color:var(--pri);padding:.05rem .3rem;border-radius:.
     <div><label for="al">Góc nhìn: <span id="alv"></span>°</label><input id="al" type="range" min="20" max="70" value="45"></div>
     <div><label for="k">Độ sâu: <span id="kv"></span></label><input id="k" type="range" min="0.3" max="0.8" step="0.05" value="0.5"></div>
    </div>
+   <div class="row">
+    <div><label for="fo">Trải hình: <b id="fov">0</b>%</label><input id="fo" type="range" min="0" max="100" value="0"></div>
+    <div><label class="inl" style="margin-top:1.3rem" title="Xoay dần góc nhìn về nhìn từ trên để thấy hình trải đúng kích thước"><input id="tv" type="checkbox" style="width:auto"> Nhìn từ trên khi trải</label></div>
+   </div>
    <details class="sub"><summary>Hướng dẫn kéo điểm</summary><p class="hint">Nét đứt cho cạnh khuất được vẽ tự động. Chọn công cụ "Kéo điểm / nhãn" để kéo đỉnh hoặc tên đỉnh. Đỉnh đáy kéo trong mặt phẳng đáy và giữ tính chất của đáy (chữ nhật, vuông, bình hành, hình thang, đều); tứ giác bất kỳ và tam giác thường kéo tự do; đỉnh trên kéo ngang, giữ Shift (hoặc tick "Kéo theo chiều cao") để kéo lên xuống. Kéo đỉnh chóp lại gần phía trên một điểm đặc biệt của đáy (đỉnh, trung điểm cạnh, trọng tâm, tâm đường tròn…) thì tự khớp và ô "Chân đường cao H" tự đổi theo; kéo ra chỗ khác thì chuyển sang "Tự do".</p></details>
    <div class="row"><button class="alt" onclick="resetShape()">Đặt lại hình mẫu</button><button class="alt" onclick="resetLo()">Đặt lại vị trí nhãn</button></div>
   </details>
@@ -224,55 +216,46 @@ code{background:var(--sky);color:var(--pri);padding:.05rem .3rem;border-radius:.
    </div>
   </details>
 
-  <details class="ex"><summary>Thêm điểm (trung điểm, điểm chia đoạn)</summary>
-   <div class="row">
-    <div><label for="pn">Tên điểm</label><input id="pn" placeholder="M"></div>
-    <div><label for="pt">Tỉ lệ từ điểm 1</label><input id="pt" type="text" class="xn" autocomplete="off" spellcheck="false" step="0.1" value="0.5"></div>
+  <details open class="tbx"><summary>Công cụ</summary>
+   <div class="tg"><span class="tl">Chọn</span><div class="tgrid">
+    <button class="tb" data-tool="sel" aria-pressed="true"><i>↖</i>Kéo điểm / nhãn</button><button class="tb" data-tool="pan" title="Kéo khung nhìn (hoặc giữ Space, hoặc chuột giữa)"><i>✋</i>Bàn tay</button>
+   </div></div>
+   <div class="tg cons"><span class="tl">Dựng điểm</span><div class="tgrid">
+    <button class="tb" data-tool="padd"><i>•</i>Điểm trên cạnh</button><button class="tb" data-tool="pmid"><i>◦</i>Trung điểm</button>
+    <button class="tb" data-tool="ext"><i>⟶</i>Kéo dài</button><button class="tb" data-tool="ll"><i>✕</i>Giao hai đường</button>
+    <button class="tb" data-tool="lp"><i>⊗</i>Giao đường – mặt</button><button class="tb" data-tool="pp"><i>⊥</i>Hình chiếu</button>
+   </div></div>
+   <div class="tg cons"><span class="tl">Dựng đường</span><div class="tgrid">
+    <button class="tb" data-tool="sseg"><i>╱</i>Nối điểm</button><button class="tb" data-tool="vec"><i>→</i>Vectơ</button><button class="tb" data-tool="par"><i>∥</i>Song song</button>
+   </div></div>
+   <div class="tg cons"><span class="tl">Mặt và ký hiệu</span><div class="tgrid">
+    <button class="tb" data-tool="fill"><i>▲</i>Tô mặt</button><button class="tb" data-tool="ra"><i>∟</i>Góc vuông</button>
+    <button class="tb" data-tool="ang"><i>∠</i>Góc</button><button class="tb" data-tool="eq"><i>≡</i>Đoạn bằng nhau</button>
+   </div></div>
+   <div class="tg"><span class="tl">Bút viết</span><div class="tgrid">
+    <button class="tb" data-tool="pen"><i>✎</i>Bút</button><button class="tb" data-tool="hl"><i>▬</i>Dạ quang</button><button class="tb" data-tool="erase"><i>⌫</i>Tẩy</button>
+   </div><div class="prow" style="margin-top:.35rem">
+    <button class="sw" data-c="#d62828" style="background:#d62828" aria-label="Đỏ"></button><button class="sw" data-c="#1d4ed8" style="background:#1d4ed8" aria-label="Xanh dương"></button><button class="sw" data-c="#16a34a" style="background:#16a34a" aria-label="Xanh lá"></button><button class="sw" data-c="#f59e0b" style="background:#f59e0b" aria-label="Vàng cam"></button><button class="sw" data-c="#111111" style="background:#111111" aria-label="Đen"></button>
+    <input id="pc" type="color" value="#d62828" aria-label="Màu tùy chọn">
+    <label class="inl">Dày <input id="pw" type="range" min="2" max="12" value="4" style="width:5.5rem"></label>
+   </div></div>
+   <div class="topt" id="topt">
+    <div class="prow" data-for="sel"><label class="inl" title="Hoặc giữ phím Shift khi kéo"><input id="vz" type="checkbox" style="width:auto"> Kéo đỉnh trên theo chiều cao</label></div>
+    <div class="prow" data-for="padd" hidden><label class="inl" for="prt">Tỉ lệ</label><input id="prt" type="text" autocomplete="off" spellcheck="false" placeholder="trống = tự do"><span class="hint" style="margin:0">vd 1/3, 0,25, 2:1</span></div>
+    <div class="prow" data-for="sseg vec" hidden><select id="ss" aria-label="Kiểu nét"><option value="a">Nét tự động</option><option value="0">Nét liền</option><option value="1">Nét đứt</option></select><input id="segc" type="color" value="#14213d" title="Màu nét" aria-label="Màu nét" style="width:34px;height:28px;padding:1px"><select id="segw" aria-label="Độ đậm" title="Độ đậm"><option value="0.6">Mảnh</option><option value="1" selected>Vừa</option><option value="1.6">Đậm</option><option value="2.4">Rất đậm</option></select></div>
+    <div class="prow" data-for="fill" hidden><label class="inl" for="fc">Màu</label><select id="fc"><option value="#1d6fa5">Xanh dương</option><option value="#d98a00">Cam</option><option value="#2f8f4e">Xanh lá</option><option value="#c0392b">Đỏ</option><option value="#7c3aed">Tím</option></select></div>
+    <div class="prow" data-for="ang" hidden><label class="inl" for="ml">Ghi chú</label><input id="ml" type="text" placeholder="α hoặc 60°" autocomplete="off"></div>
+    <div class="prow" data-for="eq" hidden><label class="inl" for="en">Số nét gạch</label><select id="en"><option>1</option><option>2</option><option>3</option></select></div>
+    <p class="hint" id="tip"></p>
    </div>
-   <div class="row">
-    <div><label for="pP1">Điểm 1</label><select id="pP1"></select></div>
-    <div><label for="pP2">Điểm 2</label><select id="pP2"></select></div>
-   </div>
-   <p class="hint">Tỉ lệ 0,5 là trung điểm. Tỉ lệ 0,33 là điểm chia đoạn theo tỉ lệ 1:2.</p>
-   <button onclick="addPt()">Thêm điểm</button>
+   <div class="tg"><span class="tl">Thao tác</span><div class="acts2">
+    <button class="tb" onclick="undoInk()" title="Ctrl+Z">Hoàn tác</button><button class="tb" onclick="redoInk()" title="Ctrl+Y">Làm lại</button><button class="tb" onclick="clearInk()">Xóa nét bút</button><button class="tb" onclick="clearAdded()">Xóa đối tượng đã dựng</button>
+   </div></div>
   </details>
 
-  <details class="ex"><summary>Thêm đoạn thẳng</summary>
-   <div class="row">
-    <div><label for="sP1">Từ điểm</label><select id="sP1"></select></div>
-    <div><label for="sP2">Đến điểm</label><select id="sP2"></select></div>
-    <div><label for="sd">Nét</label><select id="sd"><option value="a">Tự động</option><option value="0">Liền</option><option value="1">Đứt</option></select></div>
-   </div>
-   <button onclick="addSeg()">Thêm đoạn thẳng</button>
+  <details open><summary>Đối tượng đã dựng</summary>
+   <div id="items"></div>
   </details>
-
-  <details class="ex"><summary>Tô mặt phẳng / thiết diện</summary>
-   <label for="fn">Các điểm theo thứ tự (cách nhau bằng dấu phẩy)</label>
-   <div class="row">
-    <input id="fn" placeholder="S,A,C">
-    <select id="fc"><option value="#1d6fa5">Xanh dương</option><option value="#d98a00">Cam</option><option value="#2f8f4e">Xanh lá</option></select>
-   </div>
-   <button onclick="addFill()">Tô mặt</button>
-  </details>
-
-  <details class="ex"><summary>Ký hiệu: góc vuông, góc cần tính, đoạn bằng nhau</summary>
-   <div class="row">
-    <div><label for="mV">Đỉnh góc</label><select id="mV"></select></div>
-    <div><label for="mA">Điểm trên cạnh 1</label><select id="mA"></select></div>
-    <div><label for="mB">Điểm trên cạnh 2</label><select id="mB"></select></div>
-   </div>
-   <label for="ml">Ghi chú cho góc cần tính (tùy chọn)</label>
-   <input id="ml" placeholder="α hoặc 60°">
-   <div class="row"><button onclick="addMark('ra')">Thêm góc vuông</button><button onclick="addMark('ang')">Thêm góc cần tính</button></div>
-   <label>Đoạn bằng nhau: hai đầu mút và số nét gạch</label>
-   <div class="row">
-    <select id="eA" aria-label="Đầu mút 1"></select><select id="eB" aria-label="Đầu mút 2"></select>
-    <select id="en" aria-label="Số nét"><option>1</option><option>2</option><option>3</option></select>
-   </div>
-   <button onclick="addMark('eq')">Thêm dấu bằng nhau</button>
-  </details>
-
-  <div id="items"></div>
  </div>
 
 </div>
@@ -304,6 +287,8 @@ const basesFor=n=>n===3?[['gen','Tam giác thường'],['right','Tam giác vuôn
 /* DOC = dữ liệu của bản vẽ (được lưu, hoàn tác, khôi phục); các biến còn lại là trạng thái tạm khi thao tác */
 const DOC={pts:[],segs:[],fills:[],marks:[],lo:{},ink:[],cus:null};
 let scene=null,dr=null,known=[],scr={},cur=null,tool='sel',net=false,fo=0,emap=[],hist=[],redo=[],pre=null,view=null,fz=null,vnames=[];
+/* pend = thao tác dựng nhiều bước đang dở; allNames = mọi tên đã dùng; ekeys = các cặp điểm đã có đoạn nối */
+let pend=null,allNames=[],ekeys=new Set(),badPts=new Set(),rnOld=null,mouse=null;
 
 const sub=(p,q)=>p.map((v,i)=>v-q[i]);
 const dot=(p,q)=>p[0]*q[0]+p[1]*q[1]+p[2]*q[2];
@@ -314,7 +299,6 @@ const clean=s=>s.replace(/'/g,'′').replace(/[<>&"]/g,'');
 const okName=s=>/^[\p{L}\d′]+$/u.test(s);
 
 function setBases(){
-  const t=$('type').value;
   $('base').innerHTML=basesFor(nOf()).map(([v,x])=>`<option value="${v}">${x}</option>`).join('');
   ui();
 }
@@ -368,7 +352,7 @@ const dotlab=(p,dx,dy,t,key=t)=>{const fs=+$('fs').value,fy=$('fy').value;
   return`<circle cx="${p[0]}" cy="${p[1]}" r="${Math.max(2.4,LW()*1.3)}" fill="#14213d"/><text data-n="${key}" x="${p[0]+dx*fs*.8+(DOC.lo[key]||[0,0])[0]}" y="${p[1]+dy*fs*.8+(DOC.lo[key]||[0,0])[1]}" text-anchor="middle" dominant-baseline="central" font-family="${$('ff').value}" ${fy==='bold'?'font-weight="bold"':'font-style="'+fy+'"'} font-size="${fs}" fill="#14213d">${t}</text>`;};
 const inF=(fd,M)=>Math.abs(dot(fd.n,sub(M,fd.P[0])))<1e-6&&fd.P.every((p,i)=>dot(cr(sub(fd.P[(i+1)%fd.P.length],p),sub(M,p)),fd.n)*fd.fl>=-1e-6);
 const inkEl=it=>{
-  const st=`stroke="${it.c}" stroke-width="${it.w}" stroke-linecap="round" stroke-linejoin="round" fill="none"${it.d?` stroke-dasharray="${it.w*2.5} ${it.w*2}"`:''}`;
+  const st=`stroke="${it.c}" stroke-width="${it.w}" stroke-linecap="round" stroke-linejoin="round" fill="none"${it.hl?' stroke-opacity=".38"':''}${it.d?` stroke-dasharray="${it.w*2.5} ${it.w*2}"`:''}`;
   if(it.t==='dot')return`<circle cx="${it.a[0]}" cy="${it.a[1]}" r="${it.w*1.4}" fill="${it.c}"/>`;
   if(it.t==='pen')return`<polyline points="${it.p.map(q=>q.join(',')).join(' ')}" ${st}/>`;
   let a=it.a,b=it.b;
@@ -378,7 +362,8 @@ const inkEl=it=>{
 const inkIn=()=>DOC.ink.concat(cur?[cur]:[]).map(inkEl).join('');
 const inkG=()=>`<g id="inkg">${inkIn()}</g>`;
 const redraw=()=>{const g=$('inkg');if(g)g.innerHTML=inkIn();queueSave();};
-const ps=()=>({c:$('pc').value,w:+$('pw').value,d:$('pd').checked});
+const PEN=['pen','hl','erase'];
+const ps=()=>tool==='hl'?{c:$('pc').value,w:+$('pw').value*3.5,hl:1}:{c:$('pc').value,w:+$('pw').value};
 const dseg=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/L));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);};
 const hit=(it,p)=>{
   const r=Math.max(8/Z(),it.w+4);
@@ -388,7 +373,6 @@ const hit=(it,p)=>{
   const L=Math.hypot(it.b[0]-it.a[0],it.b[1]-it.a[1])||1;
   return Math.abs((it.b[0]-it.a[0])*(it.a[1]-p[1])-(it.a[0]-p[0])*(it.b[1]-it.a[1]))/L<r;
 };
-const snap=p=>{if(!$('snap').checked)return p;let b=null,bd=16/Z();for(const n in scr){const q=scr[n],d=Math.hypot(q[0]-p[0],q[1]-p[1]);if(d<bd){bd=d;b=q;}}return b?[b[0],b[1]]:p;};
 const erase=p=>{const n=DOC.ink.length;DOC.ink=DOC.ink.filter(it=>!hit(it,p));if(DOC.ink.length!==n)redraw();};
 /* lịch sử hoàn tác chung: nét bút, điểm, đoạn, mặt, ký hiệu, vị trí nhãn */
 const snapState=()=>JSON.stringify({...DOC,names:$('names').value,inp:['a','b','cd'].map(k=>$(k).value),ft:$('ft').value,fk:$('fk').value,fh:$('fh').checked});
@@ -407,12 +391,31 @@ function resetShape(){DOC.cus=null;render();}
 const clearAll=()=>{DOC.pts=[];DOC.segs=[];DOC.fills=[];DOC.marks=[];DOC.lo={};};
 function clearAdded(){DOC.pts=[];DOC.segs=[];DOC.fills=[];DOC.marks=[];render();}
 function clearInk(){DOC.ink=[];redraw();}
-function setTool(t){tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));$('svg').classList.toggle('pen',t!=='sel'&&t!=='pan');$('svg').classList.toggle('pan',t==='pan');$('svg').style.touchAction='none';}
+const TIP={
+  sel:'Kéo đỉnh, điểm hoặc tên điểm. Bấm đúp vào điểm để đổi tên. Kéo chỗ trống để di chuyển khung nhìn.',
+  pan:'Kéo để di chuyển khung nhìn. Lăn chuột để phóng to, thu nhỏ.',
+  padd:'Bấm vào một cạnh hoặc đoạn. Ô tỉ lệ để trống: điểm tự do, kéo được dọc cạnh. Có tỉ lệ: tính từ đầu mút gần chỗ bấm (AM/AB; 2:1 nghĩa là AM:MB).',
+  pmid:'Bấm vào một cạnh hoặc đoạn để lấy trung điểm.',
+  ext:'Bấm gần một đầu của cạnh rồi kéo ra ngoài để kéo dài cạnh đó.',
+  ll:'Bấm lần lượt hai đường thẳng (cạnh hoặc đoạn) cùng nằm trong một mặt phẳng. Hai đường được tự kéo dài tới giao điểm.',
+  lp:'Bấm một đường thẳng, rồi bấm 3 điểm của mặt phẳng (hoặc bấm vào trong một mặt đã tô).',
+  pp:'Bấm điểm cần chiếu. Sau đó bấm một cạnh (chiếu lên đường thẳng), hoặc 3 điểm / một mặt đã tô (chiếu lên mặt phẳng).',
+  sseg:'Kéo từ điểm này sang điểm kia, hoặc bấm lần lượt hai điểm. Thả trên cạnh thì tự tạo điểm trên cạnh.',
+  vec:'Bấm điểm đầu rồi điểm cuối (hoặc kéo từ điểm đầu tới điểm cuối).',
+  par:'Bấm một điểm, rồi bấm cạnh hoặc đoạn muốn song song. Dùng "Kéo điểm" để chỉnh độ dài đường mới.',
+  fill:'Bấm lần lượt các điểm của mặt. Bấm lại điểm đầu hoặc Enter để tô, Esc để hủy.',
+  ra:'Bấm 3 điểm: điểm trên cạnh thứ nhất, đỉnh góc, điểm trên cạnh thứ hai.',
+  ang:'Bấm 3 điểm: điểm trên cạnh thứ nhất, đỉnh góc, điểm trên cạnh thứ hai.',
+  eq:'Bấm vào các cạnh hoặc đoạn bằng nhau (chọn số nét gạch trước).',
+  pen:'Giữ Shift khi viết để kẻ thẳng.',hl:'Bút dạ quang trong suốt. Giữ Shift để kẻ thẳng.',erase:'Rê qua nét bút để xóa.'
+};
+function setTool(t){tool=t;pend=null;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));$('svg').classList.toggle('pen',t!=='sel'&&t!=='pan');$('svg').classList.toggle('pan',t==='pan');$('svg').style.touchAction='none';
+  document.querySelectorAll('#topt [data-for]').forEach(e=>{e.hidden=!e.dataset.for.split(' ').includes(t);});
+  $('tip').textContent=TIP[t]||'';const g=$('hov');if(g)g.innerHTML='';$('netMsg').textContent='';}
 function ui(){
   const t=$('type').value;
   $('lwv').textContent=$('lw').value;$('fsv').textContent=$('fs').value;
-  document.querySelectorAll('.ex').forEach(e=>e.style.display=net?'none':'');
-  $('items').style.display=net?'none':'';
+  document.querySelectorAll('.cons').forEach(e=>{e.hidden=net;});
   
   
   $('pyOpt').style.display=t==='p'?'':'none';if(t==='p')fillFoot();
@@ -447,16 +450,10 @@ function markSvg(q,i,Q,T){
   }
   return o;
 }
-function addMark(t){
-  const v=$('mV').value,a=$('mA').value,b=$('mB').value;
-  if(t==='eq'){const x=$('eA').value,y=$('eB').value;if(x===y)return say('Chọn hai đầu mút khác nhau.');DOC.marks.push({t,a:x,b:y,n:+$('en').value});}
-  else{if(v===a||v===b||a===b)return say('Chọn ba điểm khác nhau: đỉnh góc và hai điểm trên hai cạnh.');DOC.marks.push({t,v,a,b,l:t==='ang'?clean($('ml').value.trim()):''});}
-  render();
-}
 function resetLo(){DOC.lo={};render();}
 function ptr(e){const q=new DOMPoint(e.clientX,e.clientY).matrixTransform($('svg').getScreenCTM().inverse());return[+q.x.toFixed(2),+q.y.toFixed(2)];}
 /* ---------- Trải hình (khai triển) ---------- */
-function onFold(){fo=+$('fo').value/100;net=fo>0;$('fov').textContent=Math.round(fo*100);$('netBtn').setAttribute('aria-pressed',net);render();}
+function onFold(){fo=+$('fo').value/100;net=fo>0;$('fov').textContent=Math.round(fo*100);$('netBtn').setAttribute('aria-pressed',net);if(net&&!PEN.includes(tool)&&tool!=='sel'&&tool!=='pan')setTool('sel');pend=null;render();}
 function toggleNet(){$('fo').value=net?0:100;onFold();}
 function polysOverlap(A,B){
   const ax=P=>P.map((p,i)=>{const q=P[(i+1)%P.length];return[-(q[1]-p[1]),q[0]-p[0]];});
@@ -671,44 +668,211 @@ function zoomFit(){vb={x:0,y:0,w:W,h:H};applyVb();}
 function panTo(e){const k=$('svg').getScreenCTM().a||1;vb.x=dr.vb.x-(e.clientX-dr.cx)/k;vb.y=dr.vb.y-(e.clientY-dr.cy)/k;applyVb();}
 function nearName(p,list,r){let b=null,bd=r/Z();list.forEach(n=>{const q=scr[n];if(!q)return;const d=Math.hypot(q[0]-p[0],q[1]-p[1]);if(d<bd){bd=d;b=n;}});return b;}
 let xmap=[];
-const nearPt=p=>nearName(p,DOC.pts.map(q=>q.name),12);
+const nearPt=p=>nearName(p,DOC.pts.filter(q=>!q.hid).map(q=>q.name),12);
 const nearIx=p=>{let b=null,bd=12/Z();xmap.forEach(c=>{const d=Math.hypot(c.p[0]-p[0],c.p[1]-p[1]);if(d<bd){bd=d;b=c;}});return b;};
 function addIx(c){const name=nextName();DOC.pts.push({name,x:c.x});render();return name;}
 const nearAny=(p,r)=>nearName(p,known,r||14);
 function hitEdge(p){let b=null,bd=1e9;emap.forEach(e=>{const d=dseg(p,e.p,e.q);if(d>11/Z())return;const sc_=d+(e.vis?0:4/Z());if(sc_<bd){bd=sc_;b=e;}});return b;}
 function edgeT(a,b,p){const dx=b[0]-a[0],dy=b[1]-a[1];return Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy||1)));}
-function nextName(){const used=new Set(known);for(const c of 'MNPQRTUVWXYZKLEFGHIJ')if(!used.has(c))return c;let i=1;while(used.has('M'+i))i++;return 'M'+i;}
-function addEdgePt(h,p){const t=edgeT(h.p,h.q,p);if(t<.04||t>.96)return null;const name=nextName();DOC.pts.push({name,p1:h.a,p2:h.b,t:+t.toFixed(4)});render();return name;}
+function nextName(){const used=new Set(allNames);for(const c of 'MNPQRTUVWXYZKLEFGHIJ')if(!used.has(c))return c;let i=1;while(used.has('M'+i))i++;return 'M'+i;}
+/* tọa độ màn hình của một điểm bất kỳ (kể cả điểm đang ẩn) */
+const sp=n=>scene&&scene.Q[n]?scene.T(scene.Q[n]):null;
+/* tỉ lệ: "1/3", "0,25", "2√3/5" (qua xev) hoặc "2:1" (AM:MB) */
+function parseRatio(s){s=s.trim();if(s.includes(':')){const[x,y]=s.split(':').map(v=>xev(v));return x>=0&&y>=0&&x+y>0?x/(x+y):NaN;}return xev(s);}
+/* thêm đoạn nối (nét tự động) nếu chưa có cạnh hay đoạn nào nối hai điểm này */
+function addSeg1(a,b){if(!a||!b||a===b)return;const k=[a,b].sort().join('|');if(ekeys.has(k)||DOC.segs.some(g=>!g.v&&[g.a,g.b].sort().join('|')===k))return;DOC.segs.push({a,b,d:'a'});ekeys.add(k);}
+const nameAt=r=>Object.keys(scene.P).find(n=>scene.P[n].every((x,i)=>Math.abs(x-r[i])<1e-4));
+function addEdgePt(h,p,free){
+  const tc=edgeT(h.p,h.q,p),rs=free?'':$('prt').value.trim();
+  if(rs){
+    const r=parseRatio(rs);if(!(r>0&&r<1)){say('Tỉ lệ phải nằm giữa 0 và 1, ví dụ 1/3, 0,25 hoặc 2:1.');return null;}
+    const[a,b]=tc<=.5?[h.a,h.b]:[h.b,h.a];
+    const d=DOC.pts.find(x=>x.p1!==undefined&&!x.ext&&((x.p1===a&&x.p2===b&&Math.abs(x.t-r)<1e-6)||(x.p1===b&&x.p2===a&&Math.abs(x.t-1+r)<1e-6)));
+    if(d){$('netMsg').textContent=`Đã có điểm ${d.name} ở vị trí này.`;return null;}
+    const name=nextName();DOC.pts.push({name,p1:a,p2:b,t:+r.toFixed(6),fix:1,r:rs});render();
+    $('netMsg').textContent=`${name} ∈ ${a}${b}, ${a}${name}/${a}${b} = ${rs}`;return null;}
+  if(tc<.04||tc>.96)return null;const name=nextName();DOC.pts.push({name,p1:h.a,p2:h.b,t:+tc.toFixed(4)});render();return name;}
 function addMid(h){
-  const d=DOC.pts.find(x=>x.p1!==undefined&&Math.abs(x.t-.5)<1e-6&&((x.p1===h.a&&x.p2===h.b)||(x.p1===h.b&&x.p2===h.a)));
+  const d=DOC.pts.find(x=>x.p1!==undefined&&!x.ext&&Math.abs(x.t-.5)<1e-6&&((x.p1===h.a&&x.p2===h.b)||(x.p1===h.b&&x.p2===h.a)));
   if(d){$('netMsg').textContent=`Đã có trung điểm của ${h.a}${h.b}: ${d.name}.`;return d.name;}
   const name=nextName();DOC.pts.push({name,p1:h.a,p2:h.b,t:.5,mid:1});render();
   $('netMsg').textContent=`${name} là trung điểm của ${h.a}${h.b}.`;return name;
 }
 function moveOnEdge(name,p){
-  const q=DOC.pts.find(x=>x.name===name);if(!q||!scr[q.p1]||!scr[q.p2])return;
-  if(q.mid){$('netMsg').textContent=`${q.name} là trung điểm của ${q.p1}${q.p2} nên cố định. Xóa đi nếu muốn đặt lại.`;return;}
-  q.t=+Math.max(.02,Math.min(.98,edgeT(scr[q.p1],scr[q.p2],p))).toFixed(4);
-  render();$('netMsg').textContent=`${q.p1}${q.name} / ${q.p1}${q.p2} = ${q.t.toFixed(2)}`;
+  const q=DOC.pts.find(x=>x.name===name);if(!q)return;
+  if(q.mid||q.fix){$('netMsg').textContent=`${q.name} được dựng theo tỉ lệ cố định nên không kéo được. Xóa đi nếu muốn đặt lại.`;return;}
+  if(q.pl){const X=sp(q.pl.P),A=sp(q.pl.a),B=sp(q.pl.b);if(!X||!A||!B)return;
+    const u=[B[0]-A[0],B[1]-A[1]],uu=u[0]*u[0]+u[1]*u[1]||1;let t=((p[0]-X[0])*u[0]+(p[1]-X[1])*u[1])/uu;
+    if(Math.abs(t)<.05)t=t<0?-.05:.05;q.t=+Math.max(-6,Math.min(6,t)).toFixed(4);render();
+    $('netMsg').textContent=`${q.pl.P}${q.name} ∥ ${q.pl.a}${q.pl.b}`;return;}
+  if(q.p1===undefined){$('netMsg').textContent=`${q.name} là điểm dựng (giao điểm hoặc hình chiếu) nên không kéo được.`;return;}
+  const A=sp(q.p1),B=sp(q.p2);if(!A||!B)return;
+  const dx=B[0]-A[0],dy=B[1]-A[1],tu=((p[0]-A[0])*dx+(p[1]-A[1])*dy)/(dx*dx+dy*dy||1);
+  q.t=+(q.ext?(q.t>1?Math.max(1.02,Math.min(6,tu)):Math.min(-.02,Math.max(-5,tu))):Math.max(.02,Math.min(.98,tu))).toFixed(4);
+  render();$('netMsg').textContent=q.ext?`${q.name} nằm trên đường thẳng ${q.p1}${q.p2} kéo dài`:`${q.p1}${q.name} / ${q.p1}${q.p2} = ${q.t.toFixed(2)}`;
 }
-function hover(p){
-  const g=$('hov');if(!g)return;let o='';
-  if(tool==='padd'){const q=nearPt(p),c=!q&&nearIx(p);if(q)o=ringAt(scr[q]);else if(c)o=ringAt(c.p);else{const h=hitEdge(p);if(h){const t=edgeT(h.p,h.q,p);o=`<line x1="${h.p[0]}" y1="${h.p[1]}" x2="${h.q[0]}" y2="${h.q[1]}" stroke="#d62828" stroke-width="5" stroke-linecap="round" opacity=".45"/>`+(t>.04&&t<.96?ringAt([h.p[0]+t*(h.q[0]-h.p[0]),h.p[1]+t*(h.q[1]-h.p[1])]):'');}}}
-  else if(tool==='pmid'){const h=hitEdge(p);if(h)o=`<line x1="${h.p[0]}" y1="${h.p[1]}" x2="${h.q[0]}" y2="${h.q[1]}" stroke="#d62828" stroke-width="5" stroke-linecap="round" opacity=".45"/>`+ringAt([(h.p[0]+h.q[0])/2,(h.p[1]+h.q[1])/2]);}
-  else if(tool==='sseg'){const q=nearAny(p),c=!q&&nearIx(p);if(q)o=ringAt(scr[q]);else if(c)o=ringAt(c.p);}
-  else if(tool==='sel'){const q=nearPt(p)||nearName(p,vnames,12);if(q)o=ringAt(scr[q]);}
-  g.innerHTML=o;
+/* ---------- hình học: giao điểm, hình chiếu ---------- */
+const lerp3=(A,B,t)=>A.map((x,i)=>x+t*(B[i]-x));
+const nrm=(P,Q,R)=>cr(sub(Q,P),sub(R,P));
+/* giao của hai đường thẳng AB, CD (đồng phẳng, không song song); s, t là vị trí trên AB, CD */
+function meetL(A,B,C,D){
+  const u=sub(B,A),v=sub(D,C),w=sub(C,A),n=cr(u,v),nn=dot(n,n),lu=Math.hypot(...u),lv=Math.hypot(...v),sz=Math.max(lu,lv,Math.hypot(...w))||1;
+  if(nn<1e-9*lu*lu*lv*lv||Math.abs(dot(w,n))>1e-6*Math.sqrt(nn)*sz)return null;
+  const s=dot(cr(w,v),n)/nn,t=dot(cr(w,u),n)/nn;return{r:A.map((x,i)=>x+s*u[i]),s,t};
 }
-function previewSeg(a,p){
-  const g=$('hov');if(!g)return;let to=p,o='';const q=nearAny(p),c=!q&&nearIx(p);
-  if(q){to=scr[q];o=ringAt(to);}else if(c){to=c.p;o=ringAt(to);}else{const h=hitEdge(p);if(h){const t=edgeT(h.p,h.q,p);if(t>.04&&t<.96){to=[h.p[0]+t*(h.q[0]-h.p[0]),h.p[1]+t*(h.q[1]-h.p[1])];o=ringAt(to);}}}
-  g.innerHTML=`<line x1="${scr[a][0]}" y1="${scr[a][1]}" x2="${to[0]}" y2="${to[1]}" stroke="#d62828" stroke-width="2.5" stroke-linecap="round"${$('ss').value==='1'?' stroke-dasharray="6 5"':''}/>`+o;
+/* giao thật của hai đoạn (cắt nhau bên trong cả hai đoạn) */
+function meet(A,B,C,D){const o=meetL(A,B,C,D),e=1e-3;if(!o||o.s<e||o.s>1-e||o.t<e||o.t>1-e)return null;return o.r;}
+function linePlane(A,B,P,Q,R){const n=nrm(P,Q,R),u=sub(B,A),nl=Math.hypot(...n),ul=Math.hypot(...u),den=dot(n,u);if(nl<1e-9||Math.abs(den)<1e-7*nl*ul)return null;const s=dot(n,sub(P,A))/den;return{r:A.map((x,i)=>x+s*u[i]),s};}
+const projLine=(X,A,B)=>{const u=sub(B,A),uu=dot(u,u);if(uu<1e-12)return null;const s=dot(sub(X,A),u)/uu;return{r:A.map((x,i)=>x+s*u[i]),s};};
+const projPlane=(X,P,Q,R)=>{const n=nrm(P,Q,R),nn=dot(n,n);if(nn<1e-12)return null;const d=dot(sub(X,P),n)/nn;return{r:X.map((x,i)=>x-d*n[i])};};
+const collin=F=>{const V=F.map(x=>scene.P[x]);if(V.some(v=>!v))return true;const a=Math.hypot(...sub(V[1],V[0])),b=Math.hypot(...sub(V[2],V[0]));return Math.hypot(...nrm(...V))<1e-6*(a*b||1);};
+/* các điểm mà một điểm dựng phụ thuộc vào */
+const refsOf=q=>q.x?q.x:q.pp?[q.pp.P,...(q.pp.L||q.pp.F)]:q.pl?[q.pl.P,q.pl.a,q.pl.b]:q.lp?q.lp:[q.p1,q.p2];
+function mapRefs(q,f){
+  if(q.x)q.x=q.x.map(f);
+  else if(q.pp){q.pp.P=f(q.pp.P);if(q.pp.L)q.pp.L=q.pp.L.map(f);if(q.pp.F)q.pp.F=q.pp.F.map(f);}
+  else if(q.pl)['P','a','b'].forEach(k=>{q.pl[k]=f(q.pl[k]);});
+  else if(q.lp)q.lp=q.lp.map(f);
+  else{q.p1=f(q.p1);q.p2=f(q.p2);}
+}
+function ptPos(q,P){
+  const R=refsOf(q).map(x=>P[x]);if(R.some(v=>!v))return null;
+  if(q.x){if(!q.ln)return meet(...R);const o=meetL(...R);return o&&o.r;}
+  if(q.pp){const o=q.pp.L?projLine(...R):projPlane(...R);return o&&o.r;}
+  if(q.pl){const[X,A,B]=R;return X.map((x,i)=>x+q.t*(B[i]-A[i]));}
+  if(q.lp){const o=linePlane(...R);return o&&o.r;}
+  return lerp3(R[0],R[1],q.t);
+}
+const inPoly=(p,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;};
+/* mặt đã tô chứa điểm bấm: trả về {f, F = 3 điểm không thẳng hàng của mặt} */
+function fillAt(p){
+  for(let i=DOC.fills.length-1;i>=0;i--){const f=DOC.fills[i];if(f.hid)continue;const poly=f.n.map(sp);if(poly.some(v=>!v)||!inPoly(p,poly))continue;
+    const n=f.n;for(let a=0;a<n.length;a++)for(let b=a+1;b<n.length;b++)for(let c=b+1;c<n.length;c++)if(!collin([n[a],n[b],n[c]]))return{f,F:[n[a],n[b],n[c]]};}
+  return null;
+}
+const extTo=(L,s,name)=>{if(s>1+1e-3)addSeg1(L[1],name);else if(s<-1e-3)addSeg1(L[0],name);};
+function doMeet(L1,L2){
+  const P=scene.P,o=meetL(P[L1[0]],P[L1[1]],P[L2[0]],P[L2[1]]),a=L1.join(''),b=L2.join('');
+  if(!o){render();say(`${a} và ${b} không cắt nhau (chéo nhau hoặc song song).`);return;}
+  const ex=nameAt(o.r);if(ex){render();say(`Giao điểm của ${a} và ${b} là ${ex}.`);return;}
+  const name=nextName();DOC.pts.push({name,x:[...L1,...L2],ln:1});extTo(L1,o.s,name);extTo(L2,o.t,name);render();
+  $('netMsg').textContent=`${name} = ${a} ∩ ${b}`;
+}
+function doLP(L,F){
+  const P=scene.P,o=linePlane(P[L[0]],P[L[1]],...F.map(x=>P[x])),a=L.join(''),f=F.join('');
+  if(!o){render();say(`${a} song song hoặc nằm trong mặt phẳng (${f}).`);return;}
+  const ex=nameAt(o.r);if(ex){render();say(`Giao điểm của ${a} và (${f}) là ${ex}.`);return;}
+  const name=nextName();DOC.pts.push({name,lp:[...L,...F]});extTo(L,o.s,name);render();
+  $('netMsg').textContent=`${name} = ${a} ∩ (${f})`;
+}
+function doProj(X,o){
+  const P=scene.P,T_=o.L||o.F,R=T_.map(x=>P[x]),r=o.L?projLine(P[X],...R):projPlane(P[X],...R),tg=o.L?o.L.join(''):'('+o.F.join('')+')';
+  if(!r){render();return;}
+  if(Math.hypot(...sub(P[X],r.r))<1e-6){render();say(`${X} nằm trên ${tg} nên hình chiếu là chính nó.`);return;}
+  let name=nameAt(r.r);
+  if(!name){name=[...'HKIJ'].find(c=>!allNames.includes(c))||nextName();DOC.pts.push({name,pp:{P:X,...(o.L?{L:o.L}:{F:o.F})}});}
+  addSeg1(X,name);if(o.L)extTo(o.L,r.s,name);
+  const fb=T_.filter(x=>x!==name).map(x=>[x,Math.hypot(...sub(P[x],r.r))]).sort((a,b)=>b[1]-a[1])[0];
+  if(fb&&fb[1]>1e-6&&!DOC.marks.some(m=>m.t==='ra'&&m.v===name&&(m.a===X||m.b===X)))DOC.marks.push({t:'ra',v:name,a:X,b:fb[0]});
+  render();$('netMsg').textContent=`${name} là hình chiếu vuông góc của ${X} lên ${tg}.`;
+}
+/* chọn mặt phẳng bằng 3 điểm hoặc bấm vào mặt đã tô; trả về 3 tên khi đủ, null khi đang chọn, false khi bấm trượt */
+function planePick(p,q){
+  let a=nearAny(p);if(!a){const c=nearIx(p);if(c)a=addIx(c);}
+  if(a){if(q.F.includes(a))return null;q.F.push(a);if(q.F.length<3){render();return null;}
+    const F=q.F.slice();if(collin(F)){q.F=[];render();say('Ba điểm thẳng hàng, hãy chọn lại.');return null;}pend=null;return F;}
+  if(!q.F.length){const f=fillAt(p);if(f){pend=null;return f.F;}}
+  return false;
+}
+function closeFill(){
+  const q=pend;if(!q||q.t!=='fill'||q.n.length<3)return;
+  const n=q.n,F=n.map(x=>scene.P[x]),sz=Math.max(...F.map(v=>Math.hypot(...sub(v,F[0]))))||1;let nr=null;
+  for(let i=2;i<F.length&&!nr;i++){const v=nrm(F[0],F[1],F[i]);if(Math.hypot(...v)>1e-6*sz*sz)nr=v;}
+  if(!nr){say('Các điểm thẳng hàng, không tạo thành mặt.');return;}
+  const nl=Math.hypot(...nr);if(F.some(v=>Math.abs(dot(sub(v,F[0]),nr))/nl>1e-5*sz)){pend=null;render();say(`Các điểm ${n.join(', ')} không cùng nằm trên một mặt phẳng.`);return;}
+  DOC.fills.push({n,c:$('fc').value});pend=null;render();
 }
 function finishSeg(d){
   let b=nearAny(d.cur);if(!b){const c=nearIx(d.cur);if(c)b=addIx(c);}
-  if(!b){const h=hitEdge(d.cur);if(h)b=addEdgePt(h,d.cur);}
-  if(b&&b!==d.sa)DOC.segs.push(segNew({a:d.sa,b,d:$('ss').value}));
+  if(!b){const h=hitEdge(d.cur);if(h)b=addEdgePt(h,d.cur,true);}
+  if(b&&b!==d.sa){const k=[d.sa,b].sort().join('|');
+    if(!d.vec&&(ekeys.has(k)||DOC.segs.some(g=>!g.v&&[g.a,g.b].sort().join('|')===k))){render();say(`Đã có đoạn ${d.sa}${b}. Đổi màu, nét ở danh sách đối tượng.`);return;}
+    DOC.segs.push(segNew({a:d.sa,b,d:$('ss').value,...(d.vec?{v:1}:{})}));}
   render();
+}
+/* bấm chuột với các công cụ dựng hình; trả về trạng thái kéo (dr) hoặc null nếu bấm trượt */
+function consDown(p){
+  const t=tool,q=pend;
+  const pk=()=>{const a=nearAny(p);if(a)return a;const c=nearIx(p);return c?addIx(c):null;};
+  if(t==='padd'){const a=nearPt(p),c=!a&&nearIx(p);if(a)return{pt:a};if(c)return{pt:addIx(c)};const h=hitEdge(p);if(!h)return null;const nm=addEdgePt(h,p);return nm?{pt:nm}:{};}
+  if(t==='pmid'){const h=hitEdge(p);if(h)addMid(h);return{};}
+  if(t==='ext'){const a=nearPt(p);if(a&&DOC.pts.some(x=>x.name===a&&x.ext))return{pt:a};
+    const h=hitEdge(p);if(!h)return null;const out=edgeT(h.p,h.q,p)>.5,name=nextName();
+    DOC.pts.push({name,p1:h.a,p2:h.b,t:out?1.25:-.25,ext:1});addSeg1(out?h.b:h.a,name);render();
+    $('netMsg').textContent=`Kéo ${name} để chỉnh độ dài phần kéo dài của ${h.a}${h.b}.`;return{pt:name};}
+  if(t==='sseg'||t==='vec'){if(q&&q.sa){finishSeg({sa:q.sa,cur:p,vec:t==='vec'});pend=null;render();return{};}
+    const a=pk();if(!a)return null;return{sa:a,cur:p,p0:p,vec:t==='vec'};}
+  if(t==='par'){
+    if(!q){const a=pk();if(!a)return null;pend={t,P:a};render();return{};}
+    const h=hitEdge(p);if(!h)return null;const P=scene.P;
+    if(Math.hypot(...cr(sub(P[q.P],P[h.a]),sub(P[h.b],P[h.a])))<1e-6){pend=null;render();say(`${q.P} nằm trên đường thẳng ${h.a}${h.b}.`);return{};}
+    const name=nextName();DOC.pts.push({name,pl:{P:q.P,a:h.a,b:h.b},t:1});addSeg1(q.P,name);pend=null;render();
+    $('netMsg').textContent=`${q.P}${name} ∥ ${h.a}${h.b}. Kéo ${name} để chỉnh độ dài.`;return{pt:name};}
+  if(t==='ll'){const h=hitEdge(p);if(!h)return null;
+    if(!q){pend={t,L:[h.a,h.b]};render();return{};}
+    if([h.a,h.b].sort().join()===q.L.slice().sort().join())return{};
+    pend=null;doMeet(q.L,[h.a,h.b]);return{};}
+  if(t==='lp'){if(!q){const h=hitEdge(p);if(!h)return null;pend={t,L:[h.a,h.b],F:[]};render();return{};}
+    const F=planePick(p,q);if(F===false)return null;if(F)doLP(q.L,F);return{};}
+  if(t==='pp'){if(!q){const a=pk();if(!a)return null;pend={t,P:a,F:[]};render();return{};}
+    if(!q.F.length&&!nearAny(p)&&!nearIx(p)){const h=hitEdge(p);if(h){pend=null;doProj(q.P,{L:[h.a,h.b]});return{};}}
+    const F=planePick(p,q);if(F===false)return null;if(F)doProj(q.P,{F});return{};}
+  if(t==='fill'){const a=pk();if(!a)return null;
+    if(!q){pend={t,n:[a]};render();return{};}
+    if(a===q.n[0]&&q.n.length>=3){closeFill();return{};}
+    if(!q.n.includes(a)){q.n.push(a);render();}return{};}
+  if(t==='ra'||t==='ang'){const a=pk();if(!a)return null;const s=q?q.s:[];if(s.includes(a))return{};s.push(a);
+    if(s.length<3){pend={t,s};render();return{};}
+    pend=null;DOC.marks.push({t,v:s[1],a:s[0],b:s[2],l:t==='ang'?clean($('ml').value.trim()):''});render();return{};}
+  if(t==='eq'){const h=hitEdge(p);if(!h)return null;const k=[h.a,h.b].sort().join();
+    DOC.marks=DOC.marks.filter(m=>!(m.t==='eq'&&[m.a,m.b].sort().join()===k));DOC.marks.push({t:'eq',a:h.a,b:h.b,n:+$('en').value});render();return{};}
+  return null;
+}
+/* gợi ý khi rê chuột */
+const hlSeg=(a,b)=>`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#d62828" stroke-width="${5/Z()}" stroke-linecap="round" opacity=".45"/>`;
+const W_={ext:'l',sseg:'p',vec:'p',ll:'l',fill:'p',ra:'p',ang:'p',eq:'l'};
+function wants(){const q=pend,t=tool;if(t==='par')return q?'l':'p';if(t==='lp')return q?(q.F.length?'p':'pf'):'l';if(t==='pp')return q?(q.F.length?'p':'plf'):'p';return W_[t]||'';}
+function stepMsg(){const q=pend;if(!q)return'';
+  if(q.sa)return`Bấm điểm cuối (đang từ ${q.sa}). Esc để hủy.`;
+  if(q.t==='par')return`Bấm cạnh hoặc đoạn muốn song song (đường qua ${q.P}).`;
+  if(q.t==='ll')return`Bấm đường thẳng thứ hai (đã chọn ${q.L.join('')}).`;
+  if(q.t==='lp')return q.F.length?`Mặt phẳng: ${q.F.join('')}… bấm thêm ${3-q.F.length} điểm.`:`Đường ${q.L.join('')}: bấm 3 điểm của mặt phẳng hoặc bấm vào một mặt đã tô.`;
+  if(q.t==='pp')return q.F.length?`Mặt phẳng: ${q.F.join('')}… bấm thêm ${3-q.F.length} điểm.`:`Chiếu ${q.P}: bấm một cạnh, 3 điểm của mặt phẳng, hoặc một mặt đã tô.`;
+  if(q.t==='fill')return`Đã chọn ${q.n.join(', ')}. ${q.n.length>=3?'Bấm lại '+q.n[0]+' hoặc Enter để tô. ':''}Esc để hủy.`;
+  if(q.s)return['','Bấm đỉnh góc','Bấm điểm trên cạnh thứ hai'][q.s.length]+` (đã chọn ${q.s.join(', ')}).`;
+  return'';}
+function pendSvg(p){const q=pend;if(!q)return'';let o='';
+  const R=n=>{const v=sp(n);return v?ringAt(v)+`<circle cx="${v[0]}" cy="${v[1]}" r="${4/Z()}" fill="#d62828"/>`:'';};
+  [q.P,...(q.F||[]),...(q.s||[])].filter(Boolean).forEach(n=>{o+=R(n);});
+  if(q.L){const a=sp(q.L[0]),b=sp(q.L[1]);if(a&&b)o+=hlSeg(a,b);}
+  if(q.n){const v=q.n.map(sp).filter(Boolean);o+=`<polyline points="${v.concat(p?[p]:[]).map(x=>x.join(',')).join(' ')}" fill="${$('fc').value}" fill-opacity=".18" stroke="#d62828" stroke-width="${2/Z()}" stroke-dasharray="${6/Z()} ${4/Z()}" stroke-linejoin="round"/>`;v.forEach(x=>{o+=ringAt(x);});}
+  return o;}
+function hover(p){
+  const g=$('hov');if(!g)return;let o='';
+  if(tool==='padd'){const q=nearPt(p),c=!q&&nearIx(p);if(q)o=ringAt(scr[q]);else if(c)o=ringAt(c.p);else{const h=hitEdge(p);if(h){const t=edgeT(h.p,h.q,p);o=hlSeg(h.p,h.q)+(t>.04&&t<.96&&!$('prt').value.trim()?ringAt([h.p[0]+t*(h.q[0]-h.p[0]),h.p[1]+t*(h.q[1]-h.p[1])]):'');}}}
+  else if(tool==='pmid'){const h=hitEdge(p);if(h)o=hlSeg(h.p,h.q)+ringAt([(h.p[0]+h.q[0])/2,(h.p[1]+h.q[1])/2]);}
+  else if(tool==='sel'){const q=nearPt(p)||nearName(p,vnames,12);if(q)o=ringAt(scr[q]);}
+  else{const w=wants();let done=false;
+    if(w.includes('p')){const q=nearAny(p),c=!q&&nearIx(p);if(q){o=ringAt(scr[q]);done=true;}else if(c){o=ringAt(c.p);done=true;}}
+    if(!done&&w.includes('l')){const h=hitEdge(p);if(h){o=hlSeg(h.p,h.q);done=true;}}
+    if(!done&&w.includes('f')){const f=fillAt(p);if(f)o=`<polygon points="${f.f.n.map(sp).map(x=>x.join(',')).join(' ')}" fill="#d62828" fill-opacity=".15" stroke="#d62828" stroke-width="${2/Z()}"/>`;}}
+  g.innerHTML=pendSvg(p)+o;
+}
+function hoverAt(p){if(pend&&pend.sa)previewSeg(pend.sa,p);else hover(p);}
+function previewSeg(a,p){
+  const g=$('hov'),A=sp(a);if(!g||!A)return;let to=p,o='';const q=nearAny(p),c=!q&&nearIx(p);
+  if(q){to=scr[q];o=ringAt(to);}else if(c){to=c.p;o=ringAt(to);}else{const h=hitEdge(p);if(h){const t=edgeT(h.p,h.q,p);if(t>.04&&t<.96){to=[h.p[0]+t*(h.q[0]-h.p[0]),h.p[1]+t*(h.q[1]-h.p[1])];o=ringAt(to);}}}
+  g.innerHTML=`<line x1="${A[0]}" y1="${A[1]}" x2="${to[0]}" y2="${to[1]}" stroke="#d62828" stroke-width="2.5" stroke-linecap="round"${$('ss').value==='1'?' stroke-dasharray="6 5"':''}/>`+ringAt(A)+o;
 }
 function render(){
   ui();scr={};emap=[];vnames=[];xmap=[];scene=null;queueSave();
@@ -725,55 +889,73 @@ function render(){
     const vis=dot(nr,d)<-1e-9,nl=Math.hypot(...nr)||1;FD.push({P,n:nr.map(x=>x/nl),fl,vis});
     f.forEach((v,i)=>{const w=f[(i+1)%f.length],key=Math.min(v,w)+'-'+Math.max(v,w);E[key]=E[key]||vis;});
   });
+  /* điểm M nhìn thấy nếu nằm trên mặt nhìn thấy, hoặc không có mặt nhìn thấy nào che nó (tia từ M về phía người xem không cắt mặt nào) */
+  const sz0=Math.max(...[0,1,2].map(a=>Math.max(...m.V.map(q=>q[a]))-Math.min(...m.V.map(q=>q[a]))))||1;
+  const occl=M=>FD.some(fd=>{if(!fd.vis)return false;const den=dot(fd.n,d);if(Math.abs(den)<1e-12)return false;
+    const lam=dot(fd.n,sub(M,fd.P[0]))/den;if(lam<=1e-6*sz0)return false;const X=M.map((x,i)=>x-lam*d[i]);
+    return fd.P.every((p,i)=>dot(cr(sub(fd.P[(i+1)%fd.P.length],p),sub(X,p)),fd.n)*fd.fl>=-1e-9*sz0*sz0);});
+  const visAt=M=>FD.some(fd=>fd.vis&&inF(fd,M))||!occl(M);
   const P={};
   m.nm.forEach((s,i)=>P[s]=m.V[i]);
   const Sp=m.py?m.V[m.n]:null,vk=Sp?m.V.slice(0,m.n).findIndex(v=>d2(v,Sp)<1e-5):-1,hOK=!!Sp&&vk<0;
-  const hBusy=hOK&&(m.nm.includes('H')||DOC.pts.some(q=>q.name==='H')),hUsed=DOC.pts.some(q=>q.p1==='H'||q.p2==='H'||(q.x&&q.x.includes('H')))||DOC.segs.some(g=>g.a==='H'||g.b==='H')||DOC.fills.some(f=>f.n.includes('H'))||DOC.marks.some(q=>q.a==='H'||q.b==='H'||q.v==='H'),hOff=hOK&&!hBusy&&!$('fh').checked&&!hUsed,ho=hOK&&!hBusy&&!hOff;
+  const hBusy=hOK&&(m.nm.includes('H')||DOC.pts.some(q=>q.name==='H')),hUsed=DOC.pts.some(q=>refsOf(q).includes('H'))||DOC.segs.some(g=>g.a==='H'||g.b==='H')||DOC.fills.some(f=>f.n.includes('H'))||DOC.marks.some(q=>q.a==='H'||q.b==='H'||q.v==='H'),hOff=hOK&&!hBusy&&!$('fh').checked&&!hUsed,ho=hOK&&!hBusy&&!hOff;
   if(ho)P.H=[Sp[0],Sp[1],0];
   if($('ftMsg'))$('ftMsg').textContent=!m.py?'':vk>=0?`Chân đường cao trùng đỉnh ${m.nm[vk]}: ${m.nm[m.n]}${m.nm[vk]} ⊥ (${m.nm.slice(0,m.n).join('')}).`:hBusy?'Tên H đã được dùng nên không hiện chân đường cao H.':(hOK&&!$('fh').checked&&hUsed)?'Chưa ẩn được H vì đang có điểm hoặc đoạn dùng H. Hãy xóa chúng trước.':'';
-  DOC.pts=DOC.pts.filter(q=>{if(q.x){if(!q.x.every(x=>P[x]))return false;const r=meet(...q.x.map(x=>P[x]));if(!r)return false;P[q.name]=r;return true;}if(!P[q.p1]||!P[q.p2])return false;const u=P[q.p1],v=P[q.p2];P[q.name]=u.map((x,i)=>x+q.t*(v[i]-x));return true;});
-  DOC.segs=DOC.segs.filter(g=>P[g.a]&&P[g.b]);
-  DOC.fills=DOC.fills.filter(f=>f.n.every(x=>P[x]));
-  DOC.marks=DOC.marks.filter(q=>P[q.a]&&P[q.b]&&(q.t==='eq'||P[q.v]));
-  known=Object.keys(P);
+  /* bỏ những đối tượng dựa vào điểm không còn tồn tại; điểm dựng không tính được (vd hai đường hết cắt nhau) thì giữ lại nhưng tạm ẩn */
+  const base=Object.keys(P);let U;
+  for(let n0=-1;n0!==DOC.pts.length;){n0=DOC.pts.length;U=new Set(base.concat(DOC.pts.map(q=>q.name)));DOC.pts=DOC.pts.filter(q=>refsOf(q).every(x=>U.has(x)));}
+  U=new Set(base.concat(DOC.pts.map(q=>q.name)));badPts=new Set();
+  DOC.pts.forEach(q=>{const r=ptPos(q,P);if(r)P[q.name]=r;else badPts.add(q.name);});
+  DOC.segs=DOC.segs.filter(g=>U.has(g.a)&&U.has(g.b));
+  DOC.fills=DOC.fills.filter(f=>f.n.every(x=>U.has(x)));
+  DOC.marks=DOC.marks.filter(q=>U.has(q.a)&&U.has(q.b)&&(q.t==='eq'||U.has(q.v)));
+  allNames=[...U];
+  const hidP=new Set(DOC.pts.filter(q=>q.hid).map(q=>q.name));
+  known=Object.keys(P).filter(x=>!hidP.has(x));
   const pr=p=>[p[0]+k*Math.cos(al)*p[1],p[2]+k*Math.sin(al)*p[1]];
-  const Q={};known.forEach(s=>Q[s]=pr(P[s]));
-  scene={m,P,Q,FD,E,k,al,ho,pr,names:known.slice()};
+  const Q={};Object.keys(P).forEach(s=>Q[s]=pr(P[s]));
+  scene={m,P,Q,FD,E,k,al,ho,pr,visAt,names:Object.keys(P),vis:known.slice()};
   const vs=m.V.map(pr).concat(Object.values(Q));
   const xs=vs.map(p=>p[0]),ys=vs.map(p=>p[1]);
   const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),pad=60;
   const sc=Math.min((W-2*pad)/Math.max(x1-x0,1e-6),(H-2*pad)/Math.max(y1-y0,1e-6));
   const ox=(W-(x1-x0)*sc)/2-x0*sc,oy=(H-(y1-y0)*sc)/2;
   const T=p=>fz?[p[0]*fz.sc+fz.ox,H-((p[1]-fz.y0)*fz.sc+fz.oy)]:[p[0]*sc+ox,H-((p[1]-y0)*sc+oy)];
-  view=fz||{sc,ox,oy,y0,k,al};vnames=m.nm;
+  view=fz||{sc,ox,oy,y0,k,al};vnames=m.nm;scene.T=T;
   const cs=T(pr(G));
   const line=(a,b,dash,w,c)=>{const u=T(a),v=T(b);
     return`<line x1="${u[0]}" y1="${u[1]}" x2="${v[0]}" y2="${v[1]}" stroke="${c||'#14213d'}" stroke-width="${w}" stroke-linecap="round"${dash?' stroke-dasharray="6 5"':''}/>`};
   const lp=(A,B,t)=>A.map((x,j)=>x+t*(B[j]-x));
   const auto=(A,B,w,c)=>{const N=48,st=[];let o='',s0=0;
-    for(let i=0;i<N;i++){const M=lp(A,B,(i+.5)/N);st.push(FD.some(fd=>fd.vis&&inF(fd,M)));}
+    for(let i=0;i<N;i++)st.push(visAt(lp(A,B,(i+.5)/N)));
     for(let i=1;i<=N;i++)if(i===N||st[i]!==st[s0]){o+=line(pr(lp(A,B,s0/N)),pr(lp(A,B,i/N)),!st[s0],w,c);s0=i;}
     return o;};
   let s='';
   DOC.fills.forEach(f=>{
-    const ps=f.n.map(x=>Q[x]);
+    if(f.hid)return;const ps=f.n.map(x=>Q[x]);
     if(ps.length>2&&ps.every(Boolean))
       s+=`<polygon points="${ps.map(p=>T(p).join(',')).join(' ')}" fill="${f.c}" fill-opacity=".22"/>`+f.n.map((x,i)=>auto(P[x],P[f.n[(i+1)%f.n.length]],1.6,f.c)).join('');
   });
   for(const key in E){const[i,j]=key.split('-');s+=line(pr(m.V[i]),pr(m.V[j]),!E[key],LW());emap.push({a:m.nm[i],b:m.nm[j],p:T(pr(m.V[i])),q:T(pr(m.V[j])),vis:E[key]});}
-  DOC.segs.forEach(g=>{s+=g.d==='a'?auto(P[g.a],P[g.b],LW()*.85*(g.w||1),g.c):line(Q[g.a],Q[g.b],g.d==='1',LW()*.85*(g.w||1),g.c);});
+  DOC.segs.forEach(g=>{if(g.hid||!P[g.a]||!P[g.b])return;const w=LW()*.85*(g.w||1);let B=P[g.b],tip='';
+    if(g.v){const a=T(Q[g.a]),b=T(Q[g.b]),L=Math.hypot(b[0]-a[0],b[1]-a[1]);
+      if(L>1){const al_=Math.min(L*.45,8+w*3.2),u=[(b[0]-a[0])/L,(b[1]-a[1])/L],hw=al_*.4,c=[b[0]-u[0]*al_,b[1]-u[1]*al_];B=lp(P[g.a],P[g.b],1-al_*.7/L);
+        tip=`<polygon points="${b[0]},${b[1]} ${c[0]-u[1]*hw},${c[1]+u[0]*hw} ${c[0]+u[1]*hw},${c[1]-u[0]*hw}" fill="${g.c||'#14213d'}"/>`;}}
+    s+=(g.d==='a'?auto(P[g.a],B,w,g.c):line(Q[g.a],pr(B),g.d==='1',w,g.c))+tip;});
   /* đường phụ (đoạn nối, cạnh mặt tô) cũng bắt được điểm; giao điểm chỉ lấy khi hai đoạn thật sự cắt nhau trong không gian */
   const have=new Set(emap.map(e=>[e.a,e.b].sort().join('|')));
   const addAux=(a,b)=>{const k=[a,b].sort().join('|');if(have.has(k))return;have.add(k);emap.push({a,b,p:T(Q[a]),q:T(Q[b]),vis:true,aux:1});};
-  DOC.segs.forEach(g=>addAux(g.a,g.b));DOC.fills.forEach(f=>f.n.forEach((x,i)=>addAux(x,f.n[(i+1)%f.n.length])));
+  DOC.segs.forEach(g=>{if(!g.hid&&P[g.a]&&P[g.b])addAux(g.a,g.b);});DOC.fills.forEach(f=>{if(!f.hid&&f.n.every(x=>P[x]))f.n.forEach((x,i)=>addAux(x,f.n[(i+1)%f.n.length]));});
+  if(ho)addAux(m.nm[m.n],'H');
+  ekeys=new Set(emap.map(e=>[e.a,e.b].sort().join('|')));
   const seenX=new Set();
   emap.forEach((e,i)=>{if(e.aux)emap.forEach((f,j)=>{if(i===j||(f.aux&&j<i)||[e.a,e.b].some(x=>x===f.a||x===f.b))return;
     const r=meet(P[e.a],P[e.b],P[f.a],P[f.b]);if(!r)return;
     const key=r.map(x=>Math.round(x*1e4)).join(',');
-    if(seenX.has(key)||known.some(n=>P[n].every((x,q)=>Math.abs(x-r[q])<1e-4)))return;
+    if(seenX.has(key)||Object.keys(P).some(n=>P[n].every((x,q)=>Math.abs(x-r[q])<1e-4)))return;
     seenX.add(key);xmap.push({x:[e.a,e.b,f.a,f.b],p:T(pr(r))});});});
   if(ho)s+=auto(P[m.nm[m.n]],P.H,LW()*.85);
-  DOC.marks.forEach((q,i)=>{s+=markSvg(q,i,Q,T);});
+  DOC.marks.forEach((q,i)=>{if(!q.hid)s+=markSvg(q,i,Q,T);});
   known.forEach(nm=>{
     const p=T(Q[nm]);let dx=p[0]-cs[0],dy=p[1]-cs[1];const L=Math.hypot(dx,dy);
     if(L<10){dx=-.7;dy=-.7;}else{dx/=L;dy/=L;}
@@ -781,31 +963,34 @@ function render(){
   });
   $('svg').innerHTML=s+'<g id="hov"></g>'+inkG();
 
-  ['pP1','pP2','sP1','sP2','mV','mA','mB','eA','eB'].forEach((id,i)=>{
-    const el=$(id),v=el.value;
-    el.innerHTML=known.map(x=>`<option>${x}</option>`).join('');
-    if(known.includes(v))el.value=v;else el.selectedIndex=Math.min(i%2,known.length-1);
-  });
+  if(pend&&![pend.sa,pend.P,...(pend.L||[]),...(pend.F||[]),...(pend.n||[]),...(pend.s||[])].filter(Boolean).every(x=>U.has(x)))pend=null;
+  if(pend){$('netMsg').textContent=stepMsg();if(mouse)hoverAt(mouse);}
   $('items').innerHTML=
-    DOC.pts.map((q,i)=>chip(q.x?`Giao điểm ${q.name} = ${q.x[0]}${q.x[1]} ∩ ${q.x[2]}${q.x[3]}`:`Điểm ${q.name} = ${q.p1}${q.p2}, tỉ lệ ${q.t}`,'pts',i)).join('')+
-    DOC.segs.map((g,i)=>chip(`Đoạn ${g.a}${g.b}${g.d==='1'?' (đứt)':g.d==='0'?' (liền)':''}`+segCtl(g,i),'segs',i)).join('')+
-    DOC.fills.map((f,i)=>chip(`Mặt ${f.n.join('')}`,'fills',i)).join('')+
+    DOC.pts.map((q,i)=>chip(ptDesc(q),'pts',i)).join('')+
+    DOC.segs.map((g,i)=>chip(`${g.v?'Vectơ '+g.a+g.b+' →':'Đoạn '+g.a+g.b}${g.d==='1'?' (đứt)':g.d==='0'?' (liền)':''}`+segCtl(g,i),'segs',i)).join('')+
+    DOC.fills.map((f,i)=>chip(`Mặt ${f.n.join('')} <input type="color" value="${f.c}" onchange="fillSet(${i},this.value)" title="Màu mặt" aria-label="Màu mặt" style="width:22px;height:22px;padding:0;border:0;vertical-align:middle;background:none">`,'fills',i)).join('')+
     DOC.marks.map((q,i)=>chip(q.t==='eq'?`Bằng nhau ${q.a}${q.b} (${q.n} nét)`:`${q.t==='ra'?'Góc vuông':'Góc'} ${q.a}${q.v}${q.b}${q.l?' = '+q.l:''}`,'marks',i)).join('');
 }
-const chip=(t,k,i)=>`<span class="chip">${k==='pts'?`<span style="cursor:pointer" title="Bấm để đổi tên điểm" onclick="askRename('${DOC.pts[i].name}')">${t}</span>`:t}<b role="button" tabindex="0" aria-label="Xóa" onclick="del('${k}',${i})">×</b></span>`;
+const ptDesc=q=>q.x?`${q.name} = ${q.x[0]}${q.x[1]} ∩ ${q.x[2]}${q.x[3]}`:q.pp?`${q.name} là hình chiếu của ${q.pp.P} lên ${q.pp.L?q.pp.L.join(''):'('+q.pp.F.join('')+')'}`:
+  q.pl?`${q.pl.P}${q.name} ∥ ${q.pl.a}${q.pl.b}`:q.lp?`${q.name} = ${q.lp[0]}${q.lp[1]} ∩ (${q.lp.slice(2).join('')})`:q.mid?`${q.name} là trung điểm ${q.p1}${q.p2}`:
+  q.ext?`${q.name} trên ${q.p1}${q.p2} kéo dài`:q.fix?`${q.name} ∈ ${q.p1}${q.p2}, ${q.p1}${q.name}/${q.p1}${q.p2} = ${q.r||+q.t.toFixed(3)}`:`${q.name} ∈ ${q.p1}${q.p2}`;
+const chip=(t,k,i)=>{const o=DOC[k][i],bad=k==='pts'&&badPts.has(o.name);
+  return`<span class="chip${o.hid?' off':''}${bad?' bad':''}"${bad?' title="Không dựng được với hình hiện tại"':''}><b class="eye" role="button" tabindex="0" title="${o.hid?'Hiện':'Ẩn'}" aria-label="${o.hid?'Hiện':'Ẩn'}" onclick="tog('${k}',${i})">${o.hid?'◌':'👁'}</b>${k==='pts'?`<span style="cursor:pointer" title="Bấm để đổi tên điểm" onclick="askRename('${o.name}')">${t}</span>`:t}<b role="button" tabindex="0" aria-label="Xóa" onclick="del('${k}',${i})">×</b></span>`;};
+function tog(k,i){const o=DOC[k][i];if(!o)return;if(o.hid)delete o.hid;else o.hid=1;render();}
+function fillSet(i,v){const f=DOC.fills[i];if(!f)return;const b=snapState();f.c=v;render();if(snapState()!==b)pushHist(b);}
 function del(k,i){DOC[k].splice(i,1);
   if(k==='marks'){const nl={};for(const key in DOC.lo){const m=key.match(/^@a(\d+)$/);if(!m)nl[key]=DOC.lo[key];else{const j=+m[1];if(j<i)nl[key]=DOC.lo[key];else if(j>i)nl['@a'+(j-1)]=DOC.lo[key];}}DOC.lo=nl;}
   render();}
 
 /* đổi tên điểm tự tạo; mọi đoạn, mặt, ký hiệu và điểm phụ thuộc đều đổi theo */
-const renameErr=(o,n)=>!okName(n)?'Tên điểm chỉ gồm chữ, số hoặc dấu ′.':known.includes(n)&&n!==o&&!(vnames.includes(o)&&vnames.includes(n))?'Tên "'+n+'" đã có. Hãy chọn tên khác.':'';
+const renameErr=(o,n)=>!okName(n)?'Tên điểm chỉ gồm chữ, số hoặc dấu ′.':allNames.includes(n)&&n!==o&&!(vnames.includes(o)&&vnames.includes(n))?'Tên "'+n+'" đã có. Hãy chọn tên khác.':'';
 function renamePt(o,n){
   const vx=vnames.includes(o);
   if(n===o||(!vx&&!DOC.pts.some(q=>q.name===o)))return;
   const er=renameErr(o,n);if(er)return say(er);
   const f=x=>x===o?n:(vx&&x===n&&vnames.includes(n)?o:x);
   if(vx)$('names').value=vnames.map(f).join(',');
-  DOC.pts.forEach(q=>{q.name=f(q.name);if(q.p1)q.p1=f(q.p1);if(q.p2)q.p2=f(q.p2);if(q.x)q.x=q.x.map(f);});
+  DOC.pts.forEach(q=>{q.name=f(q.name);mapRefs(q,f);});pend=null;
   DOC.segs.forEach(g=>{g.a=f(g.a);g.b=f(g.b);});
   DOC.fills.forEach(g=>{g.n=g.n.map(f);});
   DOC.marks.forEach(q=>['a','b','v'].forEach(k=>{if(q[k])q[k]=f(q[k]);}));
@@ -815,39 +1000,11 @@ function renamePt(o,n){
 function askRename(o){rnOld=o;$('rnl').textContent=vnames.includes(o)?'Tên mới cho đỉnh '+o+' (trùng tên đỉnh khác thì hai đỉnh đổi tên cho nhau)':'Tên mới cho điểm '+o;$('rni').value=o;$('rne').textContent='';$('rn').hidden=false;setTimeout(()=>{$('rni').focus();$('rni').select();},0);}
 function rnClose(){$('rn').hidden=true;rnOld=null;}
 function rnDo(){const n=clean($('rni').value.trim()),er=n===rnOld?'':renameErr(rnOld,n);if(er){$('rne').textContent=er;return;}if(n!==rnOld)renamePt(rnOld,n);rnClose();}
-function addPt(){
-  const nm=clean($('pn').value.trim()),t=xev($('pt').value),a=$('pP1').value,b=$('pP2').value;
-  if(!okName(nm))return say('Nhập tên điểm, ví dụ: M');
-  if(known.includes(nm))return say('Tên điểm "'+nm+'" đã có. Hãy chọn tên khác.');
-  if(a===b||isNaN(t))return say('Chọn hai điểm khác nhau và nhập tỉ lệ.');
-  DOC.pts.push({name:nm,p1:a,p2:b,t});$('pn').value='';render();
-}
 function segNew(g){const c=$('segc').value.toLowerCase(),w=+$('segw').value;if(c!=='#14213d')g.c=c;if(w!==1)g.w=w;return g}
 function segCtl(g,i){return` <input type="color" value="${g.c||'#14213d'}" onchange="segSet(${i},'c',this.value)" title="Màu nét" aria-label="Màu nét" style="width:22px;height:22px;padding:0;border:0;vertical-align:middle;background:none"><select onchange="segSet(${i},'w',this.value)" title="Độ đậm" aria-label="Độ đậm" style="width:auto;padding:1px 2px;font-size:11px">${[[.6,'Mảnh'],[1,'Vừa'],[1.6,'Đậm'],[2.4,'R.đậm']].map(([v,t])=>`<option value="${v}"${(g.w||1)===v?' selected':''}>${t}</option>`).join('')}</select>`}
 function segSet(i,k,v){const g=DOC.segs[i];if(!g)return;const b=snapState();
   if(k==='c'){v=String(v).toLowerCase();if(v==='#14213d')delete g.c;else g.c=v}else{v=+v;if(v===1)delete g.w;else g.w=v}
   render();if(snapState()!==b)pushHist(b);}
-function addSeg(){
-  const a=$('sP1').value,b=$('sP2').value;
-  if(a===b)return say('Chọn hai điểm khác nhau.');
-  DOC.segs.push(segNew({a,b,d:$('sd').value}));render();
-}
-function addFill(){
-  const n=clean($('fn').value).split(',').map(s=>s.trim()).filter(Boolean);
-  if(n.length<3)return say('Nhập ít nhất 3 điểm, ví dụ: S,A,C');
-  const bad=n.filter(x=>!known.includes(x));
-  if(bad.length)return say('Không có điểm: '+bad.join(', '));
-  DOC.fills.push({n,c:$('fc').value});$('fn').value='';render();
-}
-
-/* giao điểm thật của hai đoạn AB, CD trong không gian; null nếu song song, chéo nhau hoặc không cắt bên trong hai đoạn */
-function meet(A,B,C,D){
-  const u=sub(B,A),v=sub(D,C),w=sub(C,A),n=cr(u,v),nn=dot(n,n),lu=Math.hypot(...u),lv=Math.hypot(...v),sz=Math.max(lu,lv,Math.hypot(...w))||1;
-  if(nn<1e-9*lu*lu*lv*lv||Math.abs(dot(w,n))>1e-6*Math.sqrt(nn)*sz)return null;
-  const s=dot(cr(w,v),n)/nn,t=dot(cr(w,u),n)/nn,e=1e-3;
-  if(s<e||s>1-e||t<e||t>1-e)return null;
-  return A.map((x,i)=>x+s*u[i]);
-}
 function centerView(){
   const bs=[...$('svg').children].filter(c=>c.id!=='inkg'&&c.id!=='hov').map(c=>{try{return c.getBBox();}catch(e){return null;}}).filter(b=>b&&(b.width||b.height));
   if(!bs.length)return;
@@ -868,30 +1025,35 @@ function tikzCode(S){
   const L=[],add=s=>L.push(s);
   /* nét liền / nét đứt của một đoạn tự động: cắt theo các mặt nhìn thấy, giống hệt hình trên màn hình */
   const runs=(a,b)=>{const A=P[a],B=P[b],N=48,st=[],r=[];
-    for(let i=0;i<N;i++)st.push(FD.some(fd=>fd.vis&&inF(fd,lp(A,B,(i+.5)/N))));
+    for(let i=0;i<N;i++)st.push(scene.visAt(lp(A,B,(i+.5)/N)));
     let s0=0;for(let i=1;i<=N;i++)if(i===N||st[i]!==st[s0]){r.push({t0:s0/N,t1:i/N,vis:st[s0]});s0=i;}
     const at=(t)=>t===0?C(a):t===1?C(b):pt(pr(lp(A,B,t)));
     return r.map(x=>({p:at(x.t0),q:at(x.t1),vis:x.vis}));};
   const G=new Map(),seg=(p,q,dash,sty)=>{const k=[sty,dash?'dashed':''].filter(Boolean).join(',');if(!G.has(k))G.set(k,[]);G.get(k).push(`${p}--${q}`);},flush=()=>{G.forEach((v,k)=>add(`  \\draw${k?'['+k+']':''} ${v.join(' ')};`));G.clear();};
-  const cols={};let nc=0;DOC.fills.forEach(f=>{if(!cols[f.c])cols[f.c]='fc'+(++nc);});DOC.segs.forEach(g=>{if(g.c&&!cols[g.c])cols[g.c]='fc'+(++nc);});
+  const FL=DOC.fills.filter(f=>!f.hid&&f.n.every(x=>P[x])),SG=DOC.segs.filter(g=>!g.hid&&P[g.a]&&P[g.b]),MK=DOC.marks.filter(q=>!q.hid&&Q[q.a]&&Q[q.b]&&(q.t==='eq'||Q[q.v]));
+  const cols={};let nc=0;FL.forEach(f=>{if(!cols[f.c])cols[f.c]='fc'+(++nc);});SG.forEach(g=>{if(g.c&&!cols[g.c])cols[g.c]='fc'+(++nc);});
   add(`% Hình không gian (xuất từ app): góc nhìn ${Math.round(al*180/Math.PI)}°, độ sâu ${k}, 1 đơn vị = ${S} cm`);
   add('% Cần: \\usepackage{tikz}');
   add('\\begin{tikzpicture}[line cap=round,line join=round,line width=0.8pt]');
   for(const c in cols)add(`  \\definecolor{${cols[c]}}{HTML}{${c.replace('#','').toUpperCase()}}`);
   add('  % Tọa độ các điểm');
   names.forEach(n=>add(`  \\coordinate ${C(n)} at ${pt(Q[n])};`));
-  if(DOC.fills.length){add('  % Mặt tô (thiết diện)');
-    DOC.fills.forEach(f=>{const cl=cols[f.c];
+  if(FL.length){add('  % Mặt tô (thiết diện)');
+    FL.forEach(f=>{const cl=cols[f.c];
       add(`  \\fill[${cl},fill opacity=0.22] ${f.n.map(C).join('--')}--cycle;`);
       f.n.forEach((x,i)=>runs(x,f.n[(i+1)%f.n.length]).forEach(r=>seg(r.p,r.q,!r.vis,`${cl},line width=0.7pt`)));});flush();}
   add('  % Các cạnh của hình');
   for(const key in E){const[i,j]=key.split('-');seg(C(m.nm[i]),C(m.nm[j]),!E[key],'');}
   if(ho)runs(m.nm[m.n],'H').forEach(r=>seg(r.p,r.q,!r.vis,'line width=0.7pt'));
   flush();
-  if(DOC.segs.length){add('  % Đoạn thẳng vẽ thêm');
-    DOC.segs.forEach(g=>{const sty=(g.c?cols[g.c]+',':'')+'line width='+f3(.7*(g.w||1))+'pt';if(g.d==='a')runs(g.a,g.b).forEach(r=>seg(r.p,r.q,!r.vis,sty));else seg(C(g.a),C(g.b),g.d==='1',sty);});flush();}
-  if(DOC.marks.length){add('  % Ký hiệu góc, đoạn bằng nhau');
-    DOC.marks.forEach(q=>{
+  if(SG.length){add('  % Đoạn thẳng, vectơ vẽ thêm');
+    /* vectơ vẽ thành lệnh riêng để mũi tên nằm đúng ở điểm cuối */
+    const arrow=(p,q,dash,sty)=>add(`  \\draw[${sty}${dash?',dashed':''},->,>=stealth] ${p}--${q};`);
+    SG.forEach(g=>{const sty=(g.c?cols[g.c]+',':'')+'line width='+f3(.7*(g.w||1))+'pt';
+      if(g.d==='a'){const rs=runs(g.a,g.b);rs.forEach((r,j)=>(g.v&&j===rs.length-1?arrow:seg)(r.p,r.q,!r.vis,sty));}
+      else (g.v?arrow:seg)(C(g.a),C(g.b),g.d==='1',sty);});flush();}
+  if(MK.length){add('  % Ký hiệu góc, đoạn bằng nhau');
+    MK.forEach(q=>{
       const a=tp(Q[q.a]),b=tp(Q[q.b]),n2=(x,y)=>`(${f3(x)},${f3(y)})`;
       if(q.t==='eq'){
         const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,Ln=Math.hypot(b[0]-a[0],b[1]-a[1])||1,ux=(b[0]-a[0])/Ln,uy=(b[1]-a[1])/Ln,nx=-uy,ny=ux;
@@ -907,7 +1069,7 @@ function tikzCode(S){
     });}
   add('  % Điểm và nhãn');
   const cs=pr(avg(m.V)),ANC=['west','south west','south','south east','east','north east','north','north west'];
-  names.forEach(n=>{
+  scene.vis.forEach(n=>{
     let dx=Q[n][0]-cs[0],dy=Q[n][1]-cs[1];if(Math.hypot(dx,dy)<.1){dx=-1;dy=1;}
     const deg=((Math.atan2(dy,dx)*180/Math.PI)%360+360)%360,an=ANC[Math.round(deg/45)%8],lo=DOC.lo[n]||[0,0];
     const sh=(Math.abs(lo[0])>.5||Math.abs(lo[1])>.5)?`,xshift=${f3(lo[0]*.75)}pt,yshift=${f3(-lo[1]*.75)}pt`:'';
@@ -939,34 +1101,33 @@ $('svg').addEventListener('pointerdown',e=>{
   if(tool==='pan'||e.button===1||spaceDown){dr={pan:1,cx:e.clientX,cy:e.clientY,vb:{...vb}};$('svg').setPointerCapture(e.pointerId);e.preventDefault();return;}
   if(e.button>1)return;const p=ptr(e);pre=snapState();
   if(tool==='sel'){const n=e.target.dataset&&e.target.dataset.n;if(n)dr={n,s:p,o:DOC.lo[n]||[0,0]};else{const q=nearPt(p);if(q)dr={pt:q};else{const v=nearName(p,vnames,12);if(v===null){dr={pan:1,cx:e.clientX,cy:e.clientY,vb:{...vb}};$('svg').setPointerCapture(e.pointerId);e.preventDefault();return;}beginVx();dr={vx:vnames.indexOf(v)};}}}
-  else if(tool==='padd'){const q=nearPt(p),c=!q&&nearIx(p);if(q)dr={pt:q};else if(c)dr={pt:addIx(c)};else{const h=hitEdge(p);const nm=h&&addEdgePt(h,p);if(!nm)return;dr={pt:nm};}}
-  else if(tool==='pmid'){const h=hitEdge(p);if(h)addMid(h);dr={};}
-  else if(tool==='sseg'){const q0=nearAny(p),c=!q0&&nearIx(p),q=q0||(c&&addIx(c));if(!q)return;dr={sa:q,cur:p};}
   else if(tool==='erase'){dr={};erase(p);}
-  else if(tool==='dot'){DOC.ink.push({t:'dot',a:snap(p),...ps()});redraw();return;}
-  else{const a=snap(p);cur=tool==='pen'?{t:'pen',p:[p],...ps()}:{t:tool,a,b:a,...ps()};dr={};}
+  else if(tool==='pen'||tool==='hl'){cur={t:'pen',p:[p],...ps()};dr={};}
+  else{if(net)return;const d=consDown(p);if(!d)return;dr=d;}
   $('svg').setPointerCapture(e.pointerId);e.preventDefault();redraw();
 });
 $('svg').addEventListener('pointermove',e=>{
   if(dr&&dr.pan){panTo(e);return;}
   const p=ptr(e);
-  if(!dr){hover(p);return;}
+  mouse=p;
+  if(!dr){hoverAt(p);return;}
   if(dr.pt){moveOnEdge(dr.pt,p);return;}
   if(dr.vx!==undefined){moveVertex(dr.vx,p,e.shiftKey||$('vz').checked);return;}
   if(dr.sa){dr.cur=p;previewSeg(dr.sa,p);return;}
   if(tool==='sel'){DOC.lo[dr.n]=[dr.o[0]+p[0]-dr.s[0],dr.o[1]+p[1]-dr.s[1]];render();}
   else if(tool==='erase')erase(p);
-  else if(cur){if(cur.t==='pen'){const l=cur.p[cur.p.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>1.5/Z())cur.p.push(p);}else cur.b=snap(p);redraw();}
+  else if(cur){if(e.shiftKey)cur.p=[cur.p[0],p];else{const l=cur.p[cur.p.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>1.5/Z())cur.p.push(p);}redraw();}
 });
 ['pointerup','pointercancel'].forEach(n=>$('svg').addEventListener(n,()=>{
-  if(cur){const ok=cur.t==='pen'?cur.p.length>1:Math.hypot(cur.b[0]-cur.a[0],cur.b[1]-cur.a[1])>3;if(ok)DOC.ink.push(cur);cur=null;redraw();}
-  if(dr&&dr.sa)finishSeg(dr);
+  if(cur){const ok=cur.p.length>1;if(ok)DOC.ink.push(cur);cur=null;redraw();}
+  /* nối điểm, vectơ: kéo rồi thả là xong; bấm tại chỗ thì chờ bấm điểm thứ hai */
+  if(dr&&dr.sa){if(Math.hypot(dr.cur[0]-dr.p0[0],dr.cur[1]-dr.p0[1])<6/Z()){pend={t:tool,sa:dr.sa};render();}else finishSeg(dr);}
   if(dr&&dr.vx!==undefined){fz=null;render();}
   commit();
   dr=null;
 }));
 $('svg').addEventListener('dblclick',e=>{if(tool!=='sel'&&tool!=='padd'&&tool!=='pmid')return;const p=ptr(e),q=nearPt(p)||nearName(p,vnames,12);if(q)askRename(q);});
-$('svg').addEventListener('pointerleave',()=>{if(!dr){const g=$('hov');if(g)g.innerHTML='';}});
+$('svg').addEventListener('pointerleave',()=>{mouse=null;if(!dr){const g=$('hov');if(g)g.innerHTML=pendSvg(null);}});
 document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>setTool(b.dataset.tool)));
 document.querySelectorAll('.sw').forEach(b=>b.addEventListener('click',()=>{$('pc').value=b.dataset.c;}));
 $('fo').addEventListener('input',onFold);
@@ -976,7 +1137,7 @@ $('type').addEventListener('change',()=>{setBases();$('names').value='';clearAll
 $('fh').addEventListener('change',()=>{const n=$('fh').checked;$('fh').checked=!n;const b=snapState();$('fh').checked=n;render();if(snapState()!==b)pushHist(b);});
 $('ft').addEventListener('input',onFoot);$('fk').addEventListener('input',onFoot);
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('chip')===false&&e.target.tagName==='B')e.target.click();});
-['addPt','addSeg','addFill','addMark','renamePt','del','clearInk','clearAdded','resetLo','resetShape'].forEach(n=>{
+['renamePt','del','tog','clearInk','clearAdded','resetLo','resetShape'].forEach(n=>{
   const f=globalThis[n];if(typeof f!=='function')return;
   globalThis[n]=function(...a){const b=snapState(),r=f.apply(this,a);if(snapState()!==b)pushHist(b);return r;};
 });
@@ -988,7 +1149,8 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='-'){zoomBy(0.8);}
   else if(e.key==='0'){zoomFit();}
   else if(e.key==='c'||e.key==='C'){centerView();}
-  else if(e.key==='t'||e.key==='T'){toggleTools();}
+  else if(e.key==='Escape'){if(pend){pend=null;render();}else if(tool!=='sel')setTool('sel');}
+  else if(e.key==='Enter'&&pend&&pend.t==='fill'){e.preventDefault();const b=snapState();closeFill();if(snapState()!==b)pushHist(b);}
 });
 document.addEventListener('keyup',e=>{if(e.key===' '){spaceDown=false;$('svg').style.cursor='';}});
 document.addEventListener('keydown',e=>{
@@ -998,8 +1160,8 @@ document.addEventListener('keydown',e=>{
   else if(k==='y'||(k==='z'&&e.shiftKey)){e.preventDefault();redoInk();}
 });
 /* tự lưu vào localStorage (nếu trình duyệt cho phép) */
-const SK='hkg-v2',SAVE=['type','nn','base','a','b','cd','h','rt','ft','fk','names','al','k','lw','fs','ff','fy','ss','pc','pw','pd','snap','vz','tv'];
-const setV=(id,v)=>{const e=$(id);if(e.type==='checkbox')e.checked=!!v;else e.value=v;};
+const SK='hkg-v2',SAVE=['type','nn','base','a','b','cd','h','rt','ft','fk','names','al','k','lw','fs','ff','fy','ss','segc','segw','fc','prt','en','pc','pw','vz','tv'];
+const setV=(id,v)=>{const e=$(id);if(!e)return;if(e.type==='checkbox')e.checked=!!v;else e.value=v;};
 let st_;
 function queueSave(){clearTimeout(st_);st_=setTimeout(()=>{try{const v={};SAVE.forEach(i=>{const e=$(i);v[i]=e.type==='checkbox'?e.checked:e.value;});localStorage.setItem(SK,JSON.stringify({v,s:DOC}));}catch(e){}},500);}
 function restore(){try{
@@ -1017,10 +1179,10 @@ $('tz').addEventListener('keydown',e=>{if(e.key==='Escape')$('tz').hidden=true;}
 $('rnok').onclick=rnDo;$('rnx').onclick=rnClose;
 $('rni').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();rnDo();}else if(e.key==='Escape')rnClose();});
 if(!restore())setBases();
+setTool('sel');
 render();
 
 /* ẩn hiện thanh công cụ; khung vẽ theo tỉ lệ vùng hiển thị để hình to hơn khi có thêm chỗ */
-function toggleTools(){const el=document.querySelector('.tgs'),h=!el.hidden;el.hidden=h;$('tgt').textContent=h?'Hiện công cụ':'Ẩn công cụ';$('tgt').setAttribute('aria-expanded',String(!h));}
 function fitH(){
   const r=document.querySelector('.cv').getBoundingClientRect();if(r.width<50||r.height<50)return;
   const nh=Math.max(300,Math.min(1600,Math.round(W*r.height/r.width)));if(Math.abs(nh-H)<2)return;
