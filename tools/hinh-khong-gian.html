@@ -224,6 +224,8 @@ window.xev=window.xev||(s=>{s=String(s).trim().replace(/,/g,'.').replace(/×/g,'
     <button class="tb" data-tool="padd"><i>•</i>Điểm trên cạnh</button><button class="tb" data-tool="pmid"><i>◦</i>Trung điểm</button>
     <button class="tb" data-tool="ext"><i>⟶</i>Kéo dài</button><button class="tb" data-tool="ll"><i>✕</i>Giao hai đường</button>
     <button class="tb" data-tool="lp"><i>⊗</i>Giao đường – mặt</button><button class="tb" data-tool="pp"><i>⊥</i>Hình chiếu</button>
+    <button class="tb" data-tool="gc"><i>G</i>Trọng tâm</button><button class="tb" data-tool="oc"><i>⊙</i>Tâm ngoại tiếp</button>
+    <button class="tb" data-tool="sym"><i>⇄</i>Đối xứng</button>
    </div></div>
    <div class="tg cons"><span class="tl">Dựng đường</span><div class="tgrid">
     <button class="tb" data-tool="sseg"><i>╱</i>Nối điểm</button><button class="tb" data-tool="vec"><i>→</i>Vectơ</button><button class="tb" data-tool="par"><i>∥</i>Song song</button>
@@ -231,6 +233,7 @@ window.xev=window.xev||(s=>{s=String(s).trim().replace(/,/g,'.').replace(/×/g,'
    <div class="tg cons"><span class="tl">Mặt và ký hiệu</span><div class="tgrid">
     <button class="tb" data-tool="fill"><i>▲</i>Tô mặt</button><button class="tb" data-tool="ra"><i>∟</i>Góc vuông</button>
     <button class="tb" data-tool="ang"><i>∠</i>Góc</button><button class="tb" data-tool="eq"><i>≡</i>Đoạn bằng nhau</button>
+    <button class="tb" data-tool="pq" title="Thiết diện của khối với mặt phẳng qua một điểm, song song với một mặt phẳng"><i>▱</i>Thiết diện ∥</button>
    </div></div>
    <div class="tg"><span class="tl">Bút viết</span><div class="tgrid">
     <button class="tb" data-tool="pen"><i>✎</i>Bút</button><button class="tb" data-tool="hl"><i>▬</i>Dạ quang</button><button class="tb" data-tool="erase"><i>⌫</i>Tẩy</button>
@@ -243,7 +246,8 @@ window.xev=window.xev||(s=>{s=String(s).trim().replace(/,/g,'.').replace(/×/g,'
     <div class="prow" data-for="sel"><label class="inl" title="Hoặc giữ phím Shift khi kéo"><input id="vz" type="checkbox" style="width:auto"> Kéo đỉnh trên theo chiều cao</label></div>
     <div class="prow" data-for="padd" hidden><label class="inl" for="prt">Tỉ lệ</label><input id="prt" type="text" autocomplete="off" spellcheck="false" placeholder="trống = tự do"><span class="hint" style="margin:0">vd 1/3, 0,25, 2:1</span></div>
     <div class="prow" data-for="sseg vec" hidden><select id="ss" aria-label="Kiểu nét"><option value="a">Nét tự động</option><option value="0">Nét liền</option><option value="1">Nét đứt</option></select><input id="segc" type="color" value="#14213d" title="Màu nét" aria-label="Màu nét" style="width:34px;height:28px;padding:1px"><select id="segw" aria-label="Độ đậm" title="Độ đậm"><option value="0.6">Mảnh</option><option value="1" selected>Vừa</option><option value="1.6">Đậm</option><option value="2.4">Rất đậm</option></select></div>
-    <div class="prow" data-for="fill" hidden><label class="inl" for="fc">Màu</label><select id="fc"><option value="#1d6fa5">Xanh dương</option><option value="#d98a00">Cam</option><option value="#2f8f4e">Xanh lá</option><option value="#c0392b">Đỏ</option><option value="#7c3aed">Tím</option></select></div>
+    <div class="prow" data-for="sym" hidden><label class="inl" for="sym">Đối xứng</label><select id="sym"><option value="P">Qua một điểm</option><option value="L">Qua một đường thẳng</option><option value="F">Qua một mặt phẳng</option></select></div>
+    <div class="prow" data-for="fill pq" hidden><label class="inl" for="fc">Màu</label><select id="fc"><option value="#1d6fa5">Xanh dương</option><option value="#d98a00">Cam</option><option value="#2f8f4e">Xanh lá</option><option value="#c0392b">Đỏ</option><option value="#7c3aed">Tím</option></select></div>
     <div class="prow" data-for="ang" hidden><label class="inl" for="ml">Ghi chú</label><input id="ml" type="text" placeholder="α hoặc 60°" autocomplete="off"></div>
     <div class="prow" data-for="eq" hidden><label class="inl" for="en">Số nét gạch</label><select id="en"><option>1</option><option>2</option><option>3</option></select></div>
     <p class="hint" id="tip"></p>
@@ -399,6 +403,10 @@ const TIP={
   ext:'Bấm gần một đầu của cạnh rồi kéo ra ngoài để kéo dài cạnh đó.',
   ll:'Bấm lần lượt hai đường thẳng (cạnh hoặc đoạn) cùng nằm trong một mặt phẳng. Hai đường được tự kéo dài tới giao điểm.',
   lp:'Bấm một đường thẳng, rồi bấm 3 điểm của mặt phẳng (hoặc bấm vào trong một mặt đã tô).',
+  gc:'Bấm 3 đỉnh của tam giác để lấy trọng tâm.',
+  oc:'Bấm 3 đỉnh của tam giác để lấy tâm đường tròn ngoại tiếp.',
+  sym:'Chọn kiểu đối xứng ở ô bên dưới. Bấm điểm cần lấy đối xứng, rồi bấm tâm (một điểm), trục (một cạnh) hoặc mặt (3 điểm / một mặt đã tô).',
+  pq:'Bấm một điểm, rồi bấm 3 điểm của mặt phẳng (hoặc một mặt đã tô). Tool tô thiết diện của khối với mặt phẳng qua điểm đó và song song với mặt phẳng đã chọn.',
   pp:'Bấm điểm cần chiếu. Sau đó bấm một cạnh (chiếu lên đường thẳng), hoặc 3 điểm / một mặt đã tô (chiếu lên mặt phẳng).',
   sseg:'Kéo từ điểm này sang điểm kia, hoặc bấm lần lượt hai điểm. Thả trên cạnh thì tự tạo điểm trên cạnh.',
   vec:'Bấm điểm đầu rồi điểm cuối (hoặc kéo từ điểm đầu tới điểm cuối).',
@@ -674,7 +682,7 @@ function addIx(c){const name=nextName();DOC.pts.push({name,x:c.x});render();retu
 const nearAny=(p,r)=>nearName(p,known,r||14);
 function hitEdge(p){let b=null,bd=1e9;emap.forEach(e=>{const d=dseg(p,e.p,e.q);if(d>11/Z())return;const sc_=d+(e.vis?0:4/Z());if(sc_<bd){bd=sc_;b=e;}});return b;}
 function edgeT(a,b,p){const dx=b[0]-a[0],dy=b[1]-a[1];return Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy||1)));}
-function nextName(){const used=new Set(allNames);for(const c of 'MNPQRTUVWXYZKLEFGHIJ')if(!used.has(c))return c;let i=1;while(used.has('M'+i))i++;return 'M'+i;}
+function nextName(){const used=new Set(allNames.concat(DOC.pts.map(q=>q.name)));for(const c of 'MNPQRTUVWXYZKLEFGHIJ')if(!used.has(c))return c;let i=1;while(used.has('M'+i))i++;return 'M'+i;}
 /* tọa độ màn hình của một điểm bất kỳ (kể cả điểm đang ẩn) */
 const sp=n=>scene&&scene.Q[n]?scene.T(scene.Q[n]):null;
 /* tỉ lệ: "1/3", "0,25", "2√3/5" (qua xev) hoặc "2:1" (AM:MB) */
@@ -727,8 +735,9 @@ const projLine=(X,A,B)=>{const u=sub(B,A),uu=dot(u,u);if(uu<1e-12)return null;co
 const projPlane=(X,P,Q,R)=>{const n=nrm(P,Q,R),nn=dot(n,n);if(nn<1e-12)return null;const d=dot(sub(X,P),n)/nn;return{r:X.map((x,i)=>x-d*n[i])};};
 const collin=F=>{const V=F.map(x=>scene.P[x]);if(V.some(v=>!v))return true;const a=Math.hypot(...sub(V[1],V[0])),b=Math.hypot(...sub(V[2],V[0]));return Math.hypot(...nrm(...V))<1e-6*(a*b||1);};
 /* các điểm mà một điểm dựng phụ thuộc vào */
-const refsOf=q=>q.x?q.x:q.pp?[q.pp.P,...(q.pp.L||q.pp.F)]:q.pl?[q.pl.P,q.pl.a,q.pl.b]:q.lp?q.lp:[q.p1,q.p2];
+const refsOf=q=>q.k?q.a:q.x?q.x:q.pp?[q.pp.P,...(q.pp.L||q.pp.F)]:q.pl?[q.pl.P,q.pl.a,q.pl.b]:q.lp?q.lp:[q.p1,q.p2];
 function mapRefs(q,f){
+  if(q.k){q.a=q.a.map(f);return;}
   if(q.x)q.x=q.x.map(f);
   else if(q.pp){q.pp.P=f(q.pp.P);if(q.pp.L)q.pp.L=q.pp.L.map(f);if(q.pp.F)q.pp.F=q.pp.F.map(f);}
   else if(q.pl)['P','a','b'].forEach(k=>{q.pl[k]=f(q.pl[k]);});
@@ -737,11 +746,25 @@ function mapRefs(q,f){
 }
 function ptPos(q,P){
   const R=refsOf(q).map(x=>P[x]);if(R.some(v=>!v))return null;
+  if(q.k)return kPos(q.k,R);
   if(q.x){if(!q.ln)return meet(...R);const o=meetL(...R);return o&&o.r;}
   if(q.pp){const o=q.pp.L?projLine(...R):projPlane(...R);return o&&o.r;}
   if(q.pl){const[X,A,B]=R;return X.map((x,i)=>x+q.t*(B[i]-A[i]));}
   if(q.lp){const o=linePlane(...R);return o&&o.r;}
   return lerp3(R[0],R[1],q.t);
+}
+/* tâm đường tròn ngoại tiếp tam giác ABC trong không gian */
+const circ3=(A,B,C)=>{const a=sub(A,C),b=sub(B,C),n=cr(a,b),nn=dot(n,n);if(nn<1e-12)return null;const w=cr(sub(b.map(x=>x*dot(a,a)),a.map(x=>x*dot(b,b))),n);return C.map((x,i)=>x+w[i]/(2*nn));};
+const add3=(p,q)=>p.map((x,i)=>x+q[i]);
+/* các loại điểm dựng mới: q.k = kiểu, q.a = các điểm phụ thuộc */
+function kPos(k,R){
+  if(k==='lq'){const[a,b,X,A,B,C]=R,o=linePlane(a,b,X,add3(X,sub(B,A)),add3(X,sub(C,A)));return o&&o.r;}
+  if(k==='g')return avg(R);
+  if(k==='oc')return circ3(...R);
+  if(k==='syP')return R[1].map((x,i)=>2*x-R[0][i]);
+  if(k==='syL'){const o=projLine(...R);return o&&o.r.map((x,i)=>2*x-R[0][i]);}
+  if(k==='syF'){const o=projPlane(...R);return o&&o.r.map((x,i)=>2*x-R[0][i]);}
+  return null;
 }
 const inPoly=(p,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;};
 /* mặt đã tô chứa điểm bấm: trả về {f, F = 3 điểm không thẳng hàng của mặt} */
@@ -783,6 +806,38 @@ function planePick(p,q){
     const F=q.F.slice();if(collin(F)){q.F=[];render();say('Ba điểm thẳng hàng, hãy chọn lại.');return null;}pend=null;return F;}
   if(!q.F.length){const f=fillAt(p);if(f){pend=null;return f.F;}}
   return false;
+}
+function doCenter(t,s){
+  if(collin(s)){render();say(`Ba điểm ${s.join(', ')} thẳng hàng.`);return;}
+  const k=t==='gc'?'g':'oc',r=kPos(k,s.map(x=>scene.P[x])),ex=r&&nameAt(r),what=t==='gc'?'Trọng tâm':'Tâm đường tròn ngoại tiếp';
+  if(ex){render();say(`${what} tam giác ${s.join('')} là ${ex}.`);return;}
+  const name=[...(t==='gc'?'G':'OI')].find(c=>!allNames.includes(c)&&!DOC.pts.some(q=>q.name===c))||nextName();
+  DOC.pts.push({name,k,a:s.slice()});render();$('netMsg').textContent=`${name} là ${what.toLowerCase()} tam giác ${s.join('')}.`;
+}
+function doSym(X,k,A){
+  const o={k,a:[X,...A]},r=kPos(k,o.a.map(x=>scene.P[x])),tg=k==='syP'?A[0]:k==='syL'?A.join(''):'('+A.join('')+')';
+  if(!r){render();say('Không lấy được điểm đối xứng (các điểm chọn thẳng hàng).');return;}
+  if(Math.hypot(...sub(r,scene.P[X]))<1e-6){render();say(`${X} nằm trên ${tg} nên điểm đối xứng là chính nó.`);return;}
+  const ex=nameAt(r);if(ex){render();say(`Điểm đối xứng của ${X} qua ${tg} là ${ex}.`);return;}
+  const used=n=>allNames.includes(n)||DOC.pts.some(q=>q.name===n),name=!used(X+'′')?X+'′':!used(X+'′′')?X+'′′':nextName();
+  DOC.pts.push({name,k,a:o.a});addSeg1(X,name);render();$('netMsg').textContent=`${name} đối xứng với ${X} qua ${tg}.`;
+}
+/* thiết diện của khối với mặt phẳng qua X, song song với mặt phẳng (F) */
+function doSection(X,F){
+  const P=scene.P,m=scene.m,[A,B,C]=F.map(x=>P[x]),n=nrm(A,B,C),nl=Math.hypot(...n),O=P[X];
+  const sz=Math.max(...[0,1,2].map(a=>Math.max(...m.V.map(q=>q[a]))-Math.min(...m.V.map(q=>q[a]))))||1,e=1e-6*sz,pts=[];
+  const put=o=>{if(!pts.some(q=>Math.hypot(...sub(q.r,o.r))<1e-5*sz))pts.push(o);};
+  Object.keys(scene.E).map(k=>k.split('-').map(i=>m.nm[+i])).forEach(([a,b])=>{
+    const pa=P[a],pb=P[b],da=dot(n,sub(pa,O))/nl,db=dot(n,sub(pb,O))/nl;
+    if(Math.abs(da)<e)put({r:pa,nm:a});if(Math.abs(db)<e)put({r:pb,nm:b});
+    if((da>e&&db<-e)||(da<-e&&db>e))put({r:lerp3(pa,pb,da/(da-db)),e:[a,b]});});
+  if(pts.length<3){render();say('Mặt phẳng này không cắt khối theo một đa giác.');return;}
+  const c=avg(pts.map(q=>q.r)),un=v=>{const l=Math.hypot(...v)||1;return v.map(x=>x/l);};
+  const u=un(sub(pts.find(q=>Math.hypot(...sub(q.r,c))>1e-9).r,c)),v=un(cr(n,u));
+  pts.sort((p,q)=>{const a=sub(p.r,c),b=sub(q.r,c);return Math.atan2(dot(a,v),dot(a,u))-Math.atan2(dot(b,v),dot(b,u));});
+  const names=pts.map(q=>{if(q.nm)return q.nm;const ex=nameAt(q.r);if(ex)return ex;const name=nextName();DOC.pts.push({name,k:'lq',a:[...q.e,X,...F]});return name;});
+  DOC.fills.push({n:names,c:$('fc').value});render();
+  $('netMsg').textContent=`Thiết diện ${names.join('')}: mặt phẳng qua ${X}, song song (${F.join('')}).`;
 }
 function closeFill(){
   const q=pend;if(!q||q.t!=='fill'||q.n.length<3)return;
@@ -827,6 +882,15 @@ function consDown(p){
   if(t==='pp'){if(!q){const a=pk();if(!a)return null;pend={t,P:a,F:[]};render();return{};}
     if(!q.F.length&&!nearAny(p)&&!nearIx(p)){const h=hitEdge(p);if(h){pend=null;doProj(q.P,{L:[h.a,h.b]});return{};}}
     const F=planePick(p,q);if(F===false)return null;if(F)doProj(q.P,{F});return{};}
+  if(t==='gc'||t==='oc'){const a=pk();if(!a)return null;const s=q?q.s:[];if(s.includes(a))return{};s.push(a);
+    if(s.length<3){pend={t,s};render();return{};}pend=null;doCenter(t,s);return{};}
+  if(t==='sym'){const md=$('sym').value;
+    if(!q){const a=pk();if(!a)return null;pend={t,P:a,F:[],md};render();return{};}
+    if(q.md==='P'){const o=pk();if(!o||o===q.P)return null;pend=null;doSym(q.P,'syP',[o]);return{};}
+    if(q.md==='L'){const h=hitEdge(p);if(!h)return null;pend=null;doSym(q.P,'syL',[h.a,h.b]);return{};}
+    const F=planePick(p,q);if(F===false)return null;if(F)doSym(q.P,'syF',F);return{};}
+  if(t==='pq'){if(!q){const a=pk();if(!a)return null;pend={t,P:a,F:[]};render();return{};}
+    const F=planePick(p,q);if(F===false)return null;if(F)doSection(q.P,F);return{};}
   if(t==='fill'){const a=pk();if(!a)return null;
     if(!q){pend={t,n:[a]};render();return{};}
     if(a===q.n[0]&&q.n.length>=3){closeFill();return{};}
@@ -840,8 +904,9 @@ function consDown(p){
 }
 /* gợi ý khi rê chuột */
 const hlSeg=(a,b)=>`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#d62828" stroke-width="${5/Z()}" stroke-linecap="round" opacity=".45"/>`;
-const W_={ext:'l',sseg:'p',vec:'p',ll:'l',fill:'p',ra:'p',ang:'p',eq:'l'};
-function wants(){const q=pend,t=tool;if(t==='par')return q?'l':'p';if(t==='lp')return q?(q.F.length?'p':'pf'):'l';if(t==='pp')return q?(q.F.length?'p':'plf'):'p';return W_[t]||'';}
+const W_={ext:'l',sseg:'p',vec:'p',ll:'l',fill:'p',ra:'p',ang:'p',eq:'l',gc:'p',oc:'p'};
+function wants(){const q=pend,t=tool;if(t==='par')return q?'l':'p';if(t==='lp')return q?(q.F.length?'p':'pf'):'l';if(t==='pp')return q?(q.F.length?'p':'plf'):'p';
+  if(t==='pq')return q?(q.F.length?'p':'pf'):'p';if(t==='sym')return q?(q.md==='P'?'p':q.md==='L'?'l':q.F.length?'p':'pf'):'p';return W_[t]||'';}
 function stepMsg(){const q=pend;if(!q)return'';
   if(q.sa)return`Bấm điểm cuối (đang từ ${q.sa}). Esc để hủy.`;
   if(q.t==='par')return`Bấm cạnh hoặc đoạn muốn song song (đường qua ${q.P}).`;
@@ -849,6 +914,9 @@ function stepMsg(){const q=pend;if(!q)return'';
   if(q.t==='lp')return q.F.length?`Mặt phẳng: ${q.F.join('')}… bấm thêm ${3-q.F.length} điểm.`:`Đường ${q.L.join('')}: bấm 3 điểm của mặt phẳng hoặc bấm vào một mặt đã tô.`;
   if(q.t==='pp')return q.F.length?`Mặt phẳng: ${q.F.join('')}… bấm thêm ${3-q.F.length} điểm.`:`Chiếu ${q.P}: bấm một cạnh, 3 điểm của mặt phẳng, hoặc một mặt đã tô.`;
   if(q.t==='fill')return`Đã chọn ${q.n.join(', ')}. ${q.n.length>=3?'Bấm lại '+q.n[0]+' hoặc Enter để tô. ':''}Esc để hủy.`;
+  if(q.t==='gc'||q.t==='oc')return`Bấm thêm ${3-q.s.length} đỉnh (đã chọn ${q.s.join(', ')}).`;
+  if(q.t==='pq')return q.F.length?`Mặt phẳng: ${q.F.join('')}… bấm thêm ${3-q.F.length} điểm.`:`Qua ${q.P}: bấm 3 điểm của mặt phẳng cần song song, hoặc bấm vào một mặt đã tô.`;
+  if(q.t==='sym')return q.md==='P'?`Bấm tâm đối xứng (đối xứng ${q.P}).`:q.md==='L'?`Bấm cạnh hoặc đoạn làm trục (đối xứng ${q.P}).`:q.F.length?`Mặt phẳng: ${q.F.join('')}… bấm thêm ${3-q.F.length} điểm.`:`Đối xứng ${q.P}: bấm 3 điểm của mặt phẳng hoặc một mặt đã tô.`;
   if(q.s)return['','Bấm đỉnh góc','Bấm điểm trên cạnh thứ hai'][q.s.length]+` (đã chọn ${q.s.join(', ')}).`;
   return'';}
 function pendSvg(p){const q=pend;if(!q)return'';let o='';
@@ -971,7 +1039,9 @@ function render(){
     DOC.fills.map((f,i)=>chip(`Mặt ${f.n.join('')} <input type="color" value="${f.c}" onchange="fillSet(${i},this.value)" title="Màu mặt" aria-label="Màu mặt" style="width:22px;height:22px;padding:0;border:0;vertical-align:middle;background:none">`,'fills',i)).join('')+
     DOC.marks.map((q,i)=>chip(q.t==='eq'?`Bằng nhau ${q.a}${q.b} (${q.n} nét)`:`${q.t==='ra'?'Góc vuông':'Góc'} ${q.a}${q.v}${q.b}${q.l?' = '+q.l:''}`,'marks',i)).join('');
 }
-const ptDesc=q=>q.x?`${q.name} = ${q.x[0]}${q.x[1]} ∩ ${q.x[2]}${q.x[3]}`:q.pp?`${q.name} là hình chiếu của ${q.pp.P} lên ${q.pp.L?q.pp.L.join(''):'('+q.pp.F.join('')+')'}`:
+const kDesc=q=>{const a=q.a;return q.k==='lq'?`${q.name} = ${a[0]}${a[1]} ∩ mp qua ${a[2]} ∥ (${a.slice(3).join('')})`:q.k==='g'?`${q.name} là trọng tâm ${a.join('')}`:
+  q.k==='oc'?`${q.name} là tâm đường tròn ngoại tiếp ${a.join('')}`:`${q.name} đối xứng ${a[0]} qua ${q.k==='syP'?a[1]:q.k==='syL'?a.slice(1).join(''):'('+a.slice(1).join('')+')'}`;};
+const ptDesc=q=>q.k?kDesc(q):q.x?`${q.name} = ${q.x[0]}${q.x[1]} ∩ ${q.x[2]}${q.x[3]}`:q.pp?`${q.name} là hình chiếu của ${q.pp.P} lên ${q.pp.L?q.pp.L.join(''):'('+q.pp.F.join('')+')'}`:
   q.pl?`${q.pl.P}${q.name} ∥ ${q.pl.a}${q.pl.b}`:q.lp?`${q.name} = ${q.lp[0]}${q.lp[1]} ∩ (${q.lp.slice(2).join('')})`:q.mid?`${q.name} là trung điểm ${q.p1}${q.p2}`:
   q.ext?`${q.name} trên ${q.p1}${q.p2} kéo dài`:q.fix?`${q.name} ∈ ${q.p1}${q.p2}, ${q.p1}${q.name}/${q.p1}${q.p2} = ${q.r||+q.t.toFixed(3)}`:`${q.name} ∈ ${q.p1}${q.p2}`;
 const chip=(t,k,i)=>{const o=DOC[k][i],bad=k==='pts'&&badPts.has(o.name);
