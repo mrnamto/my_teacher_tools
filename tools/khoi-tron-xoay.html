@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vẽ khối tròn xoay</title>
+<script src="common.js?v=3"></script>
+<style>
+:root{--bg:#f2f7ff;--card:#fff;--tx:#0f1f3d;--mut:#5b6b8a;--bd:#cfdcf3;--ac:#0d9488;--acs:#d5f3ef;--pri:#2563eb;--er:#dc2626;--font:"Be Vietnam Pro","Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:15px/1.5 var(--font);background:var(--bg);color:var(--tx);display:flex;flex-direction:column;height:100dvh}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid #99d5cf;outline-offset:1px}
+.top{display:flex;align-items:center;gap:14px;padding:8px 16px;background:linear-gradient(90deg,#115e59,#0d9488 55%,#38bdf8);color:#fff;flex-shrink:0}
+.brand{display:flex;flex-direction:column;line-height:1.2}.brand b{font-size:17px}.brand small{opacity:.85;font-size:12px}
+.seg{display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.18);margin:0 auto}
+.seg button{border:0;background:transparent;color:#fff;font-weight:600;padding:7px 16px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed=true]{background:#fff;color:#0f766e}
+.app{flex:1;min-height:0;display:grid;grid-template-columns:330px 1fr;gap:14px;padding:12px}
+.side{overflow:auto;padding-right:2px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.card h2{margin:0;padding:9px 14px;font-size:14px;color:#0f766e;background:#e6f7f5;border-left:4px solid var(--ac)}
+.card .bd{padding:12px 14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--mut);margin-bottom:3px}
+input[type=text],select{width:100%;border:1px solid var(--bd);border-radius:10px;padding:8px 10px;background:#f7faff}
+input[type=text]:focus,select:focus{border-color:var(--ac);background:#fff}
+.chk{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:14px;color:var(--tx);font-weight:500}
+.hint{font-size:12.5px;color:var(--mut);margin:8px 0 0}
+.err{color:var(--er);font-weight:600;font-size:13px;margin:8px 0 0}
+.stage{min-width:0;display:flex;flex-direction:column;gap:10px;min-height:0}
+#fig{flex:1;min-height:0;background:#fff;border:1px solid var(--bd);border-radius:14px;display:grid;place-items:center;padding:6px}
+#fig svg{max-width:100%;max-height:100%}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--bd);background:#fff;border-radius:999px;padding:8px 16px;font-weight:600;color:#0f766e;cursor:pointer}
+.btn:hover{background:var(--acs)}.btn.p{background:var(--pri);border-color:var(--pri);color:#fff}
+.ln{padding:7px 0;border-bottom:1px dashed var(--bd);font-size:14px}.ln:last-child{border:0}
+.ln b{color:#0f766e}
+.msg{font-size:13px;color:#0d9488;font-weight:600}
+dialog{border:1px solid var(--bd);border-radius:16px;padding:16px;width:min(560px,94vw)}
+dialog textarea{width:100%;height:230px;font:12px Consolas,monospace;margin:8px 0;border:1px solid var(--bd);border-radius:10px;padding:8px}
+@media(max-width:800px){.app{grid-template-columns:1fr;overflow:auto}.side{overflow:visible}#fig{min-height:340px}body{height:auto;min-height:100dvh}}
+</style></head><body>
+<header class="top">
+  <div class="brand"><b>Vẽ khối tròn xoay</b><small>Hình trụ · Hình nón · Nón cụt · Hình cầu</small></div>
+  <div class="seg" id="seg">
+    <button data-s="tru" aria-pressed="true">Hình trụ</button><button data-s="non" aria-pressed="false">Hình nón</button>
+    <button data-s="cut" aria-pressed="false">Nón cụt</button><button data-s="cau" aria-pressed="false">Hình cầu</button>
+  </div>
+</header>
+<main class="app">
+<section class="side" id="side">
+  <div class="card"><h2>Kích thước</h2><div class="bd">
+    <div class="row">
+      <div><label for="iR">Bán kính đáy R</label><input id="iR" class="xn" type="text" autocomplete="off" spellcheck="false" value="3"></div>
+      <div class="f-r"><label for="ir">Bán kính đáy nhỏ r</label><input id="ir" class="xn" type="text" autocomplete="off" spellcheck="false" value="2"></div>
+      <div class="f-h"><label for="ih">Chiều cao h</label><input id="ih" class="xn" type="text" autocomplete="off" spellcheck="false" value="4"></div>
+      <div class="f-l"><label for="il">Đường sinh l (nếu bỏ trống h)</label><input id="il" class="xn" type="text" autocomplete="off" spellcheck="false"></div>
+    </div>
+    <p class="hint">Nhập được phân số và căn: 5/2, √3, 2√2, 3,5.</p>
+    <div class="err" id="err"></div>
+  </div></div>
+  <div class="card"><h2>Hiển thị</h2><div class="bd">
+    <label class="chk"><input type="checkbox" id="oax" checked> Trục / đường cao (nét đứt)</label>
+    <label class="chk"><input type="checkbox" id="orad" checked> Bán kính</label>
+    <label class="chk"><input type="checkbox" id="olen" checked> Ghi độ dài (R, h, l…)</label>
+    <label class="chk"><input type="checkbox" id="opt" checked> Nhãn điểm</label>
+    <div style="margin-top:8px"><label for="nm">Tên các điểm (cách nhau bằng dấu phẩy)</label><input id="nm" type="text" autocomplete="off" spellcheck="false"></div>
+    <div class="row" style="margin-top:10px">
+      <div><label for="tk">Độ nghiêng đáy: <span id="tkv"></span></label><input id="tk" type="range" min="0.12" max="0.6" step="0.01" value="0.3" style="width:100%"></div>
+      <div><label for="lw">Độ đậm nét: <span id="lwv"></span></label><input id="lw" type="range" min="1" max="4" step="0.1" value="1.8" style="width:100%"></div>
+    </div>
+    <div style="margin-top:8px"><label for="lc">Màu nét</label><input id="lc" type="color" value="#14213d" style="width:44px;height:32px;padding:1px;border:1px solid var(--bd);border-radius:8px"></div>
+  </div></div>
+  <div class="card"><h2>Kết quả tính</h2><div class="bd" id="res"></div></div>
+</section>
+<section class="stage">
+  <div id="fig"></div>
+  <div class="bar">
+    <button class="btn p" id="bcp">Sao chép ảnh</button><button class="btn" id="bpng">Tải PNG</button><button class="btn" id="bsvg">Tải SVG</button><button class="btn" id="btk">Xuất TikZ</button>
+    <label class="chk" style="margin:0 0 0 6px"><input type="checkbox" id="trn"> Nền trong suốt</label><span class="msg" id="msg"></span>
+  </div>
+</section>
+</main>
+<dialog id="tkd"><b>Mã TikZ</b> <span style="font-size:12.5px;color:var(--mut)">(chỉ cần \usepackage{tikz})</span>
+  <div style="margin-top:6px;display:flex;gap:8px;align-items:center"><label for="tw" style="margin:0">Chiều rộng hình (cm)</label><input id="tw" class="xn" type="text" value="6" style="width:70px"></div>
+  <textarea id="tka" readonly></textarea>
+  <div class="bar" style="justify-content:flex-end"><span class="msg" id="tkm" style="flex:1"></span><button class="btn" id="tkc">Sao chép</button><button class="btn" id="tkx">Đóng</button></div>
+</dialog>
+<script>
+const $=id=>document.getElementById(id);
+const EV=s=>typeof window.xev==='function'?window.xev(s):(v=>isNaN(v)?NaN:v)(parseFloat(String(s).replace(',','.')));
+const D={tru:{R:'3',h:'4',nm:"O,O',A,B"},non:{R:'3',h:'4',l:'',nm:'S,O,A,B'},cut:{R:'4',r:'2',h:'3',nm:"O,O',A,B"},cau:{R:'5/2',nm:'O,A,B'}};
+let shape='tru';
+const FIELDS={R:'iR',r:'ir',h:'ih',l:'il',nm:'nm'};
+function store(){const d=D[shape];for(const k in FIELDS)if(k in d||k==='nm')d[k]=$(FIELDS[k]).value}
+function load(){const d=D[shape];for(const k in FIELDS)$(FIELDS[k]).value=d[k]??'';
+  document.querySelectorAll('.f-r').forEach(e=>e.style.display=shape==='cut'?'':'none');
+  document.querySelectorAll('.f-h').forEach(e=>e.style.display=shape==='cau'?'none':'');
+  document.querySelectorAll('.f-l').forEach(e=>e.style.display=shape==='non'?'':'none');
+  document.querySelector('label[for=iR]').textContent=shape==='cau'?'Bán kính R':'Bán kính đáy R';document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===shape))}
+function setShape(s,vals){store();shape=s;if(vals)Object.assign(D[s],vals);load();render()}
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>setShape(b.dataset.s));
+
+/* ---------- đọc kích thước ---------- */
+function dims(){const R=EV($('iR').value);let h=EV($('ih').value),r=EV($('ir').value);const l=EV($('il').value);
+  if(!(R>0))return{err:'Nhập bán kính R > 0.'};
+  if(shape==='cau')return{R};
+  if(shape==='non'&&!(h>0)&&l>R)h=Math.sqrt(l*l-R*R);
+  if(!(h>0))return{err:shape==='non'?'Nhập chiều cao h (hoặc đường sinh l > R).':'Nhập chiều cao h > 0.'};
+  if(shape==='cut'&&!(r>0&&r<R))return{err:'Nhập bán kính đáy nhỏ r với 0 < r < R.'};
+  return{R,h,r}}
+
+/* ---------- dựng hình (đơn vị toán học, trục y hướng lên) ---------- */
+function build(d){const k=+$('tk').value,nm=$('nm').value.split(',').map(s=>s.trim()),P=[];
+  const O={ax:$('oax').checked,rad:$('orad').checked,len:$('olen').checked,pt:$('opt').checked};
+  const L=(a,b,c,e,dash)=>P.push({k:'l',a,b,c,d:e,dash}),
+    E=(cx,cy,a,m)=>{if(m==='full')P.push({k:'e',cx,cy,a,b:a*k,part:'full'});else{P.push({k:'e',cx,cy,a,b:a*k,part:'front'});P.push({k:'e',cx,cy,a,b:a*k,part:'back',dash:1})}},
+    N=(x,y,i,an)=>{if(O.pt&&nm[i])P.push({k:'p',x,y,t:nm[i],an})},T=(x,y,t,an)=>{if(O.len)P.push({k:'t',x,y,t,an})};
+  const {R,h,r}=d;
+  if(shape==='tru'){E(0,h,R,'full');E(0,0,R,'base');L(-R,0,-R,h);L(R,0,R,h);
+    if(O.ax)L(0,0,0,h,1);if(O.rad){L(0,0,R,0,1);L(0,h,R,h)}
+    N(0,0,0,'sw');N(0,h,1,'nw');N(R,0,2,'se');N(R,h,3,'ne');T(R/2,0,'R','n');T(R,h/2,'h','e')}
+  else if(shape==='non'){E(0,0,R,'base');L(-R,0,0,h);L(R,0,0,h);
+    if(O.ax)L(0,h,0,0,1);if(O.rad)L(0,0,R,0,1);
+    N(0,h,0,'n');N(0,0,1,'sw');N(R,0,2,'se');N(-R,0,3,'sw');T(R/2,0,'R','n');T(0,h/2,'h','w');T(R/2,h/2,'l','ne')}
+  else if(shape==='cut'){E(0,h,r,'full');E(0,0,R,'base');L(-R,0,-r,h);L(R,0,r,h);
+    if(O.ax)L(0,0,0,h,1);if(O.rad){L(0,0,R,0,1);L(0,h,r,h)}
+    N(0,0,0,'sw');N(0,h,1,'nw');N(R,0,2,'se');N(r,h,3,'ne');T(R/2,0,'R','n');T(r/2,h,'r','s');T(0,h/2,'h','w');T((R+r)/2+ .0,h/2,'l','e')}
+  else{P.push({k:'c',cx:0,cy:0,r:R});E(0,0,R,'base');
+    if(O.ax)L(0,0,0,R,1);if(O.rad)L(0,0,R,0);
+    N(0,0,0,'sw');N(R,0,1,'e');N(0,R,2,'n');T(R/2,0,'R','n')}
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;const bb=(a,b,c,e)=>{x0=Math.min(x0,a);x1=Math.max(x1,c);y0=Math.min(y0,b);y1=Math.max(y1,e)};
+  P.forEach(p=>{if(p.k==='l')bb(Math.min(p.a,p.c),Math.min(p.b,p.d),Math.max(p.a,p.c),Math.max(p.b,p.d));
+    else if(p.k==='e')bb(p.cx-p.a,p.cy-p.b,p.cx+p.a,p.cy+p.b);else if(p.k==='c')bb(p.cx-p.r,p.cy-p.r,p.cx+p.r,p.cy+p.r);else bb(p.x,p.y,p.x,p.y)});
+  return{P,bb:[x0,y0,x1,y1]}}
+
+/* ---------- SVG ---------- */
+const AN={n:[0,-9,'middle'],s:[0,19,'middle'],e:[9,5,'start'],w:[-9,5,'end'],ne:[8,-7,'start'],nw:[-8,-7,'end'],se:[8,17,'start'],sw:[-8,17,'end']};
+function svgOf(d,transparent){const {P,bb}=build(d),M=44,bw=Math.max(bb[2]-bb[0],1e-6),bh=Math.max(bb[3]-bb[1],1e-6),s=420/Math.max(bw,bh);
+  const X=x=>(x-bb[0])*s+M,Y=y=>(bb[3]-y)*s+M,W=Math.round(bw*s+2*M),H=Math.round(bh*s+2*M),c=$('lc').value,w=+$('lw').value,f=v=>+v.toFixed(2);
+  const st=`stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round"`,ds=' stroke-dasharray="7 5"';
+  let o=transparent?'':`<rect width="${W}" height="${H}" fill="#fff"/>`;
+  P.forEach(p=>{
+    if(p.k==='l')o+=`<line x1="${f(X(p.a))}" y1="${f(Y(p.b))}" x2="${f(X(p.c))}" y2="${f(Y(p.d))}" ${st}${p.dash?ds:''}/>`;
+    else if(p.k==='c')o+=`<circle cx="${f(X(p.cx))}" cy="${f(Y(p.cy))}" r="${f(p.r*s)}" ${st}/>`;
+    else if(p.k==='e'){const cx=X(p.cx),cy=Y(p.cy),rx=p.a*s,ry=p.b*s;
+      if(p.part==='full')o+=`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(rx)}" ry="${f(ry)}" ${st}/>`;
+      else if(p.part==='front')o+=`<path d="M${f(cx-rx)} ${f(cy)}A${f(rx)} ${f(ry)} 0 0 0 ${f(cx+rx)} ${f(cy)}" ${st}/>`;
+      else o+=`<path d="M${f(cx+rx)} ${f(cy)}A${f(rx)} ${f(ry)} 0 0 0 ${f(cx-rx)} ${f(cy)}" ${st}${ds}/>`}
+    else{const[a,b,t]=AN[p.an]||AN.n,x=X(p.x),y=Y(p.y);
+      if(p.k==='p')o+=`<circle cx="${f(x)}" cy="${f(y)}" r="2.8" fill="${c}"/>`;
+      o+=`<text x="${f(x+a)}" y="${f(y+b)}" text-anchor="${t}" font-size="19" font-style="italic" font-family="'STIX Two Text','Cambria Math','Times New Roman',serif" fill="${c}">${p.t.replace(/'/g,'′')}</text>`}});
+  return{svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${o}</svg>`,W,H}}
+
+/* ---------- TikZ gọn: gộp các nét cùng kiểu ---------- */
+function tikz(d){const {P,bb}=build(d),f=v=>+v.toFixed(3),sol=[],das=[],dots=[],nodes=[],c=$('lc').value.toLowerCase(),w=+(+$('lw').value*.75).toFixed(2);
+  const TZ={n:'above',s:'below',e:'right',w:'left',ne:'above right',nw:'above left',se:'below right',sw:'below left'};
+  P.forEach(p=>{
+    if(p.k==='l')(p.dash?das:sol).push(`(${f(p.a)},${f(p.b)}) -- (${f(p.c)},${f(p.d)})`);
+    else if(p.k==='c')sol.push(`(${f(p.cx)},${f(p.cy)}) circle (${f(p.r)})`);
+    else if(p.k==='e'){const a=`${f(p.a)} and ${f(p.b)}`;
+      if(p.part==='full')sol.push(`(${f(p.cx)},${f(p.cy)}) ellipse (${a})`);
+      else if(p.part==='front')sol.push(`(${f(p.cx-p.a)},${f(p.cy)}) arc (180:360:${a})`);
+      else das.push(`(${f(p.cx+p.a)},${f(p.cy)}) arc (0:180:${a})`)}
+    else{if(p.k==='p')dots.push(`(${f(p.x)},${f(p.y)}) circle (1.3pt)`);
+      nodes.push(`\\node[${TZ[p.an]||'above'}] at (${f(p.x)},${f(p.y)}) {$${p.t}$};`)}});
+  const dark=c==='#14213d'||c==='#000000',tw=Math.max(+EV($('tw').value)||6,1),sc=+(tw/Math.max(bb[2]-bb[0],1e-6)).toFixed(2);
+  const col=dark?'':`,color=kc`,L=[`% Cần: \\usepackage{tikz}`];
+  if(!dark)L.push(`\\definecolor{kc}{HTML}{${c.slice(1).toUpperCase()}}`);
+  L.push(`\\begin{tikzpicture}[scale=${sc},line cap=round,line join=round,line width=${w}pt${col}]`);
+  if(sol.length)L.push(`  \\draw ${sol.join(' ')};`);
+  if(das.length)L.push(`  \\draw[dashed] ${das.join(' ')};`);
+  if(dots.length)L.push(`  \\fill ${dots.join(' ')};`);
+  nodes.forEach(n=>L.push('  '+n));L.push('\\end{tikzpicture}');return L.join('\n')}
+
+/* ---------- tính toán chính xác (a + b√n) ---------- */
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a),Qn=(p,q=1)=>{if(q<0){p=-p;q=-q}const g=gcd(p,q)||1;return[p/g,q/g]};
+const toQ=x=>{if(!isFinite(x))return null;let h0=0,h1=1,k0=1,k1=0,b=Math.abs(x);
+  for(let i=0;i<25;i++){const a=Math.floor(b),h=a*h1+h0,k=a*k1+k0;h0=h1;h1=h;k0=k1;k1=k;if(k1>1e5)return null;
+    if(Math.abs(Math.abs(x)-h1/k1)<1e-10)return Qn(x<0?-h1:h1,k1);if(b-a<1e-12)return null;b=1/(b-a)}return null};
+const qa=(x,y)=>Qn(x[0]*y[1]+y[0]*x[1],x[1]*y[1]),qm=(x,y)=>Qn(x[0]*y[0],x[1]*y[1]);
+const Ex=(a,b=[0,1],n=1)=>({a,b,n}),ea=(x,y)=>Ex(qa(x.a,y.a),qa(x.b,y.b),x.b[0]?x.n:y.n);
+const em=(x,y)=>{const n=x.b[0]?x.n:y.n;return Ex(qa(qm(x.a,y.a),qm(qm(x.b,y.b),[n,1])),qa(qm(x.a,y.b),qm(x.b,y.a)),n)};
+const sqQ=q=>{if(q[0]<0)return null;let t=q[0]*q[1],s=1;for(let f=2;f*f<=t;f++)while(t%(f*f)===0){t/=f*f;s*=f}return t===1?Ex(Qn(s,q[1])):Ex([0,1],Qn(s,q[1]),t)};
+const val=e=>e.a[0]/e.a[1]+e.b[0]/e.b[1]*Math.sqrt(e.n),fq=q=>q[1]===1?String(q[0]):q[0]+'/'+q[1];
+const fE=(e,pi)=>{const P=pi?'π':'';
+  if(!e.b[0]){const[p,q]=e.a;if(!pi)return fq(e.a);if(!p)return'0';const c=p===1?'':p===-1?'−':String(p);return q===1?c+P:c+P+'/'+q}
+  const cb=q=>q[1]===1?(q[0]===1?'':String(q[0])):'('+fq(q)+')';
+  if(!e.a[0])return cb(e.b)+'√'+e.n+P;
+  return'('+fq(e.a)+(e.b[0]>0?'+':'−')+cb([Math.abs(e.b[0]),e.b[1]])+'√'+e.n+')'+P};
+const dec=x=>x.toFixed(2).replace('.',','),sb=s=>/[\/√+\-− ]/.test(s)?'('+s+')':s;
+function solve(d){const out=[],q={R:toQ(d.R),h:toQ(d.h),r:toQ(d.r)},ok=q.R&&(shape==='cau'||q.h)&&(shape!=='cut'||q.r);
+  const row=(name,fm,sub,ex,ap)=>out.push(`<div class="ln"><b>${name}</b> = ${fm} = ${sub}${ok&&ex?` = <b>${ex}</b>`:''} ≈ <b>${dec(ap)}</b></div>`);
+  const T=(x,s)=>s&&s.trim()?sb(s.trim()):x==null?'':String(+x.toFixed(4)).replace('.',','),Rs=T(d.R,$('iR').value),hs=T(d.h,$('ih').value),rs=T(d.r,$('ir').value),PI=Math.PI;
+  if(shape==='cau'){const R=ok?Ex(q.R):null;
+    row('S','4πR²',`4π·${Rs}²`,ok&&fE(em(Ex([4,1]),em(R,R)),1),4*PI*d.R**2);
+    row('V','(4/3)πR³',`(4/3)π·${Rs}³`,ok&&fE(em(Ex([4,3]),em(R,em(R,R))),1),4/3*PI*d.R**3);return out.join('')}
+  const R=ok?Ex(q.R):null,H=ok?Ex(q.h):null,r=ok&&q.r?Ex(q.r):null;
+  if(shape==='tru'){
+    row('S<sub>xq</sub>','2πRh',`2π·${Rs}·${hs}`,ok&&fE(em(em(Ex([2,1]),R),H),1),2*PI*d.R*d.h);
+    row('S<sub>tp</sub>','2πR(R + h)',`2π·${Rs}·(${Rs} + ${hs})`,ok&&fE(em(em(Ex([2,1]),R),ea(R,H)),1),2*PI*d.R*(d.R+d.h));
+    row('V','πR²h',`π·${Rs}²·${hs}`,ok&&fE(em(em(R,R),H),1),PI*d.R**2*d.h)}
+  else if(shape==='non'){const l=Math.hypot(d.R,d.h),El=ok?sqQ(qa(qm(q.R,q.R),qm(q.h,q.h))):null;
+    row('l','√(R² + h²)',`√(${Rs}² + ${hs}²)`,ok&&El&&fE(El,0),l);
+    if(El){row('S<sub>xq</sub>','πRl',`π·${Rs}·l`,fE(em(R,El),1),PI*d.R*l);row('S<sub>tp</sub>','πR(R + l)',`π·${Rs}·(${Rs} + l)`,fE(em(R,ea(R,El)),1),PI*d.R*(d.R+l))}
+    else{row('S<sub>xq</sub>','πRl',`π·${Rs}·l`,0,PI*d.R*l);row('S<sub>tp</sub>','πR(R + l)',`π·${Rs}·(${Rs} + l)`,0,PI*d.R*(d.R+l))}
+    row('V','(1/3)πR²h',`(1/3)π·${Rs}²·${hs}`,ok&&fE(em(Ex([1,3]),em(em(R,R),H)),1),PI*d.R**2*d.h/3)}
+  else{const dq=ok?qa(q.R,qm(q.r,[-1,1])):null,El=ok?sqQ(qa(qm(dq,dq),qm(q.h,q.h))):null,l=Math.hypot(d.R-d.r,d.h);
+    row('l','√((R − r)² + h²)',`√((${Rs} − ${rs})² + ${hs}²)`,ok&&El&&fE(El,0),l);
+    const Sx=El?em(ea(R,r),El):null;
+    row('S<sub>xq</sub>','π(R + r)l',`π·(${Rs} + ${rs})·l`,Sx&&fE(Sx,1),PI*(d.R+d.r)*l);
+    row('S<sub>tp</sub>','π(R + r)l + π(R² + r²)',`π·(${Rs} + ${rs})·l + π(${Rs}² + ${rs}²)`,Sx&&fE(ea(Sx,ea(em(R,R),em(r,r))),1),PI*(d.R+d.r)*l+PI*(d.R**2+d.r**2));
+    row('V','(1/3)πh(R² + r² + Rr)',`(1/3)π·${hs}·(${Rs}² + ${rs}² + ${Rs}·${rs})`,ok&&fE(em(em(Ex([1,3]),H),ea(ea(em(R,R),em(r,r)),em(R,r))),1),PI*d.h*(d.R**2+d.r**2+d.R*d.r)/3)}
+  return out.join('')}
+
+/* ---------- hiển thị ---------- */
+function render(){store();$('tkv').textContent=(+$('tk').value).toFixed(2);$('lwv').textContent=(+$('lw').value).toFixed(1);
+  const d=dims();$('err').textContent=d.err||'';
+  if(d.err){$('fig').innerHTML='<span style="color:#5b6b8a">'+d.err+'</span>';$('res').innerHTML='<span class="hint">Chưa có kết quả: hãy sửa kích thước.</span>';return}
+  $('fig').innerHTML=svgOf(d,false).svg;$('res').innerHTML=solve(d)}
+document.querySelectorAll('.side input').forEach(e=>e.addEventListener('input',render));
+
+/* ---------- xuất ---------- */
+const msg=t=>{$('msg').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>$('msg').textContent='',3500)};
+function pngBlob(cb,sc=3){const d=dims();if(d.err)return msg('Chưa có hình để xuất.');const {svg,W,H}=svgOf(d,$('trn').checked),img=new Image();
+  img.onload=()=>{const c=document.createElement('canvas');c.width=W*sc;c.height=H*sc;c.getContext('2d').drawImage(img,0,0,c.width,c.height);c.toBlob(cb,'image/png')};
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
+function dl(name,blob){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
+$('bpng').onclick=()=>pngBlob(b=>dl('khoi-tron-xoay.png',b));
+$('bsvg').onclick=()=>{const d=dims();if(d.err)return msg('Chưa có hình để xuất.');dl('khoi-tron-xoay.svg',new Blob([svgOf(d,$('trn').checked).svg],{type:'image/svg+xml'}))};
+$('bcp').onclick=()=>pngBlob(async b=>{try{await navigator.clipboard.write([new ClipboardItem({'image/png':b})]);msg('Đã sao chép ảnh. Dán vào Word bằng Ctrl+V.')}catch(e){msg('Trình duyệt không cho sao chép ảnh. Hãy dùng “Tải PNG”.')}});
+function showTikz(){const d=dims();if(d.err)return;$('tka').value=tikz(d)}
+$('btk').onclick=()=>{const d=dims();if(d.err)return msg('Chưa có hình để xuất.');showTikz();$('tkm').textContent='';$('tkd').showModal();$('tka').focus();$('tka').select()};
+$('tw').addEventListener('input',showTikz);$('tkx').onclick=()=>$('tkd').close();
+$('tkc').onclick=async()=>{const a=$('tka');a.select();let ok=false;try{await navigator.clipboard.writeText(a.value);ok=true}catch(e){try{ok=document.execCommand('copy')}catch(e2){}}$('tkm').textContent=ok?'Đã sao chép mã TikZ.':'Hãy bôi đen và nhấn Ctrl+C.'};
+
+load();render();
+if(window.exampleChips)exampleChips($('side'),[
+ ['Trụ R=3, h=4',()=>setShape('tru',{R:'3',h:'4'})],['Nón R=3, h=4',()=>setShape('non',{R:'3',h:'4',l:''})],
+ ['Nón R=3, l=5',()=>setShape('non',{R:'3',h:'',l:'5'})],['Nón cụt',()=>setShape('cut',{R:'4',r:'2',h:'3'})],['Cầu R=5/2',()=>setShape('cau',{R:'5/2'})]]);
+</script></body></html>
